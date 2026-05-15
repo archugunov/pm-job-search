@@ -1,0 +1,9 @@
+{
+  "name": "pm-job-search",
+  "version": "0.1.0",
+  "description": "An opinionated daily-driver for senior PM / Head of Product job searches. Pure markdown, zero external dependencies.",
+  "author": {
+    "name": "pm-job-search contributors"
+  },
+  "license": "MIT"
+}
