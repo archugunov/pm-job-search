@@ -30,9 +30,8 @@ cd <your-workspace>
 | `/story-builder` | Maintain your universal STAR-story bank. |
 | `/interview-prep <Company>` | Adapt stories for a specific upcoming interview. |
 | `/interview-analysis` | Debrief from a pasted transcript. |
-| `/pm-case-study` | Work on a PM take-home strategy memo. |
 
-Reviewer agents (`cpo-reviewer`, `eng-manager-reviewer`, `design-manager-reviewer`, `interview-coach`, `tech-career-coach`) review case-study drafts on demand.
+Reviewer agents (`cpo-reviewer`, `eng-manager-reviewer`, `design-manager-reviewer`, `interview-coach`, `tech-career-coach`) review any draft on demand — stories, research briefs, outreach messages, take-home assignments.
 
 ## What's in `userdata/examples/`
 

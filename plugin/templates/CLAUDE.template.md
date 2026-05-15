@@ -28,9 +28,8 @@ Use the skills shipped by the pm-job-search plugin.
 | Maintain your universal story bank | `/story-builder` |
 | Prep stories for a specific upcoming interview | `/interview-prep <Company>` |
 | Post-interview debrief from a transcript | `/interview-analysis` |
-| Work on a PM take-home case study | `/pm-case-study` |
 
-For reviewing any draft — case study, story, research brief, outreach message — invoke one or more reviewer agents:
+For reviewing any draft — story, research brief, outreach message, take-home assignment — invoke one or more reviewer agents:
 
 | Agent | Lens |
 |---|---|

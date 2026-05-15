@@ -14,9 +14,9 @@ rejection_note: "Strong work, going with a candidate with more direct payments e
 
 # Stripe
 
-Closed at take-home stage. Take-home file at `case-study-2026-05-05.md`,
-feedback letter at `rejection-letter-2026-05-13.md` (not included in this
-example install).
+Closed at take-home stage. The take-home assignment and the rejection
+letter would normally live in this folder as additional `.md` files;
+omitted from this example install.
 
 Re-engagement criterion: a Consumer Credit role at Stripe would change the
 domain-fit story — worth revisiting.
