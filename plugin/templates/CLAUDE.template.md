@@ -68,4 +68,4 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 - `rejected` — they rejected you.
 - `closed` — you closed it (withdrew, not interested, no qualifying role, listing expired).
 
-Monitoring is a tier (P2) plus `to_apply` status, not a separate state.
+**Monitoring** is a tier (`P2`) plus `to_apply` status with `position` empty — a watchlist entry, no specific role being pursued. When `/job-search` or `/evaluate-position` finds a new qualifying role at a Monitoring company, the entry transitions in place: `position` is filled in, `status` becomes `new`, `tier` is re-scored. If the company already has a filled `position` (in any status — including `rejected` or `closed`), the new role gets a separate folder with a disambiguator (e.g. `Plaid (Head of Product)`). The same `(company, position)` pair is never duplicated across folders.
