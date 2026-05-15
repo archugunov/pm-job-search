@@ -5,31 +5,34 @@
   every 2-3 weeks (or at any retrospective). It drives the progress-tracking
   behaviour of /today.
 
-  - Placeholders ({{X}}) → answered during /setup.
-  - Hardcoded numeric defaults (weekly_targets, pipeline_targets) →
-    opinionated senior-PM-tuned starting points; edit values inline if your
-    cadence differs.
+  - Placeholders ({{X}}) → answered during /setup, or filled by hand.
   - Empty prose sections and the checkpoints list → you fill in your own.
+
+  Numeric targets (weekly_targets, pipeline_targets) are personal cadence —
+  no defaults shipped. If a target is unset, /today skips that comparison
+  rather than reporting against an arbitrary number.
 -->
 ---
-target_offer_date: {{TARGET_OFFER_DATE}}   # YYYY-MM-DD — when "done" should happen
+target_offer_date: {{TARGET_OFFER_DATE}}        # YYYY-MM-DD — when "done" should happen
 
-weekly_targets:                            # input metrics you control directly
-  warm_outreach: 5                         # touchpoints (LinkedIn DMs, intro coffees, referral asks)
-  applications: 3                          # cold applications submitted
-  informational_calls: 2                   # exploratory conversations
+weekly_targets:                                 # how many of each per week
+  warm_outreach: {{WEEKLY_WARM_OUTREACH}}       # touchpoints (LinkedIn DMs, intro coffees, referral asks)
+  applications: {{WEEKLY_APPLICATIONS}}         # cold applications submitted
+  informational_calls: {{WEEKLY_INFORMATIONAL}} # exploratory conversations
+                                                # Use null (or just delete a line) to skip tracking that metric.
 
-pipeline_targets:                          # leading indicators — healthy floor
-  active_interview_threads: 4              # how many P0/P1 threads at any given time
-  p0_pipeline_size: 6                      # total P0 companies in any active status
+pipeline_targets:                               # leading indicators — healthy floor
+  active_interview_threads: {{PIPELINE_ACTIVE_THREADS}}   # P0/P1 threads at any given time
+  p0_pipeline_size: {{PIPELINE_P0_SIZE}}        # total P0 companies in any active status
+                                                # Use null to skip.
 
-checkpoints: {{CHECKPOINTS}}               # YAML list of pre-committed if-then decisions.
-                                           # Each entry is { date, condition, action }.
-                                           # /today surfaces any with date within the next 14 days.
-                                           # Shape:
-                                           #   - date: 2026-06-15
-                                           #     condition: "<2 active final-round threads"
-                                           #     action: "expand search criteria; lower domain-fit floor"
+checkpoints: {{CHECKPOINTS}}                    # YAML list of pre-committed if-then decisions.
+                                                # Each entry is { date, condition, action }.
+                                                # /today surfaces any with date within the next 14 days.
+                                                # Shape:
+                                                #   - date: 2026-06-15
+                                                #     condition: "<2 active final-round threads"
+                                                #     action: "expand search criteria; lower domain-fit floor"
 ---
 
 ## Headline goal
