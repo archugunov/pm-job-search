@@ -16,10 +16,9 @@
 target_offer_date: {{TARGET_OFFER_DATE}}        # YYYY-MM-DD — when "done" should happen
 
 weekly_targets:                                 # how many of each per week
-  warm_outreach: {{WEEKLY_WARM_OUTREACH}}       # touchpoints (LinkedIn DMs, intro coffees, referral asks)
-  applications: {{WEEKLY_APPLICATIONS}}         # cold applications submitted
-  informational_calls: {{WEEKLY_INFORMATIONAL}} # exploratory conversations
-                                                # Use null (or just delete a line) to skip tracking that metric.
+  warm_outreach: {{WEEKLY_WARM_OUTREACH}}       # outreach attempts — DMs sent, intro asks, coffees scheduled
+  applications: {{WEEKLY_APPLICATIONS}}         # formal applications submitted
+                                                # Use null (or delete a line) to skip tracking that metric.
 
 pipeline_targets:                               # leading indicators — healthy floor
   active_interview_threads: {{PIPELINE_ACTIVE_THREADS}}   # P0/P1 threads at any given time

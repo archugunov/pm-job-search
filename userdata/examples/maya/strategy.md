@@ -5,7 +5,6 @@ target_offer_date: 2026-08-01
 weekly_targets:
   warm_outreach: 5
   applications: 3
-  informational_calls: 2
 
 pipeline_targets:
   active_interview_threads: 4
