@@ -34,11 +34,21 @@ cd <your-workspace>
 
 Reviewer agents (`cpo-reviewer`, `eng-manager-reviewer`, `design-manager-reviewer`, `interview-coach`, `tech-career-coach`) review case-study drafts on demand.
 
-## What's in `userdata/example/`
+## What's in `userdata/examples/`
 
-A working install populated with a fictional persona — Maya Patel, a senior PM
-in fintech. Browse `userdata/example/` to see what every file looks like
-before running `/setup`.
+Two fictional personas pre-populated so you can see what a working install
+looks like before running `/setup`:
+
+- **`userdata/examples/maya/`** — Maya Patel, senior PM in London consumer
+  credit / fintech. Full install: profile, strategy, journal, two companies
+  (one interviewing, one rejected), one story with adaptation angles,
+  generated index.
+- **`userdata/examples/diego/`** — Diego Alvares, VP Product in Mexico City
+  applying for fully-remote US roles. Skeletal install (profile, strategy,
+  one company, one story) — there to stress-test the schema against USD
+  compensation, no anchor city, US English, B2B SaaS vertical.
+
+Both personas are entirely fictional.
 
 ## Audience + caveats
 

@@ -42,12 +42,14 @@ For reviewing a case study draft, invoke one or more reviewer agents:
 
 ## Data layout
 
-- `userdata/profile.md` — your profile (frontmatter + prose). Single source of truth.
+- `userdata/profile.md` — your profile (identity, positioning, tier rubric). Single source of truth for who you are.
+- `userdata/strategy.md` — your plan (target offer date, weekly targets, checkpoints). Drives `/today`'s progress tracking. Revisit every 2-3 weeks.
+- `userdata/cv.md` — optional. Drop your CV here as md or txt and `/setup` will use it to seed positioning and proof points.
 - `userdata/journal.md` — free-form daily notes you append to.
 - `userdata/companies/<Company>/meta.md` — YAML frontmatter per company: status, tier, position, link, dates.
 - `userdata/companies/<Company>/*.md` — research briefs, interview prep, debriefs, case studies — written by skills, edited by you.
 - `userdata/stories/<filename>.md` — universal STAR-story bank. Filenames are auto-derived from each story's title.
-- `userdata/outputs/` — generated artefacts (daily briefs, applications.md index).
+- `userdata/outputs/` — daily briefs and the `applications.md` index. Both `/today` and you can edit `applications.md` freely.
 
 ## Status pipeline (used in `meta.md` frontmatter)
 

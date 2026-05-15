@@ -1,5 +1,5 @@
 userdata/*
-!userdata/example/
+!userdata/examples/
 !userdata/.gitkeep
 .env
 .DS_Store
