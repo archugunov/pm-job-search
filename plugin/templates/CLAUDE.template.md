@@ -53,14 +53,19 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 
 ## Status pipeline (used in `meta.md` frontmatter)
 
-`new` → `to_apply` → `applied` → `interviewing` → (`offer` | `rejected` | `closed`)
+**Typical forward path:** `new` → `to_apply` → `applied` → `interviewing` → `offer`
 
+**Exit states reachable from any active stage:**
+- `rejected` — they rejected you (or went silent on an application). Reachable from `applied` or `interviewing`.
+- `closed` — you closed it (changed mind, listing expired, withdrew at any stage, no longer relevant). Reachable from any active stage including `new`.
+
+**State definitions:**
 - `new` — fresh role at top of inbox, decision pending.
 - `to_apply` — decided to pursue.
 - `applied` — submitted.
 - `interviewing` — any active conversation (intro calls, panels, test assignments).
 - `offer` — offer in hand.
 - `rejected` — they rejected you.
-- `closed` — you closed it (withdrew, not interested, no qualifying role).
+- `closed` — you closed it (withdrew, not interested, no qualifying role, listing expired).
 
 Monitoring is a tier (P2) plus `to_apply` status, not a separate state.
