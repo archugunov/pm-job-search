@@ -5,7 +5,7 @@
 
 An opinionated daily-driver for senior PM / Head of Product job searches.
 Pure markdown — no Notion, no API tokens, no external services. Clone, install
-the plugin, run `/setup`, run `/today` every morning.
+the plugin, run `/setup` then `/strategy`, then `/today` every morning.
 
 ## Install
 
@@ -15,16 +15,18 @@ the plugin, run `/setup`, run `/today` every morning.
 
 cd <your-workspace>
 # run the onboarding flow inside Claude Code
-/setup
-# you're done. run /today to see your daily brief.
+/setup           # 10 min — identity, target role, salary, hard filters
+/strategy        # 15-20 min — goals, weekly targets, anti-goals, checkpoints
+# you're done. run /today every morning to see your daily brief.
 ```
 
 ## The daily loop
 
 | Skill | What it does |
 |---|---|
-| `/setup` | First-run onboarding. Writes `userdata/profile.md` + `CLAUDE.md`. |
-| `/today` | Daily brief from your pipeline state. Saves to `userdata/outputs/`. |
+| `/setup` | First-run onboarding. Writes `userdata/profile.md` + `CLAUDE.md`. Offers to run `/strategy` at the end. |
+| `/strategy` | Interview-style reflection (15-20 min). Sets target offer date, weekly outreach + application targets, pipeline floors, headline goal, anti-goals, checkpoints. Writes `userdata/strategy.md`. Re-run anytime as the search evolves. |
+| `/today` | Daily brief — pipeline state plus progress vs. the targets you set in `/strategy`. Saves to `userdata/outputs/`. |
 | `/evaluate-position <url-or-paste>` | Score a job posting against your tier model. |
 | `/job-search` | Weekly discovery sweep against your target titles + industries. |
 | `/story-builder` | Maintain your universal STAR-story bank. |
