@@ -46,8 +46,8 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 - `userdata/strategy.md` — your plan (target offer date, weekly targets, checkpoints). Drives `/today`'s progress tracking. Revisit every 2-3 weeks.
 - `userdata/cv.md` — optional. Drop your CV here as md or txt and `/setup` will use it to seed positioning and proof points.
 - `userdata/journal.md` — free-form daily notes you append to.
-- `userdata/companies/<Company>/meta.md` — YAML frontmatter per company: status, tier, position, link, dates.
-- `userdata/companies/<Company>/*.md` — research briefs, interview prep, debriefs, case studies — written by skills, edited by you.
+- `userdata/companies/<Company>/` — one folder per company. If you're pursuing a single role, `meta.md` and supporting docs (research, prep, debriefs) live directly inside. If two or more roles at the same company are tracked, each role gets its own slug subfolder: `userdata/companies/<Company>/<role-slug>/meta.md`. Skills handle the 1→2 migration automatically.
+- `meta.md` frontmatter per role: `company`, `position`, `status`, `tier`, `link`, dates, optional `monitoring: true|false`.
 - `userdata/stories/<filename>.md` — universal STAR-story bank. Filenames are auto-derived from each story's title.
 - `userdata/outputs/` — daily briefs and the `applications.md` index. Both `/today` and you can edit `applications.md` freely.
 
@@ -68,4 +68,6 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 - `rejected` — they rejected you.
 - `closed` — you closed it (withdrew, not interested, no qualifying role, listing expired).
 
-**Monitoring** is a tier (`P2`) plus `to_apply` status with `position` empty — a watchlist entry, no specific role being pursued. When `/job-search` or `/evaluate-position` finds a new qualifying role at a Monitoring company, the entry transitions in place: `position` is filled in, `status` becomes `new`, `tier` is re-scored. If the company already has a filled `position` (in any status — including `rejected` or `closed`), the new role gets a separate folder with a disambiguator (e.g. `Plaid (Head of Product)`). The same `(company, position)` pair is never duplicated across folders.
+**Monitoring** is a boolean `monitoring: true|false` field on `meta.md` frontmatter, orthogonal to `status`. It means "watch this company for new qualifying roles" — a flag, not a state. A company in any status (including `rejected` or `closed`) can also be `monitoring: true`. `/job-search`'s weekly recheck pass scans `monitoring: true` companies for new roles and adds them; new roles found at monitoring companies don't change the monitoring flag.
+
+**Dedup:** the `(company, position)` exact pair is never duplicated, regardless of status. A new `to_apply` entry never overwrites an old `rejected` entry for the same role — both are real history. A second role at the same company is added as a new role-slug subfolder (see Data layout above).

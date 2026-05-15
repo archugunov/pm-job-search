@@ -10,6 +10,7 @@ date_applied: 2026-04-12
 date_rejected: 2026-05-13
 rejection_stage: take-home
 rejection_note: "Strong work, going with a candidate with more direct payments experience."
+monitoring: true  # watch for future Consumer Credit / fintech roles
 ---
 
 # Stripe
