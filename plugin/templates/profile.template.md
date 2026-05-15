@@ -122,7 +122,8 @@ company_shape_adjustment:                 # role_fit ± 1, capped at 1-3
   for the same reason twice.
 
   Useful prompts to seed this section:
-  - What kind of PM are you NOT? (e.g. "not a process PM", "not a marketer")
+  - What kind of PM are you NOT? Name two or three role types you want to
+    avoid being conflated with.
   - What claims would feel like overreach for your actual experience?
   - What language patterns make you cringe in others' profiles?
 -->

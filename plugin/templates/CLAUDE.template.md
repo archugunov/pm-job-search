@@ -30,7 +30,7 @@ Use the skills shipped by the pm-job-search plugin.
 | Post-interview debrief from a transcript | `/interview-analysis` |
 | Work on a PM take-home case study | `/pm-case-study` |
 
-For reviewing a case study draft, invoke one or more reviewer agents:
+For reviewing any draft — case study, story, research brief, outreach message — invoke one or more reviewer agents:
 
 | Agent | Lens |
 |---|---|
@@ -38,7 +38,7 @@ For reviewing a case study draft, invoke one or more reviewer agents:
 | `eng-manager-reviewer` | Feasibility, engineering trade-offs |
 | `design-manager-reviewer` | UX, craft, discovery rigour |
 | `interview-coach` | How the candidate comes across — narrative, clarity |
-| `tech-career-coach` | Career strategy, offers, positioning (broader than case-study review) |
+| `tech-career-coach` | Career strategy, offers, positioning (broader than draft review) |
 
 ## Data layout
 
