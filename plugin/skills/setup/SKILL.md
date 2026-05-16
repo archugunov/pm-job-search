@@ -90,12 +90,12 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
    **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
 
    When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
-7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Director of Product, Principal PM, Group PM, Staff PM`. Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
+7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Typical senior-PM examples to offer: `Director of Product, Principal PM, Group PM, Staff PM`. Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
 8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `healthcare, climate tech, education, enterprise SaaS`. Substitute as YAML inline list (same form as Q7).
 9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Show two example shapes: `"£90-110K"` and `"$190-230K base + equity"`. Skippable. No validation — accept whatever currency / phrasing the user gives.
 10. **Hard filters** (`{{HARD_FILTERS}}`) — ONE question, skippable. Ask:
 
-    > "Any hard filters? These are roles you'd exclude immediately regardless of other fit. Typical senior-PM examples: 'no companies under 50 employees', 'no GM or business-owner roles', 'no in-office five days a week', 'no roles requiring relocation'. List as many as apply, comma-separated, or skip."
+    > "Any hard filters? These are roles you'd exclude immediately regardless of other fit. Examples: 'no companies under 50 employees', 'no GM or business-owner roles', 'no in-office five days a week', 'no roles requiring relocation'. List as many as apply, comma-separated, or skip."
 
     Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 employees", "no in-office five days a week"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 

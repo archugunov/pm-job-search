@@ -19,7 +19,7 @@ email: {{EMAIL}}
 linkedin_url: {{LINKEDIN_URL}}
 
 target_titles: {{TARGET_TITLES}}          # YAML list. /setup writes from your answers.
-                                          # Examples: Director of Product, Principal PM, Group PM, Staff PM.
+                                          # Typical senior-PM examples: Director of Product, Principal PM, Group PM, Staff PM.
 
 target_industries: {{TARGET_INDUSTRIES}}  # YAML list. /setup writes from your answers.
                                           # Examples: healthcare, climate tech, education, enterprise SaaS.
@@ -63,7 +63,7 @@ tier_thresholds:                          # score (sum of five dimensions, max 1
 
 hard_filters: {{HARD_FILTERS}}            # YAML list. /setup writes from your answers.
                                           # Plain-language strings. Companies matching any of these
-                                          # are excluded outright. Typical senior-PM examples:
+                                          # are excluded outright. Examples:
                                           #   - "Companies under 50 employees"
                                           #   - "GM or business-owner roles"
                                           #   - "In-office five days a week"
