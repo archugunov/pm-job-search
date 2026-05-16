@@ -63,10 +63,11 @@ tier_thresholds:                          # score (sum of five dimensions, max 1
 
 hard_filters: {{HARD_FILTERS}}            # YAML list. /setup writes from your answers.
                                           # Plain-language strings. Companies matching any of these
-                                          # are excluded outright. Examples:
+                                          # are excluded outright. Typical senior-PM examples:
                                           #   - "Companies under 50 employees"
                                           #   - "GM or business-owner roles"
                                           #   - "In-office five days a week"
+                                          #   - "Roles requiring relocation"
 
 company_shape_adjustment:                 # role_fit ± 1, capped at 1-3
   bonus: "+1 to role_fit if 20-80 ppl, Series A-B, founder-led, with craft or PLG signal"

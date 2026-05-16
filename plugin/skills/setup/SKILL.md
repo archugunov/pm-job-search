@@ -93,11 +93,11 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
 7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Director of Product, Principal PM, Group PM, Staff PM`. Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
 8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `healthcare, climate tech, education, enterprise SaaS`. Substitute as YAML inline list (same form as Q7).
 9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Show two example shapes: `"£90-110K"` and `"$190-230K base + equity"`. Skippable. No validation — accept whatever currency / phrasing the user gives.
-10. **Hard filters** (`{{HARD_FILTERS}}`) — sequence of three sub-prompts, each skippable:
-    - "Company-size cap? (e.g. 'no companies under 50 employees', or skip)"
-    - "Scope cap? (e.g. 'no GM / business-owner roles', or skip)"
-    - "Geo cap? (e.g. 'no in-office five days a week', or skip)"
-    Collect non-empty answers into a YAML inline list, with each string quoted: `["no companies under 50 employees", "no GM / business-owner roles"]`. If all three skipped, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
+10. **Hard filters** (`{{HARD_FILTERS}}`) — ONE question, skippable. Ask:
+
+    > "Any hard filters? These are roles you'd exclude immediately regardless of other fit. Typical senior-PM examples: 'no companies under 50 employees', 'no GM or business-owner roles', 'no in-office five days a week', 'no roles requiring relocation'. List as many as apply, comma-separated, or skip."
+
+    Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 employees", "no in-office five days a week"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
 After Q10: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
