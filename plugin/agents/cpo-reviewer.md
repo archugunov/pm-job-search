@@ -106,9 +106,10 @@ When your review surfaces follow-up work, point the user at the right skill:
 - Quote specific text from the draft in every section.
 - The rewrite suggestion is required.
 - Default output mode: write the four-section review to chat.
-- If `--save <Company>` is passed AND `userdata/companies/<Company>/` exists, ALSO write to `userdata/companies/<Company>/review-cpo-<YYYY-MM-DD>.md`. Use today's date. Overwrite if a file with the same date exists.
+- If `--save <Company>` is passed AND `userdata/companies/<Company>/` exists, ALSO write to `userdata/companies/<Company>/[<role-slug>/]review-cpo-<YYYY-MM-DD>.md`. Use today's date. Overwrite if a file with the same date exists.
+  (The `[<role-slug>/]` is empty for single-role companies (flat layout) and resolves to the role-slug subfolder for multi-role companies per the §I.4 layout rule. `/evaluate-position` records which layout a company uses.)
 - NEVER edit the draft itself.
-- NEVER read or write profile.md, strategy.md, journal.md, or anything in `userdata/stories/`.
+- NEVER write to profile.md, strategy.md, journal.md, or anything in `userdata/stories/`.
 - Use the writer's `## Tone of Voice` and `## What NOT to Frame As` from profile.md to shape your suggestions.
 
 ## Anti-patterns to avoid in your own critique

@@ -103,9 +103,10 @@ If profile.md is missing, run the review anyway — flag at top.
 - Quote specific text from the draft in every section.
 - The rewrite suggestion is required and MUST sound like the candidate (profile.md tone).
 - Default mode: write to chat.
-- With `--save <Company>` AND `userdata/companies/<Company>/` exists, write to `userdata/companies/<Company>/review-interview-coach-<YYYY-MM-DD>.md`.
+- With `--save <Company>` AND `userdata/companies/<Company>/` exists, write to `userdata/companies/<Company>/[<role-slug>/]review-interview-coach-<YYYY-MM-DD>.md`.
+  (The `[<role-slug>/]` is empty for single-role companies (flat layout) and resolves to the role-slug subfolder for multi-role companies per the §I.4 layout rule. `/evaluate-position` records which layout a company uses.)
 - NEVER edit the draft.
-- NEVER read or write profile.md, strategy.md, journal.md, or modify stories.
+- NEVER write to profile.md, strategy.md, journal.md, or modify stories.
 - If a draft uses an angle from `userdata/stories/*.md` poorly, RECOMMEND a different angle by name; don't rewrite the story.
 
 ## Anti-patterns to avoid

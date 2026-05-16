@@ -61,6 +61,8 @@ Do NOT copy the full STAR body from the universal bank into the prep doc. The pr
 - **Salary anchor:** <from meta.md.comp_band or profile.md.salary_band — what number to aim for, what floor to push back from.>
 - **Open questions from research:** <verbatim from research-brief.md's "Open questions" section, lightly pruned to the 2-3 most stage-appropriate.>
 
+**If `research-brief.md` is missing** (the company was added manually rather than via `/evaluate-position`): print a one-line warning to chat (`No research-brief.md at <path> — Anchors derived from meta.md only`), drop the "Why this company" bullet (you don't have a research-grounded summary), and skip the "Open questions from research" bullet (the user will need to derive those manually). The remaining anchors (Why this role from meta.md, Salary anchor) still render. Don't fabricate research content.
+
 ## Stories to land
 ### 1. <Story title>
 **Angle:** <prompt-quote from the story's "Angles for different prompts">

@@ -35,6 +35,18 @@ Walk `hard_filters` from profile.md against the extracted signals. If any filter
 
 If `drop`: don't write any files; print "Dropped — matched filter: <filter>."
 
+## Anti-goals soft warning (after hard-filter gate, before scoring)
+
+ALSO read `userdata/strategy.md` if present and walk its `## Anti-goals` bullet list against the extracted signals. Anti-goals are time-bounded situational exclusions that EXTEND `hard_filters` (per the strategy.template.md guidance) — they're advisory, not blocking. Different treatment from hard_filters:
+
+- If any anti-goal matches, print a one-line soft warning before scoring: `Heads-up: matches anti-goal "<verbatim text>". Score and file anyway?` Wait for explicit user confirmation (`yes` / `skip` / `update anti-goal`). Defaults to score-anyway if the user just continues — but the warning was surfaced.
+- If the user picks `update anti-goal`, suggest they re-run `/strategy --theme anti-goals` and exit this run without writing files.
+- Multiple anti-goals can match — surface all of them in one warning message before asking.
+
+This catches the case where a hard_filter would have blocked the role but the user only stated the rule in strategy.md (time-bounded "during this search") rather than profile.md (permanent rule). Strategy anti-goals catch the recently-added preferences; hard_filters catch the always-true preferences. Both deserve respect.
+
+If `strategy.md` is missing entirely, skip this step silently.
+
 ## Tier scoring
 
 Score each of the five dimensions 1, 2, or 3 using the rubric from profile.md's `tier_weights`. Use the rubric STRINGS literally — they're the user's words for what each level means. Don't substitute your own judgement of "what 3 should mean."

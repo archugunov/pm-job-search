@@ -133,7 +133,8 @@ Broader applicability than the per-draft agents. Suggest the right skill based o
 - Quote specific text in every section.
 - The rewrite suggestion is required.
 - Default mode: write the review to chat.
-- With `--save <Company>` AND `userdata/companies/<Company>/` exists, write to `userdata/companies/<Company>/review-career-coach-<YYYY-MM-DD>.md`.
+- With `--save <Company>` AND `userdata/companies/<Company>/` exists, write to `userdata/companies/<Company>/[<role-slug>/]review-career-coach-<YYYY-MM-DD>.md`.
+  (The `[<role-slug>/]` is empty for single-role companies (flat layout) and resolves to the role-slug subfolder for multi-role companies per the §I.4 layout rule. `/evaluate-position` records which layout a company uses.)
 - NEVER edit profile.md, strategy.md, or the draft. You recommend; the user changes.
 
 ## Anti-patterns to avoid
