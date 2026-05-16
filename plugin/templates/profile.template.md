@@ -19,14 +19,14 @@ email: {{EMAIL}}
 linkedin_url: {{LINKEDIN_URL}}
 
 target_titles: {{TARGET_TITLES}}          # YAML list. /setup writes from your answers.
-                                          # Examples: Head of Product, Lead PM, Senior PM, VP Product.
+                                          # Examples: Director of Product, Principal PM, Group PM, Staff PM.
 
 target_industries: {{TARGET_INDUSTRIES}}  # YAML list. /setup writes from your answers.
-                                          # Examples: fintech, B2C SaaS, PLG SaaS, DevTools, creator tools.
+                                          # Examples: healthcare, climate tech, education, enterprise SaaS.
 
 geography:
   mode: {{GEOGRAPHY_MODE}}                # onsite | remote | both | other
-  mode_detail: {{GEOGRAPHY_DETAIL}}       # optional free text (e.g. "open to EMEA relocation")
+  mode_detail: {{GEOGRAPHY_DETAIL}}       # optional free text (e.g. "open to relocation within commute range")
 
 salary_band: "{{SALARY_BAND}}"            # single open string; any currency
                                           # examples: "£90-110K" or "$190-230K base + equity"
@@ -64,9 +64,9 @@ tier_thresholds:                          # score (sum of five dimensions, max 1
 hard_filters: {{HARD_FILTERS}}            # YAML list. /setup writes from your answers.
                                           # Plain-language strings. Companies matching any of these
                                           # are excluded outright. Examples:
-                                          #   - "More than 500 employees AND no PLG signal"
-                                          #   - "More than 8 direct reports (GM scope)"
-                                          #   - "Requires relocation outside Europe"
+                                          #   - "Companies under 50 employees"
+                                          #   - "GM or business-owner roles"
+                                          #   - "In-office five days a week"
 
 company_shape_adjustment:                 # role_fit ± 1, capped at 1-3
   bonus: "+1 to role_fit if 20-80 ppl, Series A-B, founder-led, with craft or PLG signal"

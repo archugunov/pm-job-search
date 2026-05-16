@@ -90,14 +90,14 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
    **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
 
    When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
-7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Head of Product, Lead PM, Senior PM, VP Product`. Substitute as a YAML inline list: `[Head of Product, Lead PM, Senior PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
-8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `fintech, B2C SaaS, PLG SaaS, DevTools`. Substitute as YAML inline list (same form as Q7).
+7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Director of Product, Principal PM, Group PM, Staff PM`. Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
+8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `healthcare, climate tech, education, enterprise SaaS`. Substitute as YAML inline list (same form as Q7).
 9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Show two example shapes: `"£90-110K"` and `"$190-230K base + equity"`. Skippable. No validation — accept whatever currency / phrasing the user gives.
 10. **Hard filters** (`{{HARD_FILTERS}}`) — sequence of three sub-prompts, each skippable:
-    - "Company-size cap? (e.g. 'no more than 500 ppl', or skip)"
-    - "Scope cap? (e.g. 'no role with >8 direct reports', or skip)"
-    - "Geo cap? (e.g. 'no relocation outside Europe', or skip)"
-    Collect non-empty answers into a YAML inline list, with each string quoted: `["no more than 500 ppl", "no role with >8 direct reports"]`. If all three skipped, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
+    - "Company-size cap? (e.g. 'no companies under 50 employees', or skip)"
+    - "Scope cap? (e.g. 'no GM / business-owner roles', or skip)"
+    - "Geo cap? (e.g. 'no in-office five days a week', or skip)"
+    Collect non-empty answers into a YAML inline list, with each string quoted: `["no companies under 50 employees", "no GM / business-owner roles"]`. If all three skipped, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
 After Q10: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
