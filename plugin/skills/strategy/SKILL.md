@@ -104,7 +104,7 @@ Write to `userdata/strategy.md`. Preserve the template header HTML comment block
 Idempotent rules:
 - Never overwrite a field the user picked `keep` for in re-run mode.
 - Never wipe the body of `## Headline goal` or `## Anti-goals` without an explicit user `update`. If a re-run picks `skip` for these, leave them untouched.
-- If the file existed and is being updated, append `<!-- Last edited by /strategy on YYYY-MM-DD -->` at the very bottom of the file (after the last section). On subsequent runs, replace that line in place rather than stacking new ones.
+- Always append (or update in place) a footer line `<!-- Last edited by /strategy on YYYY-MM-DD -->` at the very bottom of the file, regardless of whether any fields changed. Running /strategy is itself a reflection event worth audit-trailing — a keep-all run still updates the footer date. On subsequent runs, replace the existing footer line in place rather than stacking new ones.
 
 ## Closing
 
