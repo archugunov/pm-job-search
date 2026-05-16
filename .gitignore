@@ -4,3 +4,4 @@ userdata/*
 .env
 .DS_Store
 .claude/settings.local.json
+SPEC.md
