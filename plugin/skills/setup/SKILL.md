@@ -135,7 +135,7 @@ Write the result to `CLAUDE.md` at the workspace root (one level above `userdata
 
 Print a brief summary of what was written (one line per file), then offer, in this order:
 
-1. **Positioning refinement.** Say: `Want to refine your positioning before we wrap? I can hand off to the tech-career-coach agent for a ~5-minute interview that rewrites your positioning paragraph. Skip if you'd rather edit profile.md yourself.` If yes, invoke the `tech-career-coach` agent with the just-written `userdata/profile.md` as input. If no, move on.
+1. **Positioning refinement.** Say: `Want to refine your positioning before we wrap? I can hand off to the career-coach agent for a ~5-minute interview that rewrites your positioning paragraph. Skip if you'd rather edit profile.md yourself.` If yes, invoke the `career-coach` agent with the just-written `userdata/profile.md` as input. If no, move on.
 
 2. **Strategy.** Say: `Ready to set your strategy? /strategy walks you through goals, weekly targets, and anti-goals in ~15-20 minutes — and unlocks the progress-tracking part of /today. Skip and you can run /strategy anytime.` If yes, suggest the user invoke /strategy next. If no, move on.
 

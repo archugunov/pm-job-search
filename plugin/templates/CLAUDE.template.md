@@ -38,7 +38,7 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 | `eng-manager-reviewer` | Feasibility, engineering trade-offs |
 | `design-manager-reviewer` | UX, craft, discovery rigour |
 | `interview-coach` | How the candidate comes across — narrative, clarity |
-| `tech-career-coach` | Career strategy, offers, positioning (broader than draft review) |
+| `career-coach` | Career strategy, offers, positioning (broader than draft review) |
 
 ## Data layout
 

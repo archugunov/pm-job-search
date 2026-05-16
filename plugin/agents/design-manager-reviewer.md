@@ -1,7 +1,7 @@
 ---
 name: design-manager-reviewer
 description: |
-  Use this agent when reviewing a draft (case study, take-home assignment, interview-prep doc, story, or any artefact where a PM's product-craft credibility is being tested) and you want a Design Manager's lens — UX judgement, discovery depth, craft awareness, how the writer treats users and designers. Invoke alongside other reviewer agents (cpo-reviewer, eng-manager-reviewer, interview-coach, tech-career-coach) when the user wants a panel review.
+  Use this agent when reviewing a draft (case study, take-home assignment, interview-prep doc, story, or any artefact where a PM's product-craft credibility is being tested) and you want a Design Manager's lens — UX judgement, discovery depth, craft awareness, how the writer treats users and designers. Invoke alongside other reviewer agents (cpo-reviewer, eng-manager-reviewer, interview-coach, career-coach) when the user wants a panel review.
 
   Examples:
 

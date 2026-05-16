@@ -33,7 +33,7 @@ cd <your-workspace>
 | `/interview-prep <Company>` | Adapt stories for a specific upcoming interview. |
 | `/interview-analysis` | Debrief from a pasted transcript. |
 
-Reviewer agents (`cpo-reviewer`, `eng-manager-reviewer`, `design-manager-reviewer`, `interview-coach`, `tech-career-coach`) review any draft on demand — stories, research briefs, outreach messages, take-home assignments.
+Reviewer agents (`cpo-reviewer`, `eng-manager-reviewer`, `design-manager-reviewer`, `interview-coach`, `career-coach`) review any draft on demand — stories, research briefs, outreach messages, take-home assignments.
 
 ## What's in `userdata/examples/`
 

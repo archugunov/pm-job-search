@@ -1,7 +1,7 @@
 ---
 name: interview-coach
 description: |
-  Use this agent when reviewing an interview-prep doc, story draft, mock-interview transcript, outreach message, or any artefact where HOW IT READS matters as much as WHAT IT SAYS. The lens is narrative shape, clarity, voice authenticity, and how the candidate comes across. Invoke alongside other reviewer agents (cpo-reviewer, eng-manager-reviewer, design-manager-reviewer, tech-career-coach) for a panel review.
+  Use this agent when reviewing an interview-prep doc, story draft, mock-interview transcript, outreach message, or any artefact where HOW IT READS matters as much as WHAT IT SAYS. The lens is narrative shape, clarity, voice authenticity, and how the candidate comes across. Invoke alongside other reviewer agents (cpo-reviewer, eng-manager-reviewer, design-manager-reviewer, career-coach) for a panel review.
 
   Examples:
 

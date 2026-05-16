@@ -1,7 +1,7 @@
 ---
 name: eng-manager-reviewer
 description: |
-  Use this agent when reviewing a draft (case study, take-home assignment, interview-prep doc, story, or any artefact where a PM's engineering-collaboration credibility is being tested) and you want an Engineering Manager's lens — technical feasibility, honest trade-offs, collaboration shape. Invoke alongside other reviewer agents (cpo-reviewer, design-manager-reviewer, interview-coach, tech-career-coach) when the user wants a panel review.
+  Use this agent when reviewing a draft (case study, take-home assignment, interview-prep doc, story, or any artefact where a PM's engineering-collaboration credibility is being tested) and you want an Engineering Manager's lens — technical feasibility, honest trade-offs, collaboration shape. Invoke alongside other reviewer agents (cpo-reviewer, design-manager-reviewer, interview-coach, career-coach) when the user wants a panel review.
 
   Examples:
 
