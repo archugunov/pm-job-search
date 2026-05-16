@@ -11,8 +11,9 @@ Trade-off: no calendar integration, no email parsing, no Slack notifications. Yo
 ## Install
 
 ```sh
-# add the plugin to a Claude Code workspace (publish path TBD)
-# claude plugin install pm-job-search
+# inside Claude Code, in any workspace:
+/plugin marketplace add archugunov/pm-job-search
+/plugin install pm-job-search@pm-job-search
 
 cd <your-workspace>
 # inside Claude Code:

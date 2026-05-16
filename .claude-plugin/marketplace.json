@@ -1,0 +1,13 @@
+{
+  "name": "pm-job-search",
+  "owner": {
+    "name": "pm-job-search contributors"
+  },
+  "plugins": [
+    {
+      "name": "pm-job-search",
+      "source": "./plugin",
+      "description": "An opinionated daily-driver for senior PM / Head of Product job searches. Pure markdown, zero external dependencies."
+    }
+  ]
+}
