@@ -99,19 +99,11 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
     - "Geo cap? (e.g. 'no relocation outside Europe', or skip)"
     Collect non-empty answers into a YAML inline list, with each string quoted: `["no more than 500 ppl", "no role with >8 direct reports"]`. If all three skipped, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
-After Q10: explain the tier rubric in one short sentence and present three clean options via AskUserQuestion. Do NOT dump raw YAML by default — most users don't read YAML fluently and a wall of nested keys after 10 questions is exhausting.
+After Q10: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
-Exact prompt:
+The senior-PM-default `tier_weights` + `tier_thresholds` get written into `profile.md` from the template automatically. Tier rubric terms (P0/P1/P2, role_fit, etc.) are too technical to introduce here without context — the user encounters them organically the first time `/evaluate-position` runs and shows a scoring breakdown. That's the right teach-moment.
 
-> Every job posting gets scored on 5 dimensions (role fit / domain fit / business health / location fit / competitive edge) — sum determines P0 (pursue now) / P1 (apply when bandwidth allows) / P2 (monitor). The defaults are senior-PM-tuned. You can edit them anytime in `userdata/profile.md`.
-
-Then offer:
-
-- **A. Use defaults** (recommended) — proceed straight to file writes.
-- **B. Show me the defaults** — print the `tier_weights` + `tier_thresholds` blocks inline, then proceed with defaults (read-only preview).
-- **C. Edit now** — current line-by-line edit flow: walk one dimension at a time, accept new rubric strings, then update thresholds.
-
-Default is A. Most users will pick it. The defaults are good; tier rubric is the kind of thing a user adjusts after they've scored 3-5 real postings and noticed the calibration drift, not before.
+If the user wants to tune the rubric, they edit `profile.md` directly. The re-run mode of `/setup` (where field-by-field keep/update/skip is offered) does NOT include the tier rubric either — same reason.
 
 ## Re-run mode question loop
 
