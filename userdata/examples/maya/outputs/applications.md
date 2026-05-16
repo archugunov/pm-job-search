@@ -1,15 +1,14 @@
-<!-- Working document. Updated by /today on each run and by other skills that touch a company. Edit freely — your edits and skill updates coexist. -->
-<!-- Source of truth for each company's individual state stays in userdata/companies/<Co>/meta.md. -->
+<!-- BEGIN GENERATED — /today regenerates this block. Edit outside the markers, not within. -->
 
 # Applications
 
-Last regenerated: 2026-05-13
+Last regenerated: 2026-05-13 09:00
 
 ## Active
 
 | Company | Status | Tier | Position | Last activity |
 |---|---|---|---|---|
-| [Plaid](../companies/Plaid/) | interviewing | P0 | Senior PM, Consumer Credit | 2026-05-13 |
+| [Plaid](../companies/Plaid/) | interviewing | P0 | Senior PM, Consumer Credit | today |
 
 ## Decided
 
@@ -20,5 +19,15 @@ Last regenerated: 2026-05-13
 ## Summary
 
 - 1 active thread (1 P0).
-- 1 closed (rejected at take-home).
-- Warm-outreach attempts this week: 0 of target 5.
+- 1 closed this search; 1 rejected.
+- Warm-outreach attempts this week: 1 / 5.
+
+<!-- END GENERATED -->
+
+## Notes
+
+Your free-text area. `/today` never touches anything below this line.
+
+- 2026-05-13 — Plaid recruiter said the process moves fast; CPO round likely within two weeks. Bring the pricing-experiment story plus one activation story; skip the underwriting one unless asked.
+- 2026-05-11 — Klarna popped up. Run `/evaluate-position` on the JD before the weekend.
+- 2026-05-08 — Re-ran `/setup` after CV refresh — positioning paragraph reads better now.
