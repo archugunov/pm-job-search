@@ -60,27 +60,23 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
 
    ### Drafting tone rules (apply to BOTH Mode A and Mode B drafts)
 
-   The goal is positioning that reads as senior, specific, and unbluffed. Senior PMs don't recognise themselves in fluffy drafts and bin them. The rules below are battle-tested — they're lifted from a real senior-PM workflow that produced hired-into outreach + positioning.
+   The goal is positioning that reads as senior, specific, and unbluffed. Senior PMs don't recognise themselves in fluffy drafts and bin them.
 
-   **Voice (the four core principles):**
+   **Voice — four core principles:**
 
-   - **Casual but professional.** No stiff openers, no "I hope this email finds you well", no corporate boilerplate.
+   - **Casual but professional.** No stiff openers, no corporate boilerplate.
    - **Direct and short.** One idea per sentence. No padding. If a sentence runs longer than ~20 words, cut it.
-   - **Honest about gaps, then reframe — never oversell.** If the CV reveals a stretch claim, surface the nuance ("defined AI use cases with a dedicated AI team — didn't ship AI end-to-end") instead of papering over.
-   - **Specific over general.** Concrete nouns beat abstract ones. "BNPL card", "freemium → paid funnel", "underwriting flow" beats "consumer fintech product", "growth funnel", "acquisition engine".
+   - **Honest about gaps, then reframe — never oversell.** If the CV reveals a stretch claim, surface the nuance rather than paper over it.
+   - **Specific over general.** Concrete nouns beat abstract ones.
 
-   **The "Not X — Y" reframing pattern.** Senior positioning gets sharpened by explicitly naming the lazy framing the writer is NOT making. Example: `Not "0→1 startup founder" — has launched subscriptions, new use cases, and new growth levers inside products that already had traction.` Use this pattern at least once in the drafted `## Positioning` if the CV implies a stretch claim the writer would want to disown.
+   **The "Not X — Y" reframing pattern.** Sharpen positioning by explicitly naming the lazy framing the writer is NOT making, then anchoring the specific one. Shape: `Not "<generic claim>" — <specific past-tense fact>.` Use this pattern at least once in the drafted `## Positioning` if the CV implies a stretch claim the writer would want to disown.
 
-   **Proof point format.** Each bullet follows the shape: `**<Anchor>:** <specific work> → <specific outcome>. (<role>)`. Examples (from `userdata/examples/maya/profile.md`):
-   - `**Pricing experiment programme, Series B fintech:** Designed and shipped the price-test framework on our flagship card product. Three back-to-back tests led to +18% MRR over Q3 with no measurable churn lift. (Senior PM)`
-   - `**Activation funnel, SaaS unicorn:** Owned the freemium → paid conversion surface for 18 months. Took conversion from 4.1% to 6.8% on a base of ~200K monthly signups. (Lead PM)`
+   **Proof point format.** Each bullet follows the shape: `**<Anchor>:** <specific work> → <specific outcome>. (<role>)`. The anchor is usually the company or product. The work is past-tense and concrete. The outcome carries the number when one exists. The role is in parentheses at the end. If a metric isn't in the CV, the bullet stays qualitative — don't invent the figure to make it land.
 
-   The anchor is usually the company or product. The work is past-tense and concrete. The outcome carries the number. The role is in parentheses at the end. If a metric isn't in the CV, the bullet stays qualitative — don't invent the figure to make it land.
-
-   **Phrases to BAN outright** (from the source's "Avoid" list, expanded with v1 install feedback):
+   **Phrases to BAN outright:**
 
    - **Superlatives:** "rare", "deep", "elite", "world-class", "exceptional", "uniquely positioned", "best-in-class"
-   - **Abstract adjective stacks:** "user-facing craft, quantitative rigour, and engineering fluency" (pick ONE, anchored)
+   - **Abstract adjective stacks:** any 3-noun rhythm of capability claims (pick ONE, anchored to a specific outcome instead)
    - **Clichés:** "move the needle", "drive impact", "compound", "10x", "north star", "first principles", "the metrics that actually [verb]"
    - **LinkedIn closers:** "equally at home in X, Y, Z", "passionate about", "obsessed with", "thrives in ambiguity"
    - **Present-tense capability framing:** "lets me", "allows me to", "able to" — replace with the past-tense outcome that demonstrates it
@@ -89,9 +85,9 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
 
    **Past tense for outcomes.** "Shipped X, lifted Y by Z%" beats "drives growth through experimentation".
 
-   **Don't add numbers that aren't in the CV.** Don't invent metrics. Don't round up. Don't aggregate without checking the math.
+   **Don't invent numbers.** If a metric isn't in the CV, don't add one. Don't round up. Don't aggregate without checking the math.
 
-   **Don't overclaim AI/ML capability.** If the CV says the writer "defined AI use cases with a team" or "launched ML-powered recs in 2018", don't draft "AI/ML leader" or "shipped AI products end-to-end". Use the writer's own framing.
+   **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
 
    When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
 7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Head of Product, Lead PM, Senior PM, VP Product`. Substitute as a YAML inline list: `[Head of Product, Lead PM, Senior PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
