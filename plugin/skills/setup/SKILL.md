@@ -15,11 +15,11 @@ Run this BEFORE asking the first question:
 2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: ask all 10 questions in order.
 3. `--refresh` flag → re-run mode, but only re-resolve the workspace-root `CLAUDE.md` from the template using the current `profile.md` content. Skip all questions. Useful after manual edits to profile.md.
 
-Also detect CV presence (only relevant in fresh-install mode):
+Also detect CV presence (only relevant in fresh-install mode). This shapes how Q6 (Positioning) is offered — see Q6 below for the full flow:
 
-- `userdata/cv.md` or `userdata/cv.txt` exists → Mode B available for question 6 (positioning).
-- `userdata/cv.pdf`, `userdata/cv.docx`, or any non-md/txt file → print one line: `Found userdata/cv.<ext>. v1 only reads .md or .txt — convert your CV first, or skip and paste positioning instead.` Then proceed with Mode A only.
-- No cv.* file → Mode A only (paste positioning).
+- `userdata/cv.md` or `userdata/cv.txt` exists → Q6 goes straight to Mode B (CV draft) without prompting.
+- `userdata/cv.pdf`, `userdata/cv.docx`, or any non-md/txt file → print one line: `Found userdata/cv.<ext>. v1 only reads .md or .txt — convert your CV first if you want me to draft from it.` Then Q6 offers all three options (CV-drop, skip, paste).
+- No cv.* file → Q6 offers all three options with CV-drop as the recommended default.
 
 ## Templates
 
@@ -40,9 +40,40 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
 3. **Email** (`{{EMAIL}}`) — required.
 4. **LinkedIn URL** (`{{LINKEDIN_URL}}`) — skippable.
 5. **Where are you looking?** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion: `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`. For "Both", optionally capture mode_detail (e.g. "London hybrid or EMEA remote") via a follow-up prompt.
-6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — two modes:
-   - **Mode A**: ask the user to paste 1-3 sentences of self-positioning. Draft a 2-paragraph `## Positioning` from it; ask for 3-5 numbered wins to draft `## Proof Points`; ask for one sentence answering "what's the rare thing you bring?" to draft `## Moat`.
-   - **Mode B** (if `userdata/cv.md` or `userdata/cv.txt` present): read the CV, draft a positioning paragraph + 5-7 proof points by extracting bullets with numbers, draft a one-sentence moat candidate, show the draft to the user, ask them to edit before save. Never save without explicit user review.
+6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
+
+   Auto-detect first: if `userdata/cv.md` or `userdata/cv.txt` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
+
+   If no CV file exists, present these three options via AskUserQuestion (in this order):
+
+   - **A. Drop your CV (recommended)** — print: *"Save your CV as `userdata/cv.md` or `userdata/cv.txt` in this workspace. I'll read it, draft your positioning and proof points, and you'll edit before save. Take a minute to drop the file in, then tell me 'ready'."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
+   - **B. Skip for now** — write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast. User completes positioning whenever it's their priority.
+   - **C. Paste positioning now** → **Mode A**.
+
+   ### Mode A (paste-now)
+
+   Ask the user to paste 1-3 sentences of self-positioning. Draft a 2-paragraph `## Positioning` from it; ask for 3-5 numbered wins to draft `## Proof Points`; ask for one sentence answering "what's the rare thing you bring?" to draft `## Moat`. Apply the **Drafting tone rules** below.
+
+   ### Mode B (CV draft)
+
+   Read the CV file. Draft a positioning paragraph (≤4 sentences) + 5-7 proof points (each ≤2 sentences) + a one-sentence moat candidate. Show to user. Ask them to edit / accept / discard. Never save without explicit user review.
+
+   ### Drafting tone rules (apply to BOTH Mode A and Mode B drafts)
+
+   The goal is positioning that reads as senior, specific, and unbluffed. Senior PMs don't recognise themselves in fluffy drafts and bin them. Hard rules:
+
+   - **Lead with the specific fact, not the capability claim.** "Took activation from 4.1% to 6.8% on 200K signups" > "drives growth through experimentation".
+   - **One claim per sentence. Short sentences.** If a sentence has more than ~20 words, cut.
+   - **Past tense for outcomes.** "Shipped X, lifted Y by Z%" > "able to ship", "drives", "lets me".
+   - **Ban superlatives.** No "rare", "deep", "elite", "world-class", "exceptional", "uniquely positioned". They make the writer sound like the recruiter.
+   - **Ban abstract adjective stacks.** "user-facing craft, quantitative rigour, and engineering fluency" reads as filler — pick the ONE specific skill anchored to a specific outcome in the CV.
+   - **Ban clichés.** No "move the needle", "drive impact", "moving needle", "compound", "10x", "north star", "first principles", "the metrics that actually [verb]".
+   - **Ban "equally at home in X, Y, Z" closers.** They signal LinkedIn-speak. Cut the closer; let the proof points carry the breadth claim.
+   - **Ban "let me / lets me / allows me" present-tense capability framing.** Replace with the past-tense outcome that demonstrates it.
+   - **Don't add numbers that aren't in the CV.** If a CV bullet lacks a metric, the proof point stays qualitative — don't invent the figure to make it land.
+   - **Prefer concrete nouns to abstract ones.** "BNPL card", "freemium → paid funnel", "underwriting flow" > "consumer fintech product", "growth funnel", "acquisition engine".
+
+   When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
 7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Examples to offer: `Head of Product, Lead PM, Senior PM, VP Product`. Substitute as a YAML inline list: `[Head of Product, Lead PM, Senior PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
 8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `fintech, B2C SaaS, PLG SaaS, DevTools`. Substitute as YAML inline list (same form as Q7).
 9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Show two example shapes: `"£90-110K"` and `"$190-230K base + equity"`. Skippable. No validation — accept whatever currency / phrasing the user gives.
