@@ -12,7 +12,7 @@ Trade-off: no calendar integration, no email parsing, no Slack notifications. Yo
 
 ```sh
 # inside Claude Code, in any workspace:
-/plugin marketplace add archugunov/pm-job-search
+/plugin marketplace add https://github.com/archugunov/pm-job-search.git
 /plugin install pm-job-search@pm-job-search
 
 cd <your-workspace>
@@ -21,6 +21,8 @@ cd <your-workspace>
 /strategy        # 15-20 min — goals, weekly targets, anti-goals, checkpoints
 # you're done. run /today every morning to see your daily brief.
 ```
+
+> Use the full `https://` URL above (not the `archugunov/pm-job-search` shorthand) — the shorthand defaults to SSH and fails for anyone without SSH keys configured for GitHub. HTTPS reads public repos anonymously.
 
 ## The workflow
 
