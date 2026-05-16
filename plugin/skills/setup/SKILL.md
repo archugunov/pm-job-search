@@ -1,6 +1,6 @@
 ---
 name: setup
-description: This skill should be used when the user asks for "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a 10-question conversational install that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
+description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a 10-question conversational install that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
 ---
 
 # /setup — first-run install and re-configure
@@ -33,10 +33,10 @@ Do not edit these template files. Always treat them as read-only inputs.
 
 ## The 10 questions
 
-Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters) — for skipped fields, leave the placeholder unfilled (write `# unset` or a blank YAML value, not the literal `{{PLACEHOLDER}}` string).
+Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
 
 1. **Name** (`{{NAME}}`) — full name. Required.
-2. **City** (`{{CITY}}`) — e.g. "London, UK". Required. Also auto-detect timezone via `date +%Z` (or `readlink /etc/localtime` parsed) and fill `{{TIMEZONE}}` without asking; tell the user the detected value and offer to override.
+2. **City** (`{{CITY}}`) — e.g. "London, UK". Required. Also auto-detect IANA timezone via `realpath /etc/localtime | sed 's|.*/zoneinfo/||'` (returns e.g. `Europe/London`). Do NOT use `date +%Z` — that returns abbreviations like `BST` / `CEST` which are not valid IANA strings. Fill `{{TIMEZONE}}` without asking; tell the user the detected value and offer to override.
 3. **Email** (`{{EMAIL}}`) — required.
 4. **LinkedIn URL** (`{{LINKEDIN_URL}}`) — skippable.
 5. **Where are you looking?** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion: `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`. For "Both", optionally capture mode_detail (e.g. "London hybrid or EMEA remote") via a follow-up prompt.
@@ -74,11 +74,14 @@ After all questions are answered, do these writes in order:
 
 Read the profile template, substitute every `{{PLACEHOLDER}}`, write to `userdata/profile.md`. Preserve all HTML comments and free-form prompt blocks (the `<!-- … -->` sections after each `##` header) verbatim. Substitute placeholders only.
 
-For skipped placeholders: write a sensible empty form, not the literal `{{NAME}}` string. Examples:
-- `{{LINKEDIN_URL}}` skipped → `linkedin_url:` (empty value, no quotes).
-- `{{SALARY_BAND}}` skipped → `salary_band: ""` (empty string).
+For skipped placeholders: write an empty YAML value, never the literal `{{NAME}}` string. Specifically:
+- `{{LINKEDIN_URL}}` skipped → `linkedin_url:` (empty value parses as null).
+- `{{SALARY_BAND}}` skipped → `salary_band: ""` (explicit empty string — keeps the quoted-string shape the template intends).
 - `{{HARD_FILTERS}}` skipped → `hard_filters: []`.
 - `{{TARGET_TITLES}}` cannot be skipped (required).
+- `{{GEOGRAPHY_DETAIL}}` skipped → `mode_detail:` (empty).
+
+Do NOT write `# unset` comments — they look like noise in the final file. An empty value is self-explanatory.
 
 ### 2. `userdata/strategy.md` (only if file does not already exist)
 
@@ -112,9 +115,19 @@ Create these empty files (only if the directory does not already contain a real 
 Read `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.template.md`. Resolve the single `{{INCLUDE: userdata/profile.md sections=positioning,proof_points,moat}}` marker by:
 
 1. Read the just-written `userdata/profile.md`.
-2. Extract the body content under `## Positioning`, `## Proof Points`, and `## Moat` (stop at the next `##` heading).
-3. Concatenate them in that order, each preceded by its heading line, separated by one blank line.
-4. Replace the entire `{{INCLUDE: …}}` line with that concatenated block.
+2. For each of `Positioning`, `Proof Points`, `Moat` (in that order):
+   - Find the `## <Section>` heading line in profile.md.
+   - Capture everything between that line and the next `## ` line (or EOF).
+   - Strip any HTML comment blocks (`<!-- … -->`, possibly multi-line) from the captured content — those are authoring helpers for profile.md, not content meant for CLAUDE.md.
+   - Trim leading and trailing blank lines from what's left.
+3. Build the replacement block. The `{{INCLUDE}}` marker sits BELOW a `## About me` heading in the template, so each section must be DEMOTED from `##` to `###` to nest correctly. For each captured section, emit:
+   - `### <Section>` (e.g. `### Positioning`)
+   - blank line
+   - the captured body
+   - blank line
+4. Replace the entire `{{INCLUDE: …}}` line (including its surrounding blank lines if any) with the concatenated block. The result is a clean `## About me` followed by three `###` subsections.
+
+Skip a section if its content (after comment-stripping and trimming) is empty — better to omit `### Moat` entirely than render an empty header.
 
 Write the result to `CLAUDE.md` at the workspace root (one level above `userdata/`). Overwrite any existing `CLAUDE.md` at the root only if it begins with the same `<!--` template-header comment as the template (signature of a previously generated file). If it doesn't, ask the user before overwriting: `CLAUDE.md exists at workspace root and was not generated by pm-job-search. Overwrite (y/N)?`
 
