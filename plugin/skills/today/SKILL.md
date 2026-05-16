@@ -45,6 +45,12 @@ If a target is unset in strategy.md (line missing or value is null/blank), omit 
 If strategy.md has no targets set at all (all three unset), replace the entire section body with:
 > Strategy not set. Run `/strategy` to enable progress tracking.
 
+**Monday retrospective extension.** On Mondays only, append a one-line week-over-week summary below the three bullets. Compute the previous 7-day window (`today - 13` to `today - 7`) and compare:
+
+> Last week → this week: applications <prev>→<curr>, warm <prev>→<curr>, new threads <prev>→<curr>.
+
+`new threads` counts meta.md entries that transitioned INTO `status: interviewing` during each window (inferable from `last_inbound` falling within the window if no prior debrief exists). If any of the three deltas is materially worse (drop ≥50%), add a single italic sentence after the line, e.g. *Applications halved week-over-week — momentum at risk.* Tue-Sun: omit the retrospective entirely (no Monday-only noise other days).
+
 ### 3. `## Top 3 actions today`
 
 At most three bullets. Each bullet is concrete and anchored to a company name or a strategy element. Surface bullets by running the trigger rules below, in this priority order, and stopping at three:
@@ -75,10 +81,11 @@ Where `N = M + K`, `rejected` = meta.md with `status: rejected`, and `withdrew` 
 
 ### 5. `## Heads-up`
 
-Three bullet types, in this order; omit any bullet whose list is empty:
+Four bullet types, in this order; omit any bullet whose list is empty:
 
 - **Checkpoints due within 14d:** comma-separated list of `<date> (<condition>)`. Skip if none.
 - **Stale items (>14d in `applied` with no movement):** count and inline list, e.g. `2 — Klarna (16d), Monzo (21d)`. Skip if none.
+- **Shape-mismatch warning on active interviews.** Trigger: any meta.md with `status: interviewing` AND (`team_size > 150` OR the company body/research-brief mentions ">150 ppl") AND the company is NOT in any `target_industries` entry from profile.md AND no explicit equity / brand signal in research-brief. When triggered: `Shape mismatch — <Company> is interviewing but <signal recap>. Re-read the role-fit verdict before next round.` This is the hollowing-risk check: a big-co interview proceeding without the shape signals the user actually wants. Skip if no qualifying meta.
 - **Late-stage interview prompts.** Trigger: any company with `status: interviewing` AND `last_inbound` within the last 7 days. When triggered, list the company names on one line, then surface the three founder-vetting questions verbatim:
   - "What does a typical week look like — product vs meetings?"
   - "Where has the last HoP spent most political capital internally?"

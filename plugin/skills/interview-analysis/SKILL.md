@@ -70,6 +70,31 @@ Write `userdata/companies/<Co>/interview-debrief-<YYYY-MM-DD>-<stage-slug>.md`:
   came through and which got buried.
 <If no prep doc: omit this section entirely.>
 
+## Role shape verdict
+**🟢 building-with-team / 🟡 mixed / 🔴 defending-positions**
+
+<One-line verdict, then 2-4 bullets quoting the transcript signals that
+drove it. Read the round for what kind of work the role actually is — the
+JD often says "build the product strategy" but the interviewer's stories
+reveal whether the last person spent their time shipping or putting out
+political fires.>
+
+Signal categories to scan for:
+- **🟢 Building** — interviewer describes recent shipping cadence, names
+  the engineering / design leads they collaborate with, talks about
+  what's NEXT for the surface, asks about your favourite product debates.
+- **🟡 Mixed** — interviewer describes the role as "stabilising" or
+  "getting the team to a steady state", references at least one named
+  internal conflict, asks about cross-functional alignment.
+- **🔴 Defending** — interviewer talks about "rebuilding trust", names
+  specific stakeholders who "need to be brought along", describes the
+  role as primarily senior-stakeholder management, the role exists
+  because the last person left under tension.
+
+If signals are insufficient to call (e.g. recruiter screen, < 20 minutes
+of substantive content), render: `Insufficient signal — defer verdict to
+next round.` Do NOT guess.
+
 ## Process / next steps
 - <Bullets capturing what the interviewer said about timeline, next
   rounds, decision process, who's involved.>
