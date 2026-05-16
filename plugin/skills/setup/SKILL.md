@@ -44,11 +44,11 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
 
    Auto-detect first: if `userdata/cv.md` or `userdata/cv.txt` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
 
-   If no CV file exists, present these three options via AskUserQuestion (in this order):
+   If no CV file exists, present these three options via AskUserQuestion (in this exact order):
 
    - **A. Drop your CV (recommended)** — print: *"Save your CV as `userdata/cv.md` or `userdata/cv.txt` in this workspace. I'll read it, draft your positioning and proof points, and you'll edit before save. Take a minute to drop the file in, then tell me 'ready'."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
-   - **B. Skip for now** — write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast. User completes positioning whenever it's their priority.
-   - **C. Paste positioning now** → **Mode A**.
+   - **B. Write it down now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
+   - **C. Skip for now** — write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast. User completes positioning whenever it's their priority.
 
    ### Mode A (paste-now)
 
