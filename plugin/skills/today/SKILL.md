@@ -7,6 +7,8 @@ description: This skill should be used when the user asks for "/today", "my dail
 
 Produce a short (~half a screen) snapshot that combines: where the user is against their stated strategy, what to actually do next, and a sorted view of the pipeline. Save the brief, regenerate the applications.md index, then print the brief to chat.
 
+**Voice:** all chat output and drafted content (the daily brief, summary lines, warnings) follows `${CLAUDE_PLUGIN_ROOT}/TONE.md`.
+
 ## Inputs
 
 Read in this order. Skip gracefully if a file is missing — the brief degrades section-by-section, never errors out wholesale.

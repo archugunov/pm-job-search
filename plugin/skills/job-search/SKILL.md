@@ -7,6 +7,8 @@ description: This skill should be used when the user asks to "/job-search", "wee
 
 Architecture lifted from the predecessor workflow with two changes: storage is md files (not Notion); Playwright is optional (not required). Three phases: pre-flight, parallel work, final merge.
 
+**Voice:** every prompt (search-query review, candidate pick, recheck-failure handling) and the chat summary follow `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Apply the low-effort-first principle — surface candidates with a short preview table, accept "all"/"none" shortcuts, don't make the user evaluate every row.
+
 ## Inputs
 
 - `userdata/profile.md` — `target_titles`, `target_industries`, `geography`, `hard_filters`, `tier_thresholds`.

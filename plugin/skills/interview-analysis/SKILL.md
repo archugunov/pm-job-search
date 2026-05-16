@@ -8,6 +8,8 @@ description: This skill should be used when the user asks to "/interview-analysi
 
 Single-pass analysis. Take a transcript (or notes), produce a debrief that's useful for: (a) the next round at the same company, (b) updates to the user's universal artefacts (stories, anti-patterns), (c) status decisions on `meta.md`.
 
+**Voice:** the transcript-source prompt, stage prompt, and the written debrief itself follow `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Apply the low-effort-first principle — accept notes if no transcript is available, infer Company / stage from filename if possible, only ask when the answer can't be derived.
+
 ## Inputs
 
 - Transcript source — one of:

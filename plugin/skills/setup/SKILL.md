@@ -7,6 +7,14 @@ description: This skill should be used when the user asks for "start", "/setup",
 
 Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaffolding the rest of the userdata tree. Idempotent — safe to re-run.
 
+**Voice:** every prompt and message in this skill follows the plugin's tone-of-voice + low-effort-first guidelines in `${CLAUDE_PLUGIN_ROOT}/TONE.md`. The exact wording for each question below is locked-in — use it verbatim, not paraphrased.
+
+**Opening line** (after mode detection, before Q1, fresh install only):
+
+> "OK, let's get you set up. Ten quick questions — none of it locked in, you can rerun anytime. Ready?"
+
+Wait for a one-word confirmation, then start Q1.
+
 ## Mode detection
 
 Run this BEFORE asking the first question:
@@ -33,22 +41,41 @@ Do not edit these template files. Always treat them as read-only inputs.
 
 ## The 10 questions
 
-Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
+Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5, Q6); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
 
-1. **Name** (`{{NAME}}`) — full name. Required.
-2. **City** (`{{CITY}}`) — e.g. "London, UK". Required. Also auto-detect IANA timezone via `realpath /etc/localtime | sed 's|.*/zoneinfo/||'` (returns e.g. `Europe/London`). Do NOT use `date +%Z` — that returns abbreviations like `BST` / `CEST` which are not valid IANA strings. Fill `{{TIMEZONE}}` without asking; tell the user the detected value and offer to override.
+Each question below shows the EXACT user-facing prompt in quotes. Use the wording verbatim — don't paraphrase. The voice is locked per `TONE.md`.
+
+1. **Name** (`{{NAME}}`) — required.
+   > "What's your name?"
+
+2. **City** (`{{CITY}}`) + auto-detect timezone — required.
+   > "Where are you based? City + country works (e.g. London, UK)."
+
+   After the user answers, auto-detect IANA timezone via `realpath /etc/localtime | sed 's|.*/zoneinfo/||'` (returns e.g. `Europe/London`). Do NOT use `date +%Z` — that returns abbreviations like `BST` / `CEST`, not IANA strings. Fill `{{TIMEZONE}}` automatically and confirm in one line:
+   > "I'm seeing your timezone as `<detected>` — that right? Override if not."
+
 3. **Email** (`{{EMAIL}}`) — required.
+   > "What's the best email for you?"
+
 4. **LinkedIn URL** (`{{LINKEDIN_URL}}`) — skippable.
-5. **Where are you looking?** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion: `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`. For "Both", optionally capture mode_detail (e.g. "London hybrid or EMEA remote") via a follow-up prompt.
+   > "LinkedIn URL? Or skip."
+
+5. **Geography** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion. Ask:
+   > "Where are you looking?"
+
+   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`. For "Both", optionally follow up:
+   > "Anything specific about the geography? (e.g. 'London hybrid or EU-remote'). Or skip."
 6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
    Auto-detect first: if `userdata/cv.md` or `userdata/cv.txt` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
 
-   If no CV file exists, present these three options via AskUserQuestion (in this exact order):
+   If no CV file exists, ask via AskUserQuestion. Use this exact opener and three options:
 
-   - **A. Drop your CV (recommended)** — print: *"Save your CV as `userdata/cv.md` or `userdata/cv.txt` in this workspace. I'll read it, draft your positioning and proof points, and you'll edit before save. Take a minute to drop the file in, then tell me 'ready'."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
-   - **B. Write it down now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
-   - **C. Skip for now** — write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast. User completes positioning whenever it's their priority.
+   > "Positioning next — who you are and what you're best at. Three ways to handle this:"
+
+   - **A. Drop your CV (recommended)** — print: *"Save your CV as `userdata/cv.md` or `.txt`, I'll read it and draft positioning + proof points for you to edit. Say 'ready' once the file's in."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
+   - **B. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
+   - **C. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
 
    ### Mode A (paste-now)
 
@@ -90,14 +117,26 @@ Ask one at a time. Use AskUserQuestion only when a question has a clear set of o
    **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
 
    When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
-7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Typical senior-PM examples to offer: `Director of Product, Principal PM, Group PM, Staff PM`. Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
-8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Examples: `healthcare, climate tech, education, enterprise SaaS`. Substitute as YAML inline list (same form as Q7).
-9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Show two example shapes: `"£90-110K"` and `"$190-230K base + equity"`. Skippable. No validation — accept whatever currency / phrasing the user gives.
+7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Ask:
+   > "What roles are you targeting? Typical senior-PM examples: Director of Product, Principal PM, Group PM, Staff PM. List as many as you'd take, comma-separated."
+
+   Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
+
+8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Ask:
+   > "What industries are you looking at? E.g. healthcare, climate tech, education, enterprise SaaS. Comma-separated."
+
+   Substitute as YAML inline list (same form as Q7).
+
+9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
+   > "What salary band are you aiming for? Whatever shape works — '£90-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet."
+
+   No validation — accept whatever currency / phrasing the user gives.
+
 10. **Hard filters** (`{{HARD_FILTERS}}`) — ONE question, skippable. Ask:
 
-    > "Any hard filters? These are roles you'd exclude immediately regardless of other fit. Examples: 'no companies under 50 employees', 'no GM or business-owner roles', 'no in-office five days a week', 'no roles requiring relocation'. List as many as apply, comma-separated, or skip."
+    > "Any red flags? Roles you'd skip immediately regardless of other fit. E.g. 'no companies under 50 people', 'no GM or business-owner roles', 'no five-day in-office', 'no relocation'. List a few, or skip."
 
-    Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 employees", "no in-office five days a week"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
+    Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 people", "no five-day in-office"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
 After Q10: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
@@ -184,11 +223,25 @@ Write the result to `CLAUDE.md` at the workspace root (one level above `userdata
 
 ## Closing offers
 
-Print a brief summary of what was written (one line per file), then offer, in this order:
+First, print a brief summary of what was written — one line per file, plain. Example:
 
-1. **Positioning refinement.** Say: `Want to refine your positioning before we wrap? I can hand off to the career-coach agent for a ~5-minute interview that rewrites your positioning paragraph. Skip if you'd rather edit profile.md yourself.` If yes, invoke the `career-coach` agent with the just-written `userdata/profile.md` as input. If no, move on.
+> "You're set up. Wrote:
+> - `userdata/profile.md` — your identity, target role, salary, hard filters
+> - `userdata/strategy.md` — placeholder (fill via `/pm-job-search:strategy`)
+> - `userdata/journal.md` — empty (append daily notes here)
+> - `CLAUDE.md` — workspace root, loads your profile into every Claude Code session"
 
-2. **Strategy.** Say: `Ready to set your strategy? /strategy walks you through goals, weekly targets, and anti-goals in ~15-20 minutes — and unlocks the progress-tracking part of /today. Skip and you can run /strategy anytime.` If yes, suggest the user invoke /strategy next. If no, move on.
+Then offer the two follow-ups in this order, each as a separate prompt:
+
+1. **Positioning refinement (skip-default).** Only relevant if Q6 produced a draft (Mode A or Mode B). Ask:
+   > "Want to sharpen your positioning before we wrap? I can pull in the `pm-job-search:career-coach` agent — quick 5-min back-and-forth, it'll suggest a tighter version. Or skip and edit `profile.md` whenever."
+
+   If yes, invoke the `career-coach` agent with the just-written `userdata/profile.md` as input. If no or Q6 was skipped, move on.
+
+2. **Strategy.** Ask:
+   > "One more — if you've got 15 min: `/pm-job-search:strategy` sets the weekly targets and re-check dates you'll measure the search against. Without it, `/today` shows pipeline state but can't track progress. Skip if you'd rather come back to it."
+
+   If yes, tell the user to run `/pm-job-search:strategy` next. If no, end the flow with: *"You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief."*
 
 Either offer is fully skippable. The install is valid without them.
 

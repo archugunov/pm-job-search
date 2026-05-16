@@ -22,7 +22,25 @@ Walk the user through a structured ~15-20 minute reflection that produces or upd
 
 `--theme <theme-name>` flag (optional) lets the user jump to a single theme (e.g. `/strategy --theme checkpoints`). Useful for quick mid-search updates.
 
-## The five themes
+**Voice:** every prompt in this skill follows `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Per low-effort-first: open with quick mode below, not the full five themes.
+
+## Quick mode (default opener)
+
+Before going into the full five-theme reflection, offer the user a low-effort path. Most users need targets and a deadline they'll actually look at — the 15-20 minute version is for when they're ready to think harder.
+
+Ask first:
+
+> "Two ways to do this:
+> 1. **Quick** — just the bones. Target offer date + one weekly target (applications OR outreach). ~3 minutes.
+> 2. **Full reflection** — five themes: destination / weekly cadence / pipeline floor / pre-committed checkpoints / anti-goals. ~15-20 minutes.
+>
+> Which one? You can come back for the deep version anytime."
+
+If **Quick**: ask two short questions, write the minimal strategy.md (other placeholders left as `null` so `/today` skips them gracefully), then end with: *"That's enough for `/today` to track you. Run `/pm-job-search:strategy` again whenever you want to fill in the rest."*
+
+If **Full reflection**: walk the five themes below.
+
+## The five themes (Full reflection mode only)
 
 Walk them in this order. Don't batch — ask one theme at a time, let the user reply, then move on. The whole flow is ~15-20 min; rushing it defeats the purpose. If the user pushes back ("just ask me everything at once"), comply — but lose the reflection value.
 

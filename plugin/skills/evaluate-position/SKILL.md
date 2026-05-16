@@ -7,6 +7,8 @@ description: This skill should be used when the user asks to "/evaluate-position
 
 Single-role discovery. Takes one posting (URL or pasted JD), produces a tier score and a research brief, files them under `userdata/companies/<Co>/` per the §I.4 folder layout. Idempotent against re-evaluation of the same role; never duplicates an existing `(company, position)` pair.
 
+**Voice:** every prompt (hard-filter bypass, score override, re-evaluation choice) and the chat output / written brief follow `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Apply the low-effort-first principle — accept defaults where they work, only ask the user when input changes the outcome.
+
 ## Inputs
 
 - The user's input — one of:

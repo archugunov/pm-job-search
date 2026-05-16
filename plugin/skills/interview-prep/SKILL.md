@@ -7,6 +7,8 @@ description: This skill should be used when the user asks for "/interview-prep <
 
 Produces a single per-interview prep doc that combines: the company's signals (from `meta.md` + `research-brief.md` + any prior debriefs), the user's positioning, the 3-5 most-relevant stories adapted for THIS interview, founder-vetting questions when the round warrants, and a short "anchors" section the user can scan before the call.
 
+**Voice:** the company-disambiguation prompt, story-pick confirmation, take-home draft-or-not offer, and all written prep content follow `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Apply the low-effort-first principle — auto-detect stage from `meta.md.status` + last debrief; only ask if genuinely ambiguous.
+
 ## Inputs
 
 - `<Company>` argument — required, e.g. `/interview-prep Plaid` or `/interview-prep "Plaid"`. Case-insensitive lookup against `userdata/companies/<Co>/` folder names. If no exact match, fuzzy-suggest: `No 'Plad' folder. Did you mean Plaid? (y/n)`. If multi-role company (subfolder layout), ask which role: `Plaid tracks 2 roles — pick: 1) senior-pm-consumer-credit, 2) lead-pm-risk-platform`.

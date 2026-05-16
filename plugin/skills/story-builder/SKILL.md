@@ -8,6 +8,8 @@ description: This skill should be used when the user asks to "/story-builder", "
 
 Conversational skill that builds and maintains `userdata/stories/*.md` — the universal bank that `/interview-prep` adapts per-interview. One story per file. Filenames are auto-derived from titles; the user never types a filename.
 
+**Voice:** every prompt (picker, STAR-section asks, angle drafting) follows `${CLAUDE_PLUGIN_ROOT}/TONE.md`. Apply the low-effort-first principle — for a NEW story, accept the user's rough first draft, then ask one targeted question at a time only if the draft needs it. Don't force the full STAR conversation when the user clearly has the story in their head already.
+
 ## Inputs
 
 - All `userdata/stories/*.md` files. Read frontmatter (`title`, `themes`, `role_lens`, `last_practised`) — body only when an existing story is selected for editing.
