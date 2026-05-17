@@ -8,6 +8,8 @@ Every other job-search tool starts with "first sign up to <SaaS>, get an API tok
 
 Trade-off: no calendar integration, no email parsing, no Slack notifications. You bring the search; the plugin gives you structure, scoring, reflection, and per-interview prep.
 
+If you already run MCPs (Granola, Gmail, Calendar, Notion, Playwright) and want to wire them in, see [plugin/INTEGRATIONS.md](plugin/INTEGRATIONS.md) for the prompt patterns that bridge them into specific skills. The plugin doesn't auto-detect or require any of them; the integrations are user-driven and entirely optional.
+
 ## Install
 
 ```sh
@@ -51,9 +53,11 @@ cd <your-workspace>
 | `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / take-home). Late-stage rounds auto-include the three founder-vetting questions. Take-home variant produces a working-doc skeleton. Updates each used story's `companies_used_in` + `last_practised`. |
 | `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Sections: what landed (anchored to transcript quotes) / what didn't / interviewer signals / vs the prep doc / role shape verdict (🟢 building / 🟡 mixed / 🔴 defending) / process / recommended updates. |
 
-## Reviewer agents
+## Agents
 
-Five personas for reviewing any draft — case study, story, prep doc, take-home, outreach, research brief. All share a fixed four-section output contract (What works / What doesn't work / Where it sounds weak from a <persona> lens / One rewrite suggestion) so you can invoke 2-4 in parallel and read them as a panel.
+Six personas. Four reviewers + one strategic coach + one interview-practice simulator.
+
+**Reviewer panel** (cpo / eng-manager / design-manager / interview-coach) — all share a fixed four-section output contract (What works / What doesn't work / Where it sounds weak from a <persona> lens / One rewrite suggestion) so you can invoke 2-4 in parallel and read them as a panel.
 
 | Agent | Lens |
 |---|---|
@@ -61,7 +65,8 @@ Five personas for reviewing any draft — case study, story, prep doc, take-home
 | `pm-job-search:eng-manager-reviewer` | Technical feasibility, engineering trade-offs, collaboration with engineers |
 | `pm-job-search:design-manager-reviewer` | UX judgement, craft, discovery rigour, how designers are treated |
 | `pm-job-search:interview-coach` | Narrative, clarity, voice authenticity, how the candidate comes across |
-| `pm-job-search:career-coach` | Search-strategy work — positioning, outreach, anti-goals, cadence rebalancing, offer evaluation, "something feels off and I can't name it" diagnostics. Broader than the other four; covers the whole career arc. |
+| `pm-job-search:career-coach` | Search-strategy work — positioning, outreach, anti-goals, cadence rebalancing, offer evaluation, "something feels off and I can't name it" diagnostics. Honest-calibration mode for the brave assessments. Broader than the four reviewers; covers the whole career arc. |
+| `pm-job-search:interviewer-simulator` | PLAYS the interviewer — not draft review, live practice. Three modes: full mock-round simulation, single-question deep-dive, or pressure-test on a story's weak angle. Pushes back on every answer with one calibrated follow-up. End-of-round debrief surfaces what landed vs hand-waves. |
 
 Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`. Pass `--save <Company>` and a company arg to also write the review to `userdata/companies/<Co>/review-<persona>-<date>.md`.
 
