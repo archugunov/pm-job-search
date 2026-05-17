@@ -38,10 +38,6 @@ cd <your-workspace>
 # ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
 ```
 
-> Use the full `https://` URL above (not the `archugunov/pm-job-search` shorthand) — the shorthand defaults to SSH and fails for anyone without SSH keys configured for GitHub. HTTPS reads public repos anonymously.
-
-> The `pm-job-search:` prefix on every command is the deterministic namespaced form — it works regardless of what other plugins you have installed. The unprefixed forms (`/setup`, `/today`, etc.) also work as long as no other installed plugin has a colliding name; the prefix removes the ambiguity.
-
 ## The workflow — 8 skills
 
 **One-time setup (~10-15 min):**
