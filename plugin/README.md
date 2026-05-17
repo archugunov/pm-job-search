@@ -2,6 +2,14 @@
 
 A Claude Code plugin for senior PM and Head of Product job searches. Tracks your pipeline, runs live interview practice, and has an honest career coach you can call on. Markdown only.
 
+## How it works
+
+1. **Set up once.** `/pm-job-search:setup` walks you through 11 questions (~10-15 min). It writes your profile, a strategy file with auto-derived weekly targets, and a workspace `CLAUDE.md` so every Claude Code session in this folder knows your context.
+2. **Daily loop.** Every morning: `/pm-job-search:today` for the 5-section brief. As roles surface: `/pm-job-search:evaluate-position <url>` to score and file them. Before interviews: `/pm-job-search:interview-prep <Company>` for prep, `pm-job-search:interviewer-simulator` to rehearse. After: `/pm-job-search:interview-analysis` with the transcript.
+3. **Coach on call.** `pm-job-search:career-coach` is there for anything strategic — got an offer, feeling stuck, positioning not landing, "should I widen the search?". It reads your install state first, then diagnoses before it suggests.
+
+Everything lives as markdown in `userdata/` (gitignored by default). You can edit any file manually anytime; the plugin is opinionated structure on top of files you own.
+
 ## What makes it different
 
 Three things most job-search tools don't do:
