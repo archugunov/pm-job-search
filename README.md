@@ -6,7 +6,7 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 
 1. **Set up once.** `/pm-job-search:setup` — 11 questions, ~10-15 min.
 2. **Daily loop.** `/pm-job-search:today` for the morning brief. `/pm-job-search:evaluate-position <url>` to score new roles. Before interviews: `/pm-job-search:interview-prep <Company>` to prep, `pm-job-search:interviewer-simulator` to rehearse, `/pm-job-search:interview-analysis` after.
-3. **Coach on call.** `pm-job-search:career-coach` for anything strategic — offer to weigh, feeling stuck, positioning not landing. Diagnoses before it suggests.
+3. **Coach on call.** `pm-job-search:career-coach` for anything strategic — offer to weigh, feeling stuck, positioning not landing. Figures out what's actually wrong before proposing a fix.
 
 ## What makes it different
 
@@ -19,7 +19,7 @@ MCP integrations (Granola / Calendar / Gmail) plug in via `/pm-job-search:integr
 
 ## Why pure markdown
 
-Your repo of `.md` files IS the system of record. Skills read markdown, write markdown — that's it. The `userdata/` directory is gitignored by default; nothing leaves your machine unless you choose to share it.
+Your repo of `.md` files is the system of record. Skills read markdown, write markdown — that's the whole contract. The `userdata/` directory is gitignored by default, so nothing leaves your machine unless you share it on purpose.
 
 ## Install
 
@@ -68,9 +68,9 @@ cd <your-workspace>
 
 ## Agents — 6 personas
 
-Four reviewers + one strategic coach + one interview-practice simulator.
+Four reviewers, one strategic coach, one interview-practice simulator.
 
-**Reviewer panel** (cpo / eng-manager / design-manager / interview-coach) — all share a fixed four-section output contract (What works / What doesn't work / Where it sounds weak from a <persona> lens / One rewrite suggestion) so you can invoke 2-4 in parallel and read them as a panel.
+The four reviewers (cpo / eng-manager / design-manager / interview-coach) share the same four-section output — what works, what doesn't, where it sounds weak from that persona's lens, one rewrite suggestion. Run 2-4 of them in parallel and read them as a panel.
 
 | Agent | Lens |
 |---|---|
@@ -83,27 +83,27 @@ Four reviewers + one strategic coach + one interview-practice simulator.
 
 Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`. Reviewer agents take `--save <Company>` to write the review to `userdata/companies/<Co>/[<role-slug>/]review-<persona>-<date>.md`.
 
-`pm-job-search:career-coach` is the home for any deeper strategy work. `/pm-job-search:setup` writes a minimal `strategy.md` (target date + auto-derived weekly cadences + auto-composed headline goal) and defers everything else — anti-goals, checkpoints, target tuning, rubric calibration — to a conversation with career-coach. Invoke by natural language ("got an offer to weigh", "I'm stuck and don't know why", "help me think through what I won't do this search"). The agent diagnoses what's actually wrong before proposing a fix, and routes to the right mechanic (rubric tuning vs anti-goal vs cadence change vs positioning rework).
+`pm-job-search:career-coach` is the home for any deeper strategy work. `/setup` writes a basic `strategy.md` — target date, weekly cadences derived from your timeline, headline goal — and leaves everything else (anti-goals, checkpoints, target tuning, rubric calibration) for a conversation with career-coach when you want it. Invoke by natural language — "got an offer to weigh", "I'm stuck and don't know why", "help me think through what I won't do this search". The agent figures out what's actually wrong before proposing a fix, and routes to the right mechanic (rubric tuning, anti-goal, cadence change, positioning rework — whichever it is).
 
 ## Extending the plugin
 
-The plugin is markdown-only by default, but power users can wire in existing MCP servers to make specific skills more capable. See [INTEGRATIONS.md](plugin/INTEGRATIONS.md) for documented prompt patterns covering:
+Markdown-only is the default, but you can wire in MCP servers you're already running to make specific skills more capable. See [INTEGRATIONS.md](plugin/INTEGRATIONS.md) for the prompt patterns, covering:
 
-- **Granola** — pull meeting transcripts directly into `/interview-analysis`
+- **Granola** — pull meeting transcripts straight into `/interview-analysis`
 - **Gmail (or any inbox MCP)** — extract recruiter conversations into `journal.md`
 - **Calendar (gcal / iCal)** — surface upcoming interviews in `/today`
 - **Notion** — sync companies as Notion DB rows alongside the markdown source
-- **Playwright** — JD link-liveness verification + interviewer research
+- **Playwright** — link-liveness verification + interviewer research
 - **Slack / Telegram / Discord** — pipe `/today` digests to an accountability channel
 
-Each integration is a prompt pattern, not a plugin code change. The plugin doesn't auto-detect or require any of them.
+Each one is a prompt pattern, not a plugin code change — nothing to install on the plugin side, nothing it auto-detects.
 
 ## What's in `userdata/examples/`
 
-Two fictional personas pre-populated so you can see what a working install looks like before running `/pm-job-search:setup`:
+Two fictional personas so you can see what a working install looks like before running `/setup`:
 
-- **`userdata/examples/maya/`** — Maya Patel, senior PM in London consumer credit / fintech. Full install: profile, strategy, journal, two companies (one interviewing, one rejected), two stories with adaptation angles, generated applications.md index.
-- **`userdata/examples/diego/`** — Diego Alvares, VP Product in Mexico City applying for fully-remote US roles. Skeletal install (profile, strategy, one company, one story) — stress-tests the schema against USD compensation, no anchor city, US English, B2B SaaS vertical.
+- **`userdata/examples/maya/`** — Maya Patel, senior PM in London doing consumer credit / fintech. Full install: profile, strategy, journal, two companies (one interviewing, one rejected), two stories with adaptation angles, a generated applications.md index.
+- **`userdata/examples/diego/`** — Diego Alvares, VP Product in Mexico City going after fully-remote US roles. Skeletal install (profile, strategy, one company, one story) — stress-tests the schema against USD compensation, no anchor city, US English, B2B SaaS.
 
 Both personas are entirely fictional.
 
@@ -113,11 +113,11 @@ Designed for senior PM / Head of Product roles. The tier rubric, status pipeline
 
 ## Privacy + contributing
 
-Your `userdata/` directory is gitignored except `userdata/examples/`. Personal data you put there (profile, journal, company notes) never leaves your machine unless you choose to share it.
+Your `userdata/` directory is gitignored except for the example installs. Anything you put there — profile, journal, company notes — stays on your machine unless you share it on purpose.
 
-A privacy-check CI workflow scans every push and PR for the plugin author's personal-data blocklist via ripgrep. If you fork, either replace the blocklist with your own terms or remove the workflow entirely — your fork, your privacy posture.
+A CI workflow scans every push and PR for the plugin author's personal-data blocklist (via ripgrep). If you fork, swap the blocklist for your own terms or remove the workflow entirely — your fork, your call.
 
-Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for scope, install-for-development, the privacy hard rule, testing conventions, and what to file issues for vs not.
+Contributions welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers scope, dev install, the privacy hard rule, testing conventions, and what's in scope for issues vs not.
 
 ## Licence
 
