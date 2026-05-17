@@ -191,7 +191,7 @@ Gmail wasn't detected — INTEGRATIONS.md §2 has install pointers for when you 
 
 ## Anti-patterns
 
-- Do NOT modify `/today`, `/interview-analysis`, or `/journal` flows to auto-inject integration data. The user pastes the invocation patterns into chat when they want them; auto-injection is out of scope for this skill (v2 candidate).
+- Do NOT modify other skills' files. Auto-injection is the OTHER skill's concern: `/today` already reads `userdata/integrations.md` and folds in Calendar + Gmail when wired; `/interview-analysis` could be similarly extended to auto-pull Granola transcripts. This skill's job is detection + writing the patterns; other skills choose to consume them.
 - Do NOT cover Notion, Playwright, or Slack. Those stay in `INTEGRATIONS.md` as manual-setup. Scope creep across all 6 MCPs would make the skill heavier than the manual approach.
 - Do NOT auto-install any MCP. Skills cannot install MCPs; that's a user action via `/plugin` or their config. Always point at INTEGRATIONS.md for install steps.
 - Do NOT save MCP credentials, OAuth tokens, or auth state anywhere in `userdata/`. The MCP itself handles auth; this skill is invocation-pattern bookkeeping only.
