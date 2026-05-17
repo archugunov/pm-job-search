@@ -88,6 +88,17 @@ See `/setup` Q6's "Drafting tone rules" for the full version with examples.
 | "Or skip." | "(This question is optional and may be skipped at your discretion.)" |
 | "Let's wrap." | "We have now completed all setup questions and will proceed to write configuration files." |
 
+## Reference layer — plugin defaults, user-localisable
+
+Some agents and skills read **reference docs** that carry domain knowledge — senior-PM archetypes, career anti-patterns, story taxonomy, and similar (live in `plugin/references/`). The convention for resolving these is:
+
+1. Skill or agent looks for `userdata/references/<name>.md` first. If present, use it.
+2. Otherwise falls back to `plugin/references/<name>.md` (the plugin-shipped default).
+
+This lets the plugin ship strong defaults while users localise — they can swap in their own region-specific compensation framing, add domain-specific anti-patterns, or rewrite story taxonomy for a different role family — without forking the plugin. The override file replaces the default entirely; partial-overrides via diff/merge are not supported (keep it simple).
+
+Hard rule for skill / agent authors: never hardcode reference content into a SKILL.md or agent file. Reference content lives in `references/`; specs point at it via `${CLAUDE_PLUGIN_ROOT}/references/<name>.md` with the userdata-override resolution.
+
 ## When in doubt
 
 Read the line aloud. If a senior PM friend wouldn't say it to you over coffee, rewrite it.

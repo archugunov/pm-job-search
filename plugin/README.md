@@ -10,9 +10,11 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 
 ## What makes it different
 
-- **Honest coaching.** A career-coach agent that diagnoses with specific data, not generic motivation — and surfaces uncomfortable truths (level miscalibration, comp underselling, sunk-cost reset) when the search itself needs a rethink, not more applications.
-- **Live interview practice.** A simulator agent that PLAYS the interviewer — asks hard questions, pushes back, debriefs after. Three modes: full mock round, single-question deep-dive, or pressure-test on one story's weak angle.
-- **A daily brief that escalates.** When patterns suggest structural problems (3 same-stage rejections, 8+ weeks of thin pipeline), `/today` points at the right help — it doesn't say "keep going".
+Most job-search tools track. This one is built for senior PMs — and pushes back.
+
+- **A daily brief that knows when to escalate.** Tracks weekly targets and surfaces late-stage interview prompts (including the three founder-vetting questions for every CPO round). When patterns suggest the search itself isn't working — 3 same-stage rejections, 8+ weeks of thin pipeline — `/today` routes you to the coach, not "send 4 more applications".
+- **A practice partner, not a reviewer.** The `interviewer-simulator` agent PLAYS the interviewer — asks hard senior-PM questions (strategy at scale, judgement under uncertainty, build-vs-defend trade-offs), pushes back on hand-wavy answers, debriefs after. Three modes: full mock round, single-question deep-dive, or pressure-test on a story's weakest angle. Backed by a four-agent reviewer panel — CPO, engineering manager, design manager, interview coach — that critiques drafts from each lens.
+- **A coach that diagnoses, not motivates.** The `career-coach` agent reads your pipeline and says the brave thing when the data warrants — level miscalibration, comp underselling, role-shape mismatch (the kind that hollows you out within 18 months even at the right comp), sunk-cost reset. When offers arrive, `/evaluate-offer` runs the structured version — anti-goals check, archetype-vs-stage match, named-anti-pattern scan — so you don't sign into a hollow-HoP role to chase the title.
 
 Optional MCP integrations (Granola / Calendar / Gmail and more) wire in via `/pm-job-search:integrations` if you have them; the plugin is fully usable without.
 
@@ -34,7 +36,7 @@ cd <your-workspace>
 # ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
 ```
 
-## The workflow — 8 skills
+## The workflow — 9 skills
 
 **One-time setup (~10-15 min):**
 
@@ -57,6 +59,7 @@ cd <your-workspace>
 | `/pm-job-search:story-builder` | Maintain your universal STAR-story bank. Each story carries 3-5 pre-loaded angles for different question types. |
 | `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / final-loop / take-home). Late-stage rounds include three founder-vetting questions. Take-home variant produces a working-doc skeleton. |
 | `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Anchors findings to transcript quotes: what landed, what didn't, interviewer signals, deltas vs the prep, recommended updates. Auto-pulls from Granola when wired. |
+| `/pm-job-search:evaluate-offer` | Sense-check an offer (or compare two) against your profile + anti-goals + the senior-PM archetype/anti-pattern references. Verdict, comp shape, role-shape re-check, archetype fit, named-anti-pattern scan, weighted decision factors, downside scenario, 3-5 specific negotiation moves to ask for. Always pairs with a "what would I regret in 2 years?" handoff to the coach. |
 
 **Optional — wire in external tools:**
 

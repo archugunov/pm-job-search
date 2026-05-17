@@ -1,6 +1,6 @@
 ---
 name: story-builder
-description: This skill should be used when the user asks to "/story-builder", "build a story", "add a STAR story", "edit my story", "work on my story bank", "I want to capture a story", or wants to maintain the universal STAR-story bank that /interview-prep draws from. Lists existing userdata/stories/*.md by title for the user to pick (edit) or describes a new one. Writes userdata/stories/<kebab-slug-from-title>.md with STAR sections + "Angles for different prompts" + frontmatter (title, themes, role_lens, companies_used_in, last_practised).
+description: This skill should be used when the user asks to "/story-builder", "build a story", "add a STAR story", "edit my story", "work on my story bank", "I want to capture a story", "what stories am I missing", "/story-builder --gap-check", or wants to maintain the universal STAR-story bank that /interview-prep draws from. Lists existing userdata/stories/*.md by title for the user to pick (edit), describes a new one, or with --gap-check reports which senior-PM story types are missing from the bank. Writes userdata/stories/<kebab-slug-from-title>.md with STAR sections + "Angles for different prompts" + frontmatter (title, story_type, themes, role_lens, companies_used_in, last_practised).
 
 ---
 
@@ -12,9 +12,13 @@ Conversational skill that builds and maintains `userdata/stories/*.md` — the u
 
 ## Inputs
 
-- All `userdata/stories/*.md` files. Read frontmatter (`title`, `themes`, `role_lens`, `last_practised`) — body only when an existing story is selected for editing.
-- `userdata/profile.md` — read `## Positioning`, `## Proof Points`, `## Tone of Voice`, `## What NOT to Frame As`. Use Tone of Voice to shape draft prose; check drafts against "What NOT to Frame As" before showing.
-- Optional flag `--new <"title">` skips the picker and goes straight to new-story flow with the given title. Optional flag `--edit <slug>` loads a story by filename slug.
+- All `userdata/stories/*.md` files. Read frontmatter (`title`, `story_type`, `themes`, `role_lens`, `last_practised`) — body only when an existing story is selected for editing.
+- `userdata/profile.md` — read `## Positioning`, `## Proof Points`, `## Tone of Voice`, `## What NOT to Frame As`. Use Tone of Voice to shape draft prose; check drafts against "What NOT to Frame As" before showing. Read `target_titles` from frontmatter for level-weighting in coverage analysis.
+- Story taxonomy: `userdata/references/story-taxonomy.md` if present, else `${CLAUDE_PLUGIN_ROOT}/references/story-taxonomy.md` (userdata override per TONE.md convention). Provides the 12 story types + coverage matrix + level-differentiation patterns.
+- Optional flags:
+  - `--new <"title">` skips the picker and goes straight to new-story flow with the given title.
+  - `--edit <slug>` loads a story by filename slug.
+  - `--gap-check` runs coverage analysis only — no edit flow. See Mode 4 below.
 
 If `userdata/profile.md` is missing, tell the user to run `/setup` first.
 
@@ -33,6 +37,14 @@ If no flag, build a picker. List every `userdata/stories/*.md` as:
 Sort by `last_practised` descending, with never-practised at the bottom but above the action items. Use AskUserQuestion for the pick if the list is ≤4; otherwise present as numbered text and ask for a number. Always include "+ New story" and "Cancel" as final options.
 
 If picker is empty (no stories yet), skip straight to new-story flow.
+
+**Coverage line.** Below the picker, print a single coverage summary line drawn from the story-taxonomy reference:
+
+```
+Coverage: <N>/12 story types covered. Missing: <comma list of missing type names, max 3 shown, "+ K more" if longer>. Run /story-builder --gap-check for details.
+```
+
+Stories without a `story_type:` frontmatter field count as `unclassified` and don't contribute to the N/12 count. If unclassified stories exist, append: `(<M> stories unclassified — edit to add story_type)`. Skip the coverage line entirely if zero stories exist (picker goes straight to new-story flow).
 
 ## Mode 2: New-story flow
 
@@ -81,6 +93,7 @@ Build the YAML frontmatter from the conversation, asking only for what can't be 
 ```yaml
 ---
 title: <verbatim from Step 1>
+story_type: <one of the 12 types from story-taxonomy.md, or unclassified>
 themes: [<comma list, 3-6 tags>]
 role_lens: [<comma list, subset of: strategy, execution, analytics, leadership, design, eng-collaboration>]
 companies_used_in: []        # empty until /interview-prep uses it
@@ -88,6 +101,7 @@ last_practised:              # blank until /interview-prep marks it
 ---
 ```
 
+- `story_type`: SUGGEST from the body. Read the story-taxonomy reference; match the body against the 12 type descriptions; offer the best 1-2 matches via AskUserQuestion (e.g., `This sounds like 'failed-launch' or 'crisis-management' — which fits better, or pick another from the taxonomy?`). Accept `unclassified` as a valid skip — better to ship a classified-later story than to force a bad classification. Canonical type slugs (kebab-case): `ambiguity-0-to-1`, `strategic-pivot`, `scope-contraction`, `stakeholder-dissent`, `failed-launch`, `hiring-decision`, `build-vs-buy`, `pricing-monetization`, `activation-retention`, `ethical-edge`, `crisis-management`, `bet-paid-off-or-didnt`.
 - `themes`: ask the user. Suggest themes from the body (e.g. if Action mentions pricing tests → suggest `pricing, experimentation`). 3-6 tags is the sweet spot; reject 1-tag and 10-tag.
 - `role_lens`: ask. Vocab is fixed to the six options above. Pick the 2-4 that best describe what the story *demonstrates*.
 - `companies_used_in`: always start as `[]`. `/interview-prep` appends to this list when it adapts the story for a specific company.
@@ -101,15 +115,54 @@ Write `userdata/stories/<slug>.md` with frontmatter + body (full STAR + angles).
 
 When the user picks an existing story:
 
-1. Read the file. Print a one-line summary: `Editing 'Payments pricing experiment' (themes: growth, pricing, experimentation, post-PMF; last practised 2026-05-11).`
+1. Read the file. Print a one-line summary: `Editing 'Payments pricing experiment' (story_type: pricing-monetization; themes: growth, pricing, experimentation, post-PMF; last practised 2026-05-11).` If the story has no `story_type` field, append `— story_type unclassified, want to set it?` and offer to classify before the change menu.
 2. Ask: `What do you want to change?` Offer (via AskUserQuestion):
    - Rewrite a STAR section
    - Add / edit an angle
-   - Update themes or role_lens
+   - Update themes / role_lens / story_type
    - Mark as practised today (set `last_practised: <today>`)
    - Done — save and exit
 3. Loop on the change menu until the user picks Done.
 4. Save the file in place, preserving frontmatter fields the user didn't touch. NEVER reset `companies_used_in` — that's owned by `/interview-prep`.
+
+## Mode 4: --gap-check
+
+Coverage analysis only — no edit flow. Output is read-only diagnostics.
+
+1. Read all `userdata/stories/*.md` frontmatter. Bucket by `story_type` value (treat missing/blank as `unclassified`).
+2. Read `target_titles` from `userdata/profile.md` frontmatter. If any target title contains "Head", "VP", "CPO", or "Director", treat as HoP-track; otherwise Senior-PM-track.
+3. Read the story-taxonomy reference. Build a list of the 12 canonical types; mark each as `covered` (≥1 story has that type), `missing`, or `unclassified-only` (only unclassified stories with possibly-matching themes).
+4. Rank missing types by relevance to user's track:
+   - **HoP-track**: weight hiring-decision, strategic-pivot, ethical-edge, crisis-management, bet-paid-off-or-didnt higher (per story-taxonomy.md level-differentiation section)
+   - **Senior-PM-track**: balanced weighting across all 12
+5. Output:
+
+```
+Story-bank coverage check — <YYYY-MM-DD>
+
+You have <N> stories: <M>/12 story types covered. <K> unclassified.
+
+Covered: ambiguity-0-to-1, pricing-monetization, ...
+Missing: hiring-decision, ethical-edge, crisis-management, ...
+Unclassified: <list of story titles with no story_type>
+
+For <target-title from profile.md>, the most leverage-gain is:
+1. hiring-decision — HoP rounds probe this near-universally; you have no story.
+2. strategic-pivot — feature-pivots count, but HoP rounds want whole-team pivots; what you have is too tactical.
+3. ethical-edge — rarely probed at Senior PM rounds, but a load-bearing differentiator at HoP rounds.
+
+Next steps:
+- /story-builder --new "<suggested title>"
+- /story-builder --edit <unclassified-slug>   (to classify what you already have)
+```
+
+The "most leverage-gain" prose draws specific justifications from the story-taxonomy reference's level-differentiation section. Each ranked item must cite the SPECIFIC reason from the taxonomy (e.g. "HoP rounds probe near-universally"), not generic "you should have this".
+
+Cap at 3 ranked items. If fewer than 3 types are missing, list however many.
+
+If all 12 are covered: `Story-bank coverage check — <date>. All 12 story types covered (<N> total stories). Look at last_practised dates — anything older than 90 days is worth refreshing before the next round.`
+
+--gap-check writes nothing. It's a read-only diagnostic — the user runs the suggested commands themselves.
 
 ## Body shape (canonical)
 
@@ -118,6 +171,7 @@ Every story file follows this exact section ordering. Fixed for `/interview-prep
 ```markdown
 ---
 title: <string>
+story_type: <one of 12 canonical slugs, or unclassified>
 themes: [<list>]
 role_lens: [<list, subset of fixed vocab>]
 companies_used_in: [<list, owned by /interview-prep>]
@@ -150,7 +204,7 @@ last_practised: <YYYY-MM-DD or blank>
 **"<Prompt 3>"** <Framing instruction.>
 ```
 
-Blank lines between sections are part of the contract — don't compress.
+`story_type` is optional for backwards compatibility — stories from before the taxonomy convention had no field, and re-running /story-builder on them prompts to classify. Blank lines between sections are part of the contract — don't compress.
 
 ## Hard rules
 
@@ -169,6 +223,7 @@ Blank lines between sections are part of the contract — don't compress.
 
 ## Smoke test against the Maya example
 
-- Picker against `userdata/examples/maya/stories/` shows one entry: `1. Payments pricing experiment [themes: growth, pricing, experimentation, post-PMF] (last practised 2026-05-11)`, then `+ New story` and `Cancel`.
-- `--new "Activation funnel uplift"` flow: computes slug `activation-funnel-uplift`, no collision in Maya's bank, walks STAR + angles using Maya's `## Tone of Voice` (direct, short sentences, UK English, low-pressure CTAs).
-- `--edit payments-pricing-experiment` loads Maya's existing story; "Mark as practised today" action updates `last_practised: 2026-05-15`, preserves everything else.
+- Picker against `userdata/examples/maya/stories/` shows one entry: `1. Payments pricing experiment [themes: growth, pricing, experimentation, post-PMF] (last practised 2026-05-11)`, then `+ New story` and `Cancel`. Coverage line: `Coverage: 0/12 story types covered. (1 story unclassified — edit to add story_type) Run /story-builder --gap-check for details.` (Maya's existing story pre-dates the story_type convention.)
+- `--new "Activation funnel uplift"` flow: computes slug `activation-funnel-uplift`, no collision in Maya's bank, walks STAR + angles using Maya's `## Tone of Voice` (direct, short sentences, UK English, low-pressure CTAs). At Step 4, suggests `story_type: activation-retention` (or `pricing-monetization` if the body leans that way) — user confirms or picks another.
+- `--edit payments-pricing-experiment` loads Maya's existing story; one-line summary appends `— story_type unclassified, want to set it?` and offers `pricing-monetization` as the likely match. "Mark as practised today" action updates `last_practised: 2026-05-15`, preserves everything else.
+- `--gap-check` against Maya's bank with target_titles including "Head of Product": output reports `1/12 types covered (if user classifies the one story) / 0/12 if not, 1 unclassified`, surfaces missing types ranked by HoP-relevance — hiring-decision, strategic-pivot, ethical-edge as top 3, each with specific justification lifted from story-taxonomy.md.

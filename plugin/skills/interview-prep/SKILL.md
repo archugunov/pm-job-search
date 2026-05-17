@@ -16,7 +16,8 @@ Produces a single per-interview prep doc that combines: the company's signals (f
 - `userdata/companies/<Co>/[<slug>/]research-brief.md` — Company snapshot / Why this fits / Open questions.
 - `userdata/companies/<Co>/[<slug>/]interview-debrief-*.md` if present (prior rounds) — read the most recent 2; use to avoid repeating stories the user already told and to surface unanswered open questions.
 - `userdata/profile.md` — `## Positioning`, `## Proof Points`, `## Moat`, `## Tone of Voice`.
-- All `userdata/stories/*.md` — full STAR + angles + frontmatter.
+- All `userdata/stories/*.md` — full STAR + angles + frontmatter (including `story_type` if set).
+- Story taxonomy: `userdata/references/story-taxonomy.md` if present, else `${CLAUDE_PLUGIN_ROOT}/references/story-taxonomy.md` (userdata override per TONE.md convention). Used for the story-selection tiebreaker — see "Story selection" below.
 
 Optional flags:
 - `--stage <stage-name>` — e.g. `--stage cpo-round`, `--stage take-home`, `--stage final-loop`. Shapes the prep doc emphasis (see "Stage shaping" below).
@@ -43,7 +44,8 @@ Algorithm:
 1. **Hard match on `themes` and `role_lens`**: from `meta.md.position` and `research-brief.md`, extract topic signals (e.g. consumer credit, pricing, growth, leadership). Rank all stories by overlap with these signals.
 2. **De-prioritize used-here stories**: if a story's `companies_used_in` already includes this company, demote it (it was used in a prior round at this company — pick a different one unless the user explicitly invokes `--include-repeats`). Don't exclude entirely; if a story was used in an earlier-stage round and is still the strongest fit, surface it but flag: `Already used at <Company> on <last_practised date> — consider freshening the angle.`
 3. **Cover distinct angles**: the final 3-5 stories should collectively cover at least 3 distinct `role_lens` values across the set (don't pick 4 stories that all only show `analytics`).
-4. **Show the user the picks before writing the doc**: `Picked these 4 — swap any? <numbered list with one-line justifications>`. Honor swaps.
+4. **Story-type tiebreaker (when ties remain after steps 1-3)**: read the story-taxonomy reference's coverage matrix for the round's `--stage`. Prefer stories whose `story_type` is marked as `heavily probed` (X) at this stage over `likely probed` (·) over `unlikely`. Stories with `unclassified` or missing `story_type` get neutral weight — neither penalised nor preferred. Skip this step silently if the taxonomy reference is unreadable or all candidate stories are unclassified.
+5. **Show the user the picks before writing the doc**: `Picked these 4 — swap any? <numbered list with one-line justifications>`. If a tiebreaker fired, justifications mention it (e.g. "ambiguity-0-to-1, heavily probed at HM rounds per the story-taxonomy"). Honor swaps.
 
 For each picked story:
 - Lift the title and the ONE angle from "Angles for different prompts" that best matches the company's signals (not all angles — be opinionated).
