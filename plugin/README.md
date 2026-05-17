@@ -12,11 +12,11 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 
 Most job-search tools track. This one is built for senior PMs — and pushes back.
 
-- **A daily brief that knows when to escalate.** Tracks weekly targets and surfaces late-stage interview prompts (including the three founder-vetting questions for every CPO round). When patterns suggest the search itself isn't working — 3 same-stage rejections, 8+ weeks of thin pipeline — `/today` routes you to the coach, not "send 4 more applications".
-- **A practice partner, not a reviewer.** The `interviewer-simulator` agent PLAYS the interviewer — asks hard senior-PM questions (strategy at scale, judgement under uncertainty, build-vs-defend trade-offs), pushes back on hand-wavy answers, debriefs after. Three modes: full mock round, single-question deep-dive, or pressure-test on a story's weakest angle. Backed by a four-agent reviewer panel — CPO, engineering manager, design manager, interview coach — that critiques drafts from each lens.
-- **A coach that diagnoses, not motivates.** The `career-coach` agent reads your pipeline and says the brave thing when the data warrants — level miscalibration, comp underselling, role-shape mismatch (the kind that hollows you out within 18 months even at the right comp), sunk-cost reset. When offers arrive, `/evaluate-offer` runs the structured version — anti-goals check, archetype-vs-stage match, named-anti-pattern scan — so you don't sign into a hollow-HoP role to chase the title.
+- **A daily brief that escalates.** When the search itself isn't working — 3 same-stage rejections, 8+ weeks thin pipeline — `/today` routes you to the coach, not to "send 4 more applications".
+- **A practice partner, not a reviewer.** `interviewer-simulator` PLAYS the interviewer with pushback and a debrief. Four reviewer agents (CPO, eng manager, design manager, interview coach) critique drafts in parallel.
+- **A coach that diagnoses, not motivates.** `career-coach` reads your pipeline and names the brave call — level miscalibration, hollow-HoP risk, sunk-cost. `/evaluate-offer` runs the structured version when offers arrive.
 
-Optional MCP integrations (Granola / Calendar / Gmail and more) wire in via `/pm-job-search:integrations` if you have them; the plugin is fully usable without.
+MCP integrations (Granola / Calendar / Gmail) wire in via `/pm-job-search:integrations` — optional.
 
 ## Why pure markdown
 
