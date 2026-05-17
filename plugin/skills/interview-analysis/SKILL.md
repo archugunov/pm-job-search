@@ -1,6 +1,6 @@
 ---
 name: interview-analysis
-description: This skill should be used when the user asks to "/interview-analysis", "analyze my interview", "debrief my interview", "what did I miss in the interview", "review my interview transcript", or pastes a transcript / notes from a just-finished interview. Reads the transcript (pasted or from --from-file), pulls context from userdata/companies/<Co>/{meta,research-brief,interview-prep-*}.md and userdata/profile.md, and writes userdata/companies/<Co>/interview-debrief-<YYYY-MM-DD>-<stage>.md with: what landed, what didn't, interviewer signals, deltas vs the prep doc, and recommended updates (story angles, profile.md What-NOT items, monitoring flag).
+description: This skill should be used when the user asks to "/interview-analysis", "analyze my interview", "debrief my interview", "what did I miss in the interview", "review my interview transcript", or pastes a transcript / notes from a just-finished interview. Reads the transcript (pasted, from --from-file, or auto-pulled from Granola when userdata/integrations.md shows granola wired), pulls context from userdata/companies/<Co>/{meta,research-brief,interview-prep-*}.md and userdata/profile.md, and writes userdata/companies/<Co>/interview-debrief-<YYYY-MM-DD>-<stage>.md with: what landed, what didn't, interviewer signals, deltas vs the prep doc, and recommended updates (story angles, profile.md What-NOT items, monitoring flag).
 
 ---
 
@@ -12,17 +12,33 @@ Single-pass analysis. Take a transcript (or notes), produce a debrief that's use
 
 ## Inputs
 
-- Transcript source — one of:
-  - Pasted into chat after invocation.
-  - `--from-file <path>` — read from the given path (can be inside or outside the workspace).
-  - If neither: prompt `Paste the transcript, or give me a file path.`
+- Transcript source — resolve in this priority order. The FIRST source that produces content wins:
+  1. **Pasted content** in the same message as the invocation.
+  2. **`--from-file <path>`** — read from the given path (can be inside or outside the workspace).
+  3. **Auto-Granola fetch** — if `userdata/integrations.md` shows `granola` status `wired` AND neither of the above produced content, automatically attempt the Granola fetch (see "Granola fetch" below). No flag needed.
+  4. **Prompt the user** — `Paste the transcript, or give me a file path.` Only fires when 1-3 all came up empty.
   - If the user has only notes (not a verbatim transcript), accept them — flag in the debrief that analysis is from notes, not transcript.
 - `<Company>` — required. Take as positional arg (`/interview-analysis Plaid`), infer from `--from-file` parent folder if path is inside `userdata/companies/<Co>/`, or ask if neither.
 - `<stage>` — required for the filename and for shaping. Pass via `--stage` or ask: `Which round was this — recruiter / hiring-manager / panel / cpo-round / final-loop / take-home / other?` Free-text accepted; will be slugged.
+- `userdata/integrations.md` if it exists — parse the `## granola` section for wired-status. Skip silently if absent.
 - `userdata/companies/<Co>/meta.md` and `research-brief.md` — for company context.
 - The most recent `userdata/companies/<Co>/interview-prep-*.md` if it exists — for the "vs the prep" delta analysis. Match on `--stage` if multiple; otherwise pick the most recent same-stage prep, or the most recent prep regardless.
 - `userdata/profile.md` — `## Positioning`, `## Tone of Voice`, `## What NOT to Frame As`.
 - All `userdata/stories/*.md` — to spot which stories were used (match by title hints in the transcript) and judge whether the angles landed.
+
+## Granola fetch (when granola wired)
+
+When auto-Granola fires (or when the user explicitly says "pull from Granola"):
+
+1. Query Granola for meetings matching `<Company>`. Use the saved tool prefix from `integrations.md` (typically `mcp__granola__query_granola_meetings`); fall back to `list_meetings` + title scan if the query call returns empty.
+2. Handle the result count:
+   - **One match:** print `Found: <Meeting title> on <Date> — use this transcript?` Wait for y/n. If wrong, ask the user to describe the meeting and re-query.
+   - **Multiple matches:** present a numbered list `1. <Title> — <Date> — <Duration>` and ask `Which interview — pick a number, or comma-separate to bundle rounds.` Bundling multiple selections concatenates them in chronological order with `--- next meeting ---` separators between transcripts.
+   - **No matches:** print `Couldn't find any Granola meeting matching '<Company>'. Paste the transcript or give me a file path instead.` Fall through to source #4.
+3. For the selected meeting(s), call `get_meeting_transcript` with the meeting ID. Extract the transcript text. Pass that downstream as if it had been pasted.
+4. If the Granola call returns an auth or quota error: print one line `Granola fetch failed (<error type>). Paste the transcript or give me a file path instead.` and fall through to source #4. Do not retry silently.
+
+Auto-Granola is opportunistic. If the user has explicitly pasted a transcript or passed `--from-file`, that wins — Granola is never queried in those runs.
 
 ## Parse the transcript
 
@@ -156,7 +172,12 @@ If the debrief recommends a meta.md status change, repeat it in the chat output 
 - Never edits the prep doc the interview used. The prep was a forecast; the debrief is what happened.
 - Never invents transcript content. If a section can't be evidenced from the input, the bullet is `<None evidenced — needs user fill-in.>`.
 - Never deletes prior debriefs at the same company / stage. If the same stage gets a re-interview (rare), the new debrief has the suffix `-v2` (or `-v3`, etc.).
+- Never writes to `userdata/integrations.md`. Granola is read-only from this skill's perspective.
+- Never persists the raw Granola response anywhere. The transcript text gets used to produce the debrief; the saved file is the debrief, not the API response. (The transcript stays in Granola — that's its source of truth.)
+- Never retries failed Granola calls silently. One attempt, fall through to manual paste on failure.
 
 ## Smoke test against the Maya example
 
-There's no transcript in Maya's example install — this skill is exercised by the user pasting real content. A synthetic test would mock a transcript for Plaid's CPO round and verify the output structure. Defer until a real interview happens.
+There's no transcript and no `integrations.md` in Maya's example install — this skill is exercised by the user pasting real content. A synthetic test would mock a transcript for Plaid's CPO round and verify the output structure. Defer until a real interview happens.
+
+To exercise the auto-Granola code path, run the skill in a workspace where `userdata/integrations.md` has granola wired (run `/pm-job-search:integrations` first), invoke `/interview-analysis <Company>` with NO pasted transcript and no `--from-file`, and verify the Granola query / disambiguation / fetch flow runs before any "paste the transcript" prompt would appear.
