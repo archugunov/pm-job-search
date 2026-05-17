@@ -4,25 +4,21 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 
 ## How it works
 
-1. **Set up once.** `/pm-job-search:setup` walks you through 11 questions (~10-15 min). It writes your profile, a strategy file with auto-derived weekly targets, and a workspace `CLAUDE.md` so every Claude Code session in this folder knows your context.
-2. **Daily loop.** Every morning: `/pm-job-search:today` for the 5-section brief. As roles surface: `/pm-job-search:evaluate-position <url>` to score and file them. Before interviews: `/pm-job-search:interview-prep <Company>` for prep, `pm-job-search:interviewer-simulator` to rehearse. After: `/pm-job-search:interview-analysis` with the transcript.
-3. **Coach on call.** `pm-job-search:career-coach` is there for anything strategic — got an offer, feeling stuck, positioning not landing, "should I widen the search?". It reads your install state first, then diagnoses before it suggests.
-
-Everything lives as markdown in `userdata/` (gitignored by default). You can edit any file manually anytime; the plugin is opinionated structure on top of files you own.
+1. **Set up once.** `/pm-job-search:setup` — 11 questions, ~10-15 min.
+2. **Daily loop.** `/pm-job-search:today` for the morning brief. `/pm-job-search:evaluate-position <url>` to score new roles. Before interviews: `/pm-job-search:interview-prep <Company>` to prep, `pm-job-search:interviewer-simulator` to rehearse, `/pm-job-search:interview-analysis` after.
+3. **Coach on call.** `pm-job-search:career-coach` for anything strategic — offer to weigh, feeling stuck, positioning not landing. Diagnoses before it suggests.
 
 ## What makes it different
 
-Three things most job-search tools don't do:
+- **Honest coaching.** A career-coach agent that diagnoses with specific data, not generic motivation — and surfaces uncomfortable truths (level miscalibration, comp underselling, sunk-cost reset) when the search itself needs a rethink, not more applications.
+- **Live interview practice.** A simulator agent that PLAYS the interviewer — asks hard questions, pushes back, debriefs after. Three modes: full mock round, single-question deep-dive, or pressure-test on one story's weak angle.
+- **A daily brief that escalates.** When patterns suggest structural problems (3 same-stage rejections, 8+ weeks of thin pipeline), `/today` points at the right help — it doesn't say "keep going".
 
-- **Honest coaching.** A career-coach agent that diagnoses what's actually wrong — and will tell you the search itself needs restarting when the data says so, not just suggest more applications. Five trigger patterns (level miscalibration, comp underselling, sunk-cost reset, pattern-of-rejection, hard-stop check) surface uncomfortable truths with specific data, not generic motivation.
-- **Live interview practice.** A simulator agent that PLAYS the interviewer — asks real hard questions, pushes back on hand-wavy answers, debriefs at the end. Three modes: full mock-round simulation, single-question deep-dive, or pressure-test on one story's weak angle. Not draft review — real-pressure rehearsal.
-- **A daily brief that escalates.** When patterns suggest structural problems (5 rejections at the same stage, 8 weeks of thin pipeline, cadence drift for 4 weeks running), `/today` doesn't say "keep going". It points at the right help with the specific data.
-
-The cost: no Notion sync, no calendar integration, no email parsing by default. You bring the search; the plugin gives you structure, scoring, reflection, practice, and honest coaching. If you already run MCPs and want to wire them in, [INTEGRATIONS.md](INTEGRATIONS.md) documents the prompt patterns.
+Optional MCP integrations (Granola / Calendar / Gmail and more) wire in via `/pm-job-search:integrations` if you have them; the plugin is fully usable without.
 
 ## Why pure markdown
 
-Every other job-search tool starts with "first sign up to <SaaS>, get an API token, duplicate this template…". By the time you're tracking roles, you've spent more time on tooling than searching. `pm-job-search` is the opposite — the user's repo of `.md` files IS the system of record. Skills read markdown, write markdown, full stop. Your `userdata/` directory is gitignored by default; nothing leaves your machine unless you choose to share it.
+Your repo of `.md` files IS the system of record. Skills read markdown, write markdown — that's it. The `userdata/` directory is gitignored by default; nothing leaves your machine unless you choose to share it.
 
 ## Install
 
@@ -44,29 +40,29 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:setup` | Onboarding. 11 questions including target offer date. Writes `userdata/profile.md`, a populated `userdata/strategy.md` (auto-derived weekly cadences based on your timeline + an auto-composed headline goal), an empty `userdata/journal.md`, and a workspace-root `CLAUDE.md`. Idempotent — re-run anytime. CV-import mode (Mode B) reads `userdata/cv.md` to draft positioning + proof points. Closes by optionally invoking `pm-job-search:career-coach` to sharpen positioning. |
+| `/pm-job-search:setup` | 11 questions including target offer date. Writes profile + strategy + workspace `CLAUDE.md`. Re-runnable. Pre-fills positioning from a CV if you drop one into `userdata/cv.md`. |
 
 **Daily / weekly:**
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:today` | Daily brief. Five sections: where you are, this week's progress vs targets, top 3 actions today, pipeline state table, heads-up. Surfaces late-stage interview prompts, shape-mismatch warnings, Monday weekly retrospective, and three coach-nudge triggers (cadence drift / closing roles without applying / sunk-cost structural rethink) that route you to `pm-job-search:career-coach` when patterns warrant it. Saves to `userdata/outputs/daily-brief-<date>.md` and regenerates `userdata/outputs/applications.md`. |
-| `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric (5 dimensions × 1-3) with company-shape adjustment. Hard-filter gate before scoring, anti-goal soft warning, quick posting check (🟢 looks live / 🟡 looks stale / 🔴 looks dead), user-override on the score. Writes `userdata/companies/<Co>/meta.md` + `~200-word research-brief.md`. Handles 1→2 role folder migration when a second role is added at the same company. |
-| `/pm-job-search:job-search` | Three-phase weekly sweep. Pre-flight builds dedup data; Phase 1 runs Recheck-A / Recheck-B / Discovery in parallel subagents (recheck uses public no-auth ATS APIs — Ashby / Greenhouse / Lever; discovery uses `site:`-scoped WebSearch against ATS domains to skip aggregators); Phase 2 merges, scores, and delegates filing to `/pm-job-search:evaluate-position`. Optional `--with-playwright` for link-liveness verification. |
+| `/pm-job-search:today` | Daily brief: where you are, weekly progress vs targets, top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy itself needs rework. First run offers to set up 9am daily auto-runs. |
+| `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric with company-shape adjustment. Hard-filter + anti-goal gates, posting-liveness check (🟢 live / 🟡 stale / 🔴 dead), user-override. Writes the company folder (meta + ~200-word research brief). |
+| `/pm-job-search:job-search` | Weekly sweep. Parallel subagents recheck your P0/P1 companies via public ATS APIs (Ashby / Greenhouse / Lever) and discover new roles via `site:`-scoped search. Scores and files results via `/evaluate-position`. Optional `--with-playwright` for link verification. |
 
 **Interview cluster:**
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:story-builder` | Maintain your universal STAR-story bank. Picker shows existing stories by title (sorted by `last_practised`), user edits or describes new. Filenames are auto-derived kebab-slugs. STAR + "Angles for different prompts" structure — each story carries 3-5 angles pre-loaded for different question types. |
-| `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / final-loop / take-home). Late-stage rounds auto-include the three founder-vetting questions. Take-home variant produces a working-doc skeleton. Updates each used story's `companies_used_in` + `last_practised`. |
-| `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Sections: what landed (anchored to transcript quotes) / what didn't / interviewer signals / vs the prep doc / role shape verdict (🟢 building / 🟡 mixed / 🔴 defending) / process / recommended updates. |
+| `/pm-job-search:story-builder` | Maintain your universal STAR-story bank. Each story carries 3-5 pre-loaded angles for different question types. |
+| `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / final-loop / take-home). Late-stage rounds include three founder-vetting questions. Take-home variant produces a working-doc skeleton. |
+| `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Anchors findings to transcript quotes: what landed, what didn't, interviewer signals, deltas vs the prep, recommended updates. Auto-pulls from Granola when wired. |
 
 **Optional — wire in external tools:**
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:integrations` | Probes which MCP integrations are installed (Granola, Calendar, Gmail), walks through wiring each available one with at most 1-2 questions per integration, saves customized invocation patterns to `userdata/integrations.md`. Granola feeds `/interview-analysis`, Calendar feeds `/today` heads-up, Gmail feeds journal updates. Skip-friendly — none required. The other three integrations in [INTEGRATIONS.md](INTEGRATIONS.md) (Notion, Playwright, Slack) stay manual-setup. |
+| `/pm-job-search:integrations` | Probes for Granola / Calendar / Gmail MCPs and wires the ones you have. Granola feeds `/interview-analysis`, Calendar feeds `/today` heads-up, Gmail feeds journal updates. Saves invocation patterns to `userdata/integrations.md`. Optional — the plugin works fine without any of them. See [INTEGRATIONS.md](INTEGRATIONS.md) for Notion, Playwright, Slack as manual-setup. |
 
 ## Agents — 6 personas
 
@@ -109,11 +105,9 @@ Two fictional personas pre-populated so you can see what a working install looks
 
 Both personas are entirely fictional.
 
-## Audience + caveats
+## Audience
 
-Designed for **senior PM / Head of Product** roles. The tier rubric, status pipeline, story shape, and reviewer agents are tuned for that target. Different role family (engineer, designer, marketer)? Fork it — the architecture is reusable, the defaults aren't.
-
-This is opinionated. The skills surface stop-and-switch nudges, stale-application warnings, shape-mismatch flags on active interviews, sunk-cost triggers, and 14-day-out checkpoint reminders. The career-coach will tell you uncomfortable things when the data warrants. If you want a neutral tracker that doesn't push back, this is the wrong tool.
+Designed for senior PM / Head of Product roles. The tier rubric, status pipeline, story shape, and reviewer agents are tuned for that target. Different role family (engineer, designer, marketer)? Fork it — the architecture is reusable, the defaults aren't.
 
 ## Privacy + contributing
 
