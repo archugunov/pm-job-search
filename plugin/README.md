@@ -12,9 +12,8 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 
 Built for senior PMs. Tracks your pipeline like other tools — and pushes back when it's not working.
 
-- **The daily brief flags when the plan is broken.** Three same-stage rejections? Eight weeks of thin pipeline? `/today` tells you to talk to the coach, not to send more applications.
 - **The simulator interviews you, for real.** Hard questions, pushback when you're hand-waving, debrief after. Four reviewer agents (CPO, eng manager, design manager, interview coach) critique your drafts in parallel.
-- **The coach says what's actually wrong.** Reads your pipeline and surfaces things like wrong level, hollow-HoP risk, or "this search needs restarting". `/evaluate-offer` runs the same check on offers when they land.
+- **The coach tells you what's actually wrong.** Three same-stage rejections? Eight weeks of thin pipeline? `/today` hands you to `career-coach`, which surfaces things like wrong level, hollow-HoP risk, or "this search needs restarting" — not "send more applications". `/evaluate-offer` runs the same check on offers when they land.
 
 MCP integrations (Granola / Calendar / Gmail) plug in via `/pm-job-search:integrations`.
 
