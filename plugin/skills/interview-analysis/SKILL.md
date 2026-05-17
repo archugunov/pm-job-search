@@ -30,7 +30,7 @@ Single-pass analysis. Take a transcript (or notes), produce a debrief that's use
 
 When auto-Granola fires (or when the user explicitly says "pull from Granola"):
 
-1. Query Granola for meetings matching `<Company>`. Use the saved tool prefix from `integrations.md` (typically `mcp__granola__query_granola_meetings`); fall back to `list_meetings` + title scan if the query call returns empty.
+1. Query Granola for meetings matching `<Company>`. Primary path: call `mcp__granola__list_meetings` (or equivalent under the saved tool prefix) and title-scan the response for case-insensitive substring matches against `<Company>` (plus any common aliases from `userdata/companies/<Co>/meta.md`). If the list returns >10 meetings AND >3 candidate matches survive the title scan, refine via `mcp__granola__query_granola_meetings` to narrow. Reason for list-first: the query tool has been observed returning false negatives even when matching meetings exist; the list endpoint is more reliable as the source of truth.
 2. Handle the result count:
    - **One match:** print `Found: <Meeting title> on <Date> — use this transcript?` Wait for y/n. If wrong, ask the user to describe the meeting and re-query.
    - **Multiple matches:** present a numbered list `1. <Title> — <Date> — <Duration>` and ask `Which interview — pick a number, or comma-separate to bundle rounds.` Bundling multiple selections concatenates them in chronological order with `--- next meeting ---` separators between transcripts.

@@ -188,6 +188,7 @@ Gmail wasn't detected — INTEGRATIONS.md §2 has install pointers for when you 
 - Save the user's invocation customizations verbatim — don't paraphrase what they specified.
 - Idempotent. Re-running the skill must not destroy user-customized invocation patterns unless they explicitly choose `--refresh`.
 - If `userdata/integrations.md` already exists, present three options and act on the chosen one: refresh (overwrite) / add-new-only (merge) / exit (no changes).
+- Discard auth metadata from probe responses. Probe calls often return identifying data (account email, workspace ID, OAuth scope, user display name) as part of their success payload. Use this data ONLY to confirm the integration is wired; NEVER write it to `userdata/integrations.md` or anywhere on disk. The integrations file records tool prefixes and invocation patterns, not identity.
 
 ## Anti-patterns
 
