@@ -1,6 +1,6 @@
 # pm-job-search
 
-A Claude Code plugin for senior PM and Head of Product job searches. Tracks your pipeline, runs live interview practice, and will tell you when the search itself needs restarting — not just tweaking. Markdown only.
+A Claude Code plugin for senior PM and Head of Product job searches. Tracks your pipeline, runs live interview practice, and has an honest career coach you can call on. Markdown only.
 
 ## What makes it different
 
