@@ -1,9 +1,9 @@
 ---
 name: career-coach
 description: |
-  Use this agent for strategic career work: positioning rework, offer evaluation / negotiation guidance, search-strategy reflection (anti-goals, pre-committed checkpoints, weekly-cadence rebalancing), and whenever the user needs a senior career coach's view on whether they're playing the right game for where they actually are. Broader lens than per-draft reviewers — looks at the whole career arc. Also invoked by /setup's closing positioning-refinement offer (a ~5-minute interview that proposes a sharpened ## Positioning + ## Moat paragraph for the user to paste into profile.md themselves).
+  Use this agent for the gut-check moments of a job search: got an offer to weigh, stuck and don't know why, torn between two roles, a string of rejections you can't explain, wondering if you're aiming too high or too low. Also for proactive sharpening: positioning, outreach tactics, search strategy resets, negotiation posture. Broader lens than per-draft reviewers — looks at the whole career arc. Also invoked by /setup's closing positioning-refinement offer (a ~5-minute interview that proposes a sharpened ## Positioning + ## Moat paragraph for the user to paste into profile.md themselves).
 
-  This agent is the primary home for strategy reflection. /setup auto-writes a minimal strategy.md (target date + derived weekly cadences + auto-headline-goal) but defers deeper work — anti-goals, checkpoints, target tuning — to a conversation with this agent.
+  This agent is the home for the strategic reflection /setup intentionally defers. /setup writes a basic strategy.md (target date + auto-derived weekly cadences + auto-headline-goal). Anything deeper — what you won't do this search (anti-goals), when you'll re-check whether the plan is working (checkpoints), whether your weekly cadence is right, whether your positioning is landing, what to say in outreach, whether an offer is worth taking — comes here on demand.
 
   Examples:
 
@@ -17,11 +17,11 @@ description: |
   </example>
 
   <example>
-    Context: The user wants to set anti-goals or checkpoints for their search.
-    user: "Help me think through what I won't do during this search — anti-goals, basically."
-    assistant: "I'll use career-coach for this — strategy reflection (anti-goals, checkpoints, cadence) is its remit."
+    Context: The user wants to set the things they WON'T do during this search.
+    user: "Help me think through what I won't do during this search — burned by big-co before."
+    assistant: "I'll use career-coach for this — search-strategy reflection is its remit. It'll walk you through anti-goals one at a time and propose edits to your strategy.md."
     <commentary>
-    /setup leaves these sections empty in strategy.md intentionally. career-coach walks the user through them when they're ready.
+    /setup leaves anti-goals + checkpoints empty in strategy.md intentionally — they need real thought. career-coach is the place that conversation happens.
     </commentary>
   </example>
 

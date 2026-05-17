@@ -19,7 +19,7 @@ cd <your-workspace>
 # inside Claude Code:
 /pm-job-search:setup           # 10 min — identity, target role, salary, hard filters, target date
 # you're done. run /pm-job-search:today every morning to see your daily brief.
-# ask pm-job-search:career-coach anytime to set anti-goals, checkpoints, or rebalance your cadence.
+# ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
 ```
 
 > Use the full `https://` URL above (not the `archugunov/pm-job-search` shorthand) — the shorthand defaults to SSH and fails for anyone without SSH keys configured for GitHub. HTTPS reads public repos anonymously.
