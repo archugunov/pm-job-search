@@ -100,7 +100,7 @@ When your review surfaces follow-up work, point the user at the right skill:
 | `/story-builder` | A story used in the draft would land better with a different angle, or a missing story should be added to the universal bank |
 | `/interview-prep` | Reviewing a prep doc and a key story is missing, or the prep doesn't match the round shape |
 | `/interview-analysis` | After the interview, surface a debrief so your next-round prep is sharper |
-| `/strategy` | The draft reveals the user is unclear on their own target — strategy reset needed |
+| ask `pm-job-search:career-coach` | The draft reveals the user is unclear on their own target — strategy reset, anti-goal review, or cadence rebalancing needed |
 
 ## Hard rules
 

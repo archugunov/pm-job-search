@@ -18,7 +18,7 @@ Every interactive flow opens with the easiest question that delivers value. Deep
 
 - **Auto-detect before asking.** If the answer can be inferred from existing files, the system clock, or a previous answer, infer it and confirm — don't ask.
 - **Offer skip-and-fill-later on every optional question.** Onboarding should finish even if the user skips most of it.
-- **Defer deep questions.** A 15-minute reflection (e.g. /strategy themes) should always offer a "quick mode" that captures the bare minimum and offers depth on demand.
+- **Defer deep questions.** Long reflections (anti-goals, pre-committed checkpoints, cadence tuning) belong in `career-coach` conversations triggered on-demand — not jammed into install-time onboarding.
 - **Defaults > prompts** when the defaults are good. Tier rubric defaults ship without asking; they get tuned when the user disagrees with a real `/evaluate-position` score.
 - **Stop asking after value is delivered.** If the user has enough set up to use the daily loop, end the flow. Don't insist on completeness.
 

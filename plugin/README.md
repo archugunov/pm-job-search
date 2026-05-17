@@ -1,6 +1,6 @@
 # pm-job-search
 
-An opinionated daily-driver for senior PM / Head of Product job searches. Pure markdown — no Notion, no API tokens, no external services. Clone, install the plugin, run `/pm-job-search:setup` then `/pm-job-search:strategy`, then `/pm-job-search:today` every morning.
+An opinionated daily-driver for senior PM / Head of Product job searches. Pure markdown — no Notion, no API tokens, no external services. Clone, install the plugin, run `/pm-job-search:setup`, then `/pm-job-search:today` every morning.
 
 ## Why pure markdown
 
@@ -17,9 +17,9 @@ Trade-off: no calendar integration, no email parsing, no Slack notifications. Yo
 
 cd <your-workspace>
 # inside Claude Code:
-/pm-job-search:setup           # 10 min — identity, target role, salary, hard filters
-/pm-job-search:strategy        # 15-20 min — goals, weekly targets, anti-goals, checkpoints
+/pm-job-search:setup           # 10 min — identity, target role, salary, hard filters, target date
 # you're done. run /pm-job-search:today every morning to see your daily brief.
+# ask pm-job-search:career-coach anytime to set anti-goals, checkpoints, or rebalance your cadence.
 ```
 
 > Use the full `https://` URL above (not the `archugunov/pm-job-search` shorthand) — the shorthand defaults to SSH and fails for anyone without SSH keys configured for GitHub. HTTPS reads public repos anonymously.
@@ -32,8 +32,8 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:setup` | Onboarding. 10 questions. Writes `userdata/profile.md`, a placeholder `userdata/strategy.md`, an empty `userdata/journal.md`, and a workspace-root `CLAUDE.md`. Idempotent — re-run anytime. CV-import mode (Mode B) reads `userdata/cv.md` to draft positioning + proof points. Closes by offering `/pm-job-search:strategy`. |
-| `/pm-job-search:strategy` | 15-20 minute conversational reflection across 5 themes (destination / weekly cadence / pipeline floor / pre-committed checkpoints / anti-goals). Writes `userdata/strategy.md`. Re-run every 2-3 weeks as the search evolves. `--theme <name>` jumps to one theme. |
+| `/pm-job-search:setup` | Onboarding. 11 questions including target offer date. Writes `userdata/profile.md`, a populated `userdata/strategy.md` (with auto-derived weekly cadences based on your timeline + an auto-composed headline goal), an empty `userdata/journal.md`, and a workspace-root `CLAUDE.md`. Idempotent — re-run anytime. CV-import mode (Mode B) reads `userdata/cv.md` to draft positioning + proof points. Closes by optionally invoking `pm-job-search:career-coach` to sharpen positioning. |
+| `pm-job-search:career-coach` (agent) | The home for deeper strategy work — anti-goals, pre-committed checkpoints, weekly-cadence rebalancing, positioning refinement, offer evaluation, search-strategy resets. Invoked on-demand by natural language ("help me think through my anti-goals", "should I take this offer?"). |
 
 **Daily / weekly:**
 

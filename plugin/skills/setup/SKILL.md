@@ -11,7 +11,7 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Opening line** (after mode detection, before Q1, fresh install only):
 
-> "OK, let's get you set up. Ten quick questions — none of it locked in, you can rerun anytime. Ready?"
+> "OK, let's get you set up. Eleven quick questions — none of it locked in, you can rerun anytime. Ready?"
 
 Wait for a one-word confirmation, then start Q1.
 
@@ -138,7 +138,30 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
 
     Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 people", "no five-day in-office"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
-After Q10: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
+11. **Target offer date** — skippable. Ask:
+    > "When do you want the offer signed by? Concrete date — even a best guess. Vague dates make `/today`'s countdown noisy."
+
+    Parse as `YYYY-MM-DD`. If skipped, set `target_offer_date: null` in strategy.md and skip the cadence derivation below — strategy.md will only have the auto-headline-goal populated; `/today` degrades gracefully (no countdown, no progress section).
+
+After Q11 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
+
+| W | weekly_targets.applications | weekly_targets.warm_outreach | pipeline_targets.active_interview_threads | pipeline_targets.p0_pipeline_size |
+|---|---|---|---|---|
+| W < 8 (under 2 mo) | 12 | 10 | 5 | 8 |
+| W = 8-16 (2-4 mo) | 8 | 8 | 4 | 6 |
+| W ≥ 16 (4+ mo) | 5 | 5 | 3 | 5 |
+
+Rationale (don't surface to user unless asked): shorter timeline → higher concurrent activity needed to hit ~2 offers in hand by deadline, assuming ~30% offer rate on active interview threads and ~15% interview rate on applications.
+
+Also silently auto-compose `## Headline goal` for strategy.md from profile.md frontmatter. Format:
+
+> "Sign a `<target_titles joined by ' / '>` role at a `<target_industries joined by ', '>` company by `<target_offer_date>`. `<geography phrasing — 'Fully remote', 'London hybrid', etc.>`. Base `<salary_band>`."
+
+Skip clauses where the source field is unset (e.g. if salary skipped, drop the base clause).
+
+Leave `## Anti-goals` empty and `checkpoints: []` — those need deeper reflection and belong to the user's later editing or to a `career-coach` conversation.
+
+After Q11: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
 The senior-PM-default `tier_weights` + `tier_thresholds` get written into `profile.md` from the template automatically. Tier rubric terms (P0/P1/P2, role_fit, etc.) are too technical to introduce here without context — the user encounters them organically the first time `/evaluate-position` runs and shows a scoring breakdown. That's the right teach-moment.
 
@@ -175,9 +198,16 @@ Do NOT write `# unset` comments — they look like noise in the final file. An e
 
 ### 2. `userdata/strategy.md` (only if file does not already exist)
 
-Read the strategy template, leave all `{{PLACEHOLDERS}}` AS-IS (do NOT prompt for strategy values during /setup — `/strategy` owns that). Write to `userdata/strategy.md`.
+Read the strategy template. Populate:
+- `target_offer_date`: from Q11. If Q11 was skipped, leave as `null`.
+- `weekly_targets.*` + `pipeline_targets.*`: from the cadence-derivation table above. If Q11 was skipped, leave all as `null` (`/today` skips them gracefully).
+- `checkpoints: []` (empty list — user adds later via `career-coach` or by hand).
+- `## Headline goal`: the auto-composed paragraph (from profile.md fields + target date). If Q11 was skipped, omit the date clause and drop the countdown wording.
+- `## Anti-goals`: leave the section empty (the template's HTML comment prompts the user to fill in later).
 
-If `userdata/strategy.md` already exists, skip this write. /setup never overwrites strategy.
+Write to `userdata/strategy.md`.
+
+If `userdata/strategy.md` already exists, skip this write. /setup never overwrites a user's existing strategy file.
 
 ### 3. `userdata/journal.md` (only if file does not already exist)
 
@@ -223,27 +253,23 @@ Write the result to `CLAUDE.md` at the workspace root (one level above `userdata
 
 ## Closing offers
 
-First, print a brief summary of what was written — one line per file, plain. Example:
+First, print a brief summary of what was written — one line per file. If Q11 set a target date, include the derived cadence summary so the user can spot-check the numbers. Example with target date set:
 
 > "You're set up. Wrote:
-> - `userdata/profile.md` — your identity, target role, salary, hard filters
-> - `userdata/strategy.md` — placeholder (fill via `/pm-job-search:strategy`)
+> - `userdata/profile.md` — identity, target role, salary, hard filters
+> - `userdata/strategy.md` — headline goal + derived weekly targets (8 apps/wk, 8 outreach/wk, 4 active interview threads floor) based on your 18-week timeline. Edit these in `userdata/strategy.md` if they feel off — or ask `pm-job-search:career-coach` to help you set anti-goals and checkpoints.
 > - `userdata/journal.md` — empty (append daily notes here)
 > - `CLAUDE.md` — workspace root, loads your profile into every Claude Code session"
 
-Then offer the two follow-ups in this order, each as a separate prompt:
+If Q11 was skipped, omit the cadence summary line — just say `userdata/strategy.md — headline goal drafted; targets unset (skipped target date)`.
 
-1. **Positioning refinement (skip-default).** Only relevant if Q6 produced a draft (Mode A or Mode B). Ask:
-   > "Want to sharpen your positioning before we wrap? I can pull in the `pm-job-search:career-coach` agent — quick 5-min back-and-forth, it'll suggest a tighter version. Or skip and edit `profile.md` whenever."
+Then offer ONE follow-up (only if Q6 produced a draft via Mode A or Mode B):
 
-   If yes, invoke the `career-coach` agent with the just-written `userdata/profile.md` as input. If no or Q6 was skipped, move on.
+> "Want to sharpen your positioning before we wrap? I can pull in the `pm-job-search:career-coach` agent — quick 5-min back-and-forth, it'll suggest a tighter version. Or skip and edit `profile.md` whenever."
 
-2. **Strategy.** Ask:
-   > "One more — if you've got 15 min: `/pm-job-search:strategy` sets the weekly targets and re-check dates you'll measure the search against. Without it, `/today` shows pipeline state but can't track progress. Skip if you'd rather come back to it."
+If yes, invoke the `career-coach` agent. If no or Q6 was skipped, end with:
 
-   If yes, tell the user to run `/pm-job-search:strategy` next. If no, end the flow with: *"You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief."*
-
-Either offer is fully skippable. The install is valid without them.
+> "You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief. Ask `pm-job-search:career-coach` anytime you want to set anti-goals, checkpoints, or rebalance your weekly cadence."
 
 ## What /setup never does
 

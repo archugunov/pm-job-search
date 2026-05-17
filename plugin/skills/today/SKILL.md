@@ -45,7 +45,7 @@ Three bullets, only those whose target is set in strategy.md:
 If a target is unset in strategy.md (line missing or value is null/blank), omit that bullet. Do not show `0/0`.
 
 If strategy.md has no targets set at all (all three unset), replace the entire section body with:
-> Strategy not set. Run `/strategy` to enable progress tracking.
+> Strategy targets not set. Re-run `/pm-job-search:setup --refresh` to add a target date (auto-derives weekly cadences), or edit `userdata/strategy.md` directly to enable progress tracking.
 
 **Monday retrospective extension.** On Mondays only, append a one-line week-over-week summary below the three bullets. Compute the previous 7-day window (`today - 13` to `today - 7`) and compare:
 

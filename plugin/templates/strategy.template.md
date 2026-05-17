@@ -1,15 +1,20 @@
 <!--
   pm-job-search — strategy template.
 
-  /setup writes a copy of this file to userdata/strategy.md with placeholders
-  intact. /strategy walks you through a 15-20 minute reflection that
-  substitutes the placeholders. Revisit /strategy every 2-3 weeks (or at any
-  retrospective) — strategy.md drives the progress-tracking behaviour of /today.
+  /setup writes a populated copy of this file to userdata/strategy.md when you
+  install: target_offer_date from Q11, weekly_targets + pipeline_targets
+  auto-derived from your timeline (see /setup SKILL.md for the cadence table),
+  and the headline goal auto-composed from your profile.md.
 
-  - Placeholders ({{X}}) → filled by /strategy from your answers.
-  - Numeric targets (weekly_targets, pipeline_targets) are personal cadence —
-    no defaults shipped. If a target is unset (null), /today skips that
-    comparison rather than reporting against an arbitrary number.
+  Deeper sections (## Anti-goals, checkpoints) start empty. To fill them in:
+  - Edit this file directly, OR
+  - Ask `pm-job-search:career-coach` ("help me think through my anti-goals",
+    "set my checkpoints", "rebalance my weekly cadence") — the agent walks
+    you through one theme at a time and proposes edits for you to paste.
+
+  This file drives the progress-tracking behaviour of /today. Any unset value
+  (null) is gracefully skipped — /today doesn't report against numbers you
+  haven't committed to.
 -->
 ---
 # YYYY-MM-DD — when "done" should happen.

@@ -22,7 +22,7 @@ Use the skills shipped by the pm-job-search plugin.
 | Task | Skill |
 |---|---|
 | First-run install / re-configure | `/setup` |
-| Set or refresh your strategy (goals, weekly targets, anti-goals) | `/strategy` |
+| Set or refresh deeper strategy (anti-goals, checkpoints, cadence rebalancing) | ask `pm-job-search:career-coach` |
 | Daily brief (pipeline state + progress vs targets) | `/today` |
 | Score a job posting against the tier model | `/evaluate-position <url-or-paste>` |
 | Weekly job discovery sweep | `/job-search` |
