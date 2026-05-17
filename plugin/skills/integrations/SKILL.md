@@ -29,6 +29,8 @@ No required arguments. Optional flag:
 
 Probe order: Granola → Calendar → Gmail. Each probe attempts a safe, read-only call. The skill must NOT ask the user "do you have <MCP>?" before probing — detect first.
 
+**Mechanic — how to enumerate MCP tools.** MCP tools surface as `mcp__<server>__<tool>` in the deferred-tool list. To check if a server is wired, use `ToolSearch` with a pattern query (e.g. `ToolSearch query="mcp__granola"` or `ToolSearch query="mcp__gcal"`) to enumerate matching tools. If matches surface, the server is installed; if zero matches, treat as `not_installed`. For Calendar and Gmail where naming varies, try multiple patterns in sequence (see per-integration sections below).
+
 ### Granola
 
 Attempt: any `mcp__granola__*` tool that returns metadata cheaply (e.g. `mcp__granola__get_account_info` or `mcp__granola__list_meeting_folders`). If the call succeeds, mark `wired`. If the tool isn't available (no `mcp__granola__*` tools surface in the deferred-tool list), mark `not_installed`.
@@ -64,6 +66,8 @@ Integration detection — <YYYY-MM-DD>
 | Calendar  | ✅ wired (mcp__gcal_x) | Upcoming interviews → /today heads-up       |
 | Gmail     | ❌ not detected         | Recruiter convos → journal (manual fallback works) |
 ```
+
+For the `wired` status, render the bare ✅ — do NOT decorate with a meeting-count or item-count flourish even if the probe response would let you compute one. The probe is for detection, not telemetry; extra calls just to populate a cosmetic count add latency for no value.
 
 For any `not_installed` row, append a one-line pointer: `See INTEGRATIONS.md §<N> for install link.`
 
