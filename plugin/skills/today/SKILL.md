@@ -163,6 +163,33 @@ If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only.
 
 Always print the brief to chat regardless of save mode.
 
+## First-run automation nudge
+
+After the brief renders, check whether to surface a one-shot nudge asking the user to set up daily auto-runs.
+
+**Trigger conditions (ALL must be true):**
+
+1. The run is non-ephemeral (the `--ephemeral` flag was NOT passed).
+2. The marker file `userdata/outputs/.automation-nudge-shown` does NOT exist.
+
+**When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the nudge is a one-time chat surface, not part of the brief history). Then create the marker file with `touch userdata/outputs/.automation-nudge-shown` so the nudge never fires again on this install.
+
+```
+---
+
+First daily brief filed. Want this to run automatically at 9am every day?
+
+- **Inside Claude Code (cross-platform, easiest):** run `/schedule` and follow the prompt for a daily 09:00 trigger on `/pm-job-search:today`.
+- **macOS launchd (no Claude Code session needed):** ask Claude Code to draft a `~/Library/LaunchAgents/com.<you>.pm-job-search-today.plist` for a headless `claude -p "/pm-job-search:today"` daily run. Survives reboots, no terminal needed.
+- **Linux / generic cron:** add `0 9 * * * cd <workspace> && claude -p "/pm-job-search:today"` to `crontab -e`.
+
+Skip this if you'd rather drive it manually. This nudge fires once — delete `userdata/outputs/.automation-nudge-shown` to see it again.
+```
+
+The nudge is informational. /today does NOT attempt to set up scheduling itself — different OSes, different shells, permission considerations. The user picks the path that fits their setup.
+
+If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write nudge marker — automation prompt will repeat on next /today run.` and continue without erroring. The nudge resurfacing is annoying, not destructive.
+
 ## `applications.md` regeneration
 
 `applications.md` is a hybrid file: /today owns one HTML-comment-delimited block; the user owns everything outside it. Spec is in plan §I.2.
@@ -239,3 +266,5 @@ When debugging this skill, run it against `userdata/examples/maya/` as a synthet
 - "Heads-up": no checkpoints in 14d, no stale `applied`, no upcoming-events or new-inbound bullets (no integrations), late-stage prompts triggered by Plaid; three founder-vetting questions printed verbatim.
 
 If the output diverges materially from the above against the Maya snapshot, the skill has a bug — fix before promoting. To exercise the integration fold-in code paths, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the new bullets and column render.
+
+The first-run automation nudge fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
