@@ -269,7 +269,7 @@ Then offer ONE follow-up (only if Q6 produced a draft via Mode A or Mode B):
 
 If yes, invoke the `career-coach` agent. If no or Q6 was skipped, end with:
 
-> "You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief. Ask `pm-job-search:career-coach` anytime — got an offer to weigh, stuck and don't know why, or torn between two roles. Also good for the proactive stuff: sharpening your positioning, working through outreach tactics, or rethinking your search strategy."
+> "You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief. Ask `pm-job-search:career-coach` for search strategy, positioning, or outreach — plus offers and stuck moments later."
 
 ## What /setup never does
 
