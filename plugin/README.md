@@ -1,6 +1,6 @@
 # pm-job-search
 
-A Claude Code plugin for senior PM and Head of Product job searches. Tracks your pipeline, runs live interview practice, and has an honest career coach you can call on. Markdown only.
+A Claude Code plugin for senior PM and Head of Product job searches. Tracks your pipeline, runs live interview practice, and has an honest career coach you can call on. Markdown by default — expandable with integrations.
 
 ## How it works
 
@@ -42,7 +42,7 @@ cd <your-workspace>
 
 > The `pm-job-search:` prefix on every command is the deterministic namespaced form — it works regardless of what other plugins you have installed. The unprefixed forms (`/setup`, `/today`, etc.) also work as long as no other installed plugin has a colliding name; the prefix removes the ambiguity.
 
-## The workflow — 7 skills
+## The workflow — 8 skills
 
 **One-time setup (~10-15 min):**
 
@@ -65,6 +65,12 @@ cd <your-workspace>
 | `/pm-job-search:story-builder` | Maintain your universal STAR-story bank. Picker shows existing stories by title (sorted by `last_practised`), user edits or describes new. Filenames are auto-derived kebab-slugs. STAR + "Angles for different prompts" structure — each story carries 3-5 angles pre-loaded for different question types. |
 | `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / final-loop / take-home). Late-stage rounds auto-include the three founder-vetting questions. Take-home variant produces a working-doc skeleton. Updates each used story's `companies_used_in` + `last_practised`. |
 | `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Sections: what landed (anchored to transcript quotes) / what didn't / interviewer signals / vs the prep doc / role shape verdict (🟢 building / 🟡 mixed / 🔴 defending) / process / recommended updates. |
+
+**Optional — wire in external tools:**
+
+| Skill | What it does |
+|---|---|
+| `/pm-job-search:integrations` | Probes which MCP integrations are installed (Granola, Calendar, Gmail), walks through wiring each available one with at most 1-2 questions per integration, saves customized invocation patterns to `userdata/integrations.md`. Granola feeds `/interview-analysis`, Calendar feeds `/today` heads-up, Gmail feeds journal updates. Skip-friendly — none required. The other three integrations in [INTEGRATIONS.md](INTEGRATIONS.md) (Notion, Playwright, Slack) stay manual-setup. |
 
 ## Agents — 6 personas
 

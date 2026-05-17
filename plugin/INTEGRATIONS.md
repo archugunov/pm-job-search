@@ -2,6 +2,12 @@
 
 The plugin works as-is — markdown only, zero external dependencies. This guide is for users who already run other MCP servers (Granola, Gmail, Calendar, Notion, Playwright) and want to wire them into specific skills to make them more capable. **None of these are required.** The plugin does not auto-detect or auto-install any of them.
 
+## Quickstart — `/pm-job-search:integrations`
+
+For the three integrations that plug into the daily/weekly loop (Granola, Calendar, Gmail), the easiest path is `/pm-job-search:integrations`. It probes which MCPs are installed, walks through wiring each available one with at most 1-2 questions, and saves customized invocation patterns to `userdata/integrations.md` for copy-paste later. Re-run anytime to refresh detection or add newly-installed MCPs.
+
+The remaining three integrations below (Notion, Playwright, Slack) stay manual-setup — read the section, apply the pattern. They sit outside the daily loop so a guided skill would be more ceremony than value.
+
 Why even document this? Two reasons:
 1. The "zero deps" pitch sometimes meets the "but I have my interview transcripts in Granola already" objection. This guide shows the upgrade path without forcing it on default users.
 2. MCPs already running on the user's machine ARE effectively zero-setup from the plugin's perspective — they're just tools the agents can use. The original "zero deps" rule was about installation friction, not about refusing to USE servers the user already trusts.
