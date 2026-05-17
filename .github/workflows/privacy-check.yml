@@ -1,0 +1,38 @@
+name: Privacy check
+
+# Fails the build if any committed file contains personal data from the
+# blocklist. The plugin is a public extract of a personal job-search
+# workflow; this CI is the safety net that catches accidental leaks
+# in PRs before they merge to main.
+#
+# If you're forking for your own use, you can either:
+#   - keep this workflow and replace the blocklist with your own personal-data terms
+#   - or delete this workflow entirely (your own fork, your own privacy posture)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
+      - name: Scan for personal-data leaks
+        run: |
+          PATTERN='arkadii|arcady|samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140'
+          # Exclude .github/ and CONTRIBUTING.md — they legitimately contain
+          # the pattern as documentation (this workflow and the contributor guide).
+          if rg -i "$PATTERN" --glob='!.github/' --glob='!CONTRIBUTING.md' . ; then
+            echo ""
+            echo "::error::Privacy scan found matches above. The repo must contain zero personal data — fix before merging."
+            exit 1
+          else
+            echo "Privacy scan clean — no blocklist matches."
+          fi
