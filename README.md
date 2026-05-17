@@ -40,7 +40,7 @@ cd <your-workspace>
 | Skill | What it does |
 |---|---|
 | `/pm-job-search:today` | Daily brief. Five sections (where you are, this week's progress vs targets, top 3 actions today, pipeline state table, heads-up). Surfaces late-stage interview prompts, shape-mismatch warnings, Monday weekly retrospective. Saves to `userdata/outputs/daily-brief-<date>.md` and regenerates `userdata/outputs/applications.md`. |
-| `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric (5 dimensions × 1-3) with company-shape adjustment. Hard-filter gate before scoring, posting-legitimacy verdict (🟢/🟡/🔴), user-override on the score. Writes `userdata/companies/<Co>/meta.md` + `~200-word research-brief.md`. Handles 1→2 role folder migration. |
+| `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric (5 dimensions × 1-3) with company-shape adjustment. Hard-filter gate before scoring, quick posting check (🟢 looks live / 🟡 looks stale / 🔴 looks dead), user-override on the score. Writes `userdata/companies/<Co>/meta.md` + `~200-word research-brief.md`. Handles 1→2 role folder migration. |
 | `/pm-job-search:job-search` | Three-phase weekly sweep. Pre-flight builds dedup data; Phase 1 runs Recheck-A / Recheck-B / Discovery in parallel subagents (recheck uses public no-auth ATS APIs — Ashby / Greenhouse / Lever; discovery uses `site:`-scoped WebSearch against ATS domains to skip aggregators); Phase 2 merges, scores, and delegates filing to `/pm-job-search:evaluate-position`. Optional `--with-playwright` for link-liveness verification. |
 
 **Interview cluster:**

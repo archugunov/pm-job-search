@@ -76,24 +76,24 @@ Apply `tier_thresholds`:
 
 Show the scoring breakdown to the user before writing files: a 5-row table of `dimension | score | rubric-string-matched | one-line justification`. Ask `Use this score, adjust manually, or rescore with my override?` Accept their override on any dimension — never strong-arm the user; the rubric is a tool, not a verdict.
 
-## Posting legitimacy verdict
+## Posting check
 
-Before scoring, run a quick legitimacy check on the JD itself — separate from the role-fit score. Saves the user from chasing dead or zombie postings.
+Before scoring, do a quick check on the JD itself — separate from the role-fit score. Saves the user from chasing dead or zombie postings.
 
-Emit one of three verdicts:
+Emit one of three labels:
 
-- 🟢 **high** — recent posting (date stamp or "posted N days ago" within last 30d), Apply / Submit button visible, JD content is substantive (≥300 chars, names a hiring manager or specific team scope, not generic boilerplate).
-- 🟡 **caution** — at least one yellow signal: missing date stamp, JD is mostly boilerplate language, no named team or scope, or has been live >60 days.
-- 🔴 **suspicious** — multiple yellow signals OR: JD says "always hiring" / "evergreen", Apply button is missing or links offsite to a third-party recruiter, content is < 200 chars, or URL redirects to a generic careers landing.
+- 🟢 **looks live** — recent posting (date stamp or "posted N days ago" within last 30d), Apply / Submit button visible, JD content is substantive (≥300 chars, names a hiring manager or specific team scope, not generic boilerplate).
+- 🟡 **looks stale** — at least one yellow signal: missing date stamp, JD is mostly boilerplate language, no named team or scope, or has been live >60 days.
+- 🔴 **looks dead** — multiple yellow signals OR: JD says "always hiring" / "evergreen", Apply button is missing or links offsite to a third-party recruiter, content is < 200 chars, or URL redirects to a generic careers landing. Covers expired postings, evergreen lead-gen, and zombie roles indistinguishable from any of those.
 
-If pulled via WebFetch, infer from the fetched page content. If pasted JD, infer from the text (no URL liveness signal — default to 🟡 caution unless the user provides freshness info).
+If pulled via WebFetch, infer from the fetched page content. If pasted JD, infer from the text (no URL liveness signal — default to 🟡 looks stale unless the user provides freshness info).
 
-Surface the verdict in:
+Surface the label in:
 1. The scoring breakdown shown to the user before file writes.
-2. `meta.md.legitimacy` frontmatter field.
+2. `meta.md.posting_check` frontmatter field (values: `live` / `stale` / `dead`).
 3. The closing chat output (see "Output to chat").
 
-If the verdict is 🔴 suspicious, ASK the user before scoring/filing: `Posting looks suspicious (<reason>). Score and file anyway, file as monitoring-only, or skip?`
+If the label is 🔴 looks dead, ASK the user before scoring/filing: `Posting looks dead (<reason>). Score and file anyway, file as monitoring-only, or skip?`
 
 ## Folder layout (per §I.4)
 
@@ -148,7 +148,7 @@ Optional keys to include when known:
 - `reports_to`: free-string
 - `team_size`: int or string range
 - `comp_band`: free-string
-- `legitimacy`: one of `high` / `caution` / `suspicious` (see "Posting legitimacy verdict" below)
+- `posting_check`: one of `live` / `stale` / `dead` (see "Posting check" below)
 
 Body (below frontmatter): a short title-cased `# <Company>` heading + one paragraph orienting the company. Do NOT duplicate the research brief here — that's a separate file.
 
@@ -185,7 +185,7 @@ Hard rules:
 After files are written, print to chat (compact):
 
 ```
-Filed: <Company> / <Position> — tier <P0/P1/P2>, score <N>, legitimacy <🟢|🟡|🔴>.
+Filed: <Company> / <Position> — tier <P0/P1/P2>, score <N>, posting <🟢 looks live | 🟡 looks stale | 🔴 looks dead>.
   meta.md         → userdata/companies/<Company>/[<slug>/]meta.md
   research-brief  → userdata/companies/<Company>/[<slug>/]research-brief.md
   Status: new. Move to to_apply / applied as you act.
