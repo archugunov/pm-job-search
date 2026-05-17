@@ -83,11 +83,14 @@ Where `N = M + K`, `rejected` = meta.md with `status: rejected`, and `withdrew` 
 
 ### 5. `## Heads-up`
 
-Four bullet types, in this order; omit any bullet whose list is empty:
+Five bullet types, in this order; omit any bullet whose list is empty:
 
 - **Checkpoints due within 14d:** comma-separated list of `<date> (<condition>)`. Skip if none.
 - **Stale items (>14d in `applied` with no movement):** count and inline list, e.g. `2 — Klarna (16d), Monzo (21d)`. Skip if none.
 - **Shape-mismatch warning on active interviews.** Trigger: any meta.md with `status: interviewing` AND (`team_size > 150` OR the company body/research-brief mentions ">150 ppl") AND the company is NOT in any `target_industries` entry from profile.md AND no explicit equity / brand signal in research-brief. When triggered: `Shape mismatch — <Company> is interviewing but <signal recap>. Re-read the role-fit verdict before next round.` This is the hollowing-risk check: a big-co interview proceeding without the shape signals the user actually wants. Skip if no qualifying meta.
+- **Coach nudge.** Surfaces when a multi-week pattern suggests `pm-job-search:career-coach` would help diagnose. Two independent triggers — fire at most ONE per /today run; pick whichever is currently active and more severe. Skip if neither triggers.
+  - **Trigger A — cadence drift.** Weekly targets (`applications` AND/OR `warm_outreach`) missed by >50% for 3 weeks running. Compute by counting `date_applied` per 7-day window AND keyword-scanning journal per window across the last 21 days. When triggered: `Cadence under 50% three weeks running — pm-job-search:career-coach can help work out if the targets or the search itself needs a rethink.`
+  - **Trigger B — closing without applying.** ≥3 meta.md files have `status: closed` AND `strategy.md ## Anti-goals` section body is empty. (User is closing roles without applying — pattern suggests an unstated rule worth naming.) When triggered: `Closed <N> roles without applying — there's probably a pattern worth naming. Ask pm-job-search:career-coach to walk you through it.`
 - **Late-stage interview prompts.** Trigger: any company with `status: interviewing` AND `last_inbound` within the last 7 days. When triggered, list the company names on one line, then surface the three founder-vetting questions verbatim:
   - "What does a typical week look like — product vs meetings?"
   - "Where has the last HoP spent most political capital internally?"
