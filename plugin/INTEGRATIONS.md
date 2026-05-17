@@ -57,6 +57,8 @@ Claude calls the Granola MCP to fetch the matching meeting, extracts the transcr
 
 **MCP.** Look for a Gmail MCP supporting read + search. Tools typically named like `search_emails`, `get_email`. Most general inbox MCPs work — Outlook, Fastmail, etc. — as long as they expose read+search.
 
+**Install bar — be honest.** The official [Google Workspace Gmail MCP](https://developers.google.com/workspace/gmail) needs a Google Cloud project, enabled Gmail API, OAuth consent screen, and OAuth credentials — ~15-30 min for experienced users, longer first-time. Lighter alternatives that skip Cloud setup: third-party IMAP-based Gmail MCPs using an app password (read-only or limited write), or any inbox MCP for non-Google providers (Fastmail, Outlook, ProtonMail) with their own auth models. Pick based on whether you already have Cloud set up vs starting cold.
+
 **Example invocation:**
 
 > "Search my Gmail for the last 7 days of emails from any address containing 'recruiter', 'talent', or '@<company-domain>'. Summarise each in one line and append a new dated entry to `userdata/journal.md`."
@@ -76,6 +78,8 @@ Claude calls the inbox MCP, summarises, writes to journal. The journal entries t
 **Use case.** `/today`'s heads-up section already shows late-stage interview prompts for any company with `status: interviewing` AND `last_inbound` within 7 days. With a calendar MCP, you can additionally surface SPECIFIC scheduled interviews for the next 14 days — "you have Plaid CPO round Wed 14:00, Bark intro Thu 11:00" — without the user maintaining a separate file.
 
 **MCP.** A Google Calendar MCP (search "gcal MCP" for current options) or any iCal-format reader.
+
+**Install bar — be honest.** The [official Google Workspace Calendar MCP](https://developers.google.com/workspace/calendar/api/guides/configure-mcp-server) needs a Google Cloud project, enabled Calendar API, OAuth consent screen, and OAuth credentials — ~15-30 min for experienced users, longer first-time. Lighter alternatives that skip Cloud setup: iCal-feed-based MCPs (read-only, just the calendar's private iCal URL, polling-based so events may be stale), or non-Google calendar providers (Fastmail, Outlook) with their own MCPs. Pick based on whether you already have Cloud set up vs starting cold.
 
 **Example invocation:**
 

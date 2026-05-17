@@ -153,6 +153,18 @@ For each integration that's `not_installed` or `detected_but_not_wired`, render 
 See `${CLAUDE_PLUGIN_ROOT}/INTEGRATIONS.md` §<N> for install link.
 ```
 
+For Calendar and Gmail specifically, append the install-bar heads-up so users don't naively start the Google Cloud + OAuth journey thinking it's a quick MCP install:
+
+```markdown
+## calendar — not_installed
+Install bar: official Google MCP needs a Cloud project + OAuth (~30 min). Lighter iCal-feed alternatives exist with capability tradeoffs. See `${CLAUDE_PLUGIN_ROOT}/INTEGRATIONS.md` §3.
+
+## gmail — not_installed
+Install bar: official Google MCP needs a Cloud project + OAuth (~30 min). Lighter IMAP-based or non-Google-inbox alternatives exist with capability tradeoffs. See `${CLAUDE_PLUGIN_ROOT}/INTEGRATIONS.md` §2.
+```
+
+Granola has no install-bar heads-up — its MCP is a one-click install (or already installed if the user runs Granola).
+
 ## Closing summary
 
 Show 2-4 example invocations the user can paste, drawn from the integrations that were wired. Per TONE.md: stop after value is delivered, no upsells.
