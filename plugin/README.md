@@ -61,11 +61,11 @@ Five personas for reviewing any draft — case study, story, prep doc, take-home
 | `pm-job-search:eng-manager-reviewer` | Technical feasibility, engineering trade-offs, collaboration with engineers |
 | `pm-job-search:design-manager-reviewer` | UX judgement, craft, discovery rigour, how designers are treated |
 | `pm-job-search:interview-coach` | Narrative, clarity, voice authenticity, how the candidate comes across |
-| `pm-job-search:career-coach` | Positioning, market readability, offer leverage, whether the artefact serves the bigger plan |
+| `pm-job-search:career-coach` | Search-strategy work — positioning, outreach, anti-goals, cadence rebalancing, offer evaluation, "something feels off and I can't name it" diagnostics. Broader than the other four; covers the whole career arc. |
 
 Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`. Pass `--save <Company>` and a company arg to also write the review to `userdata/companies/<Co>/review-<persona>-<date>.md`.
 
-`pm-job-search:career-coach` is also invoked by `/pm-job-search:setup`'s closing positioning-helper offer — a ~5-minute interview that proposes a sharpened `## Positioning` paragraph for you to paste into `profile.md`.
+`pm-job-search:career-coach` is the home for any deeper strategy work. `/pm-job-search:setup` writes a minimal `strategy.md` (target date + auto-derived weekly cadences + auto-composed headline goal) and defers everything else — anti-goals, checkpoints, target tuning, rubric calibration — to a conversation with career-coach. Invoke by natural language ("got an offer to weigh", "I'm stuck and don't know why", "help me think through what I won't do this search"). The agent diagnoses what's actually wrong before proposing a fix, and routes to the right mechanic (rubric tuning vs anti-goal vs cadence change vs positioning rework). Also invoked by `/setup`'s closing positioning-helper offer — a ~5-minute interview that proposes a sharpened `## Positioning` paragraph for you to paste into `profile.md`.
 
 ## What's in `userdata/examples/`
 
