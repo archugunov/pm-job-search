@@ -65,3 +65,16 @@ def _strip_quotes(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
         return value[1:-1]
     return value
+
+
+_SLUG_RE = re.compile(r"[^a-z0-9]+")
+
+
+def position_slug(position: str) -> str:
+    """Lowercase, replace runs of non-alphanumeric with a single hyphen, trim hyphens.
+
+    "Senior PM, Consumer Credit" -> "senior-pm-consumer-credit"
+    """
+    lowered = position.lower()
+    hyphenated = _SLUG_RE.sub("-", lowered)
+    return hyphenated.strip("-")
