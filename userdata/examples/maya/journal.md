@@ -1,5 +1,14 @@
 # Journal
 
+## 2026-05-15
+- [Plaid] CPO round scheduled Thu 2026-05-21 14:00. (source: calendar, confirmed)
+- [Klarna] Recruiter Anna replied — wants intro call next week, will send slots. (source: gmail, confirmed)
+- Mock with Sasha on the pricing-experiment story — landed better than the Stripe take-home version. Saving the new opening to the bank. (source: user)
+
+## 2026-05-14
+- [Klarna] Tier-evaluated via /evaluate-position — P0, archetype fits. Status to_apply. (source: user)
+- Energy fine; warm-outreach felt forced today. Skipped the second DM. (source: user)
+
 ## 2026-05-13
 
 - Plaid 2nd-round panel went well. Lots of depth on the pricing-experiment story; almost no time on activation. Next round is with the CPO.
