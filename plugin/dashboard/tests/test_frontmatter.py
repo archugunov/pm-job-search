@@ -75,3 +75,23 @@ def test_ignores_lines_starting_with_hash_inside_frontmatter():
         """)
     fm, _ = parse_frontmatter(md)
     assert fm == {"company": "Plaid"}
+
+
+def test_skips_leading_html_comments_before_frontmatter():
+    md = dedent("""\
+        <!-- Example file. Replace with your own via /setup. -->
+        <!--
+          Multi-line comment block
+          with documentation for humans reading the source.
+        -->
+        ---
+        company: Plaid
+        tier: P0
+        ---
+
+        body
+        """)
+    fm, body = parse_frontmatter(md)
+    assert fm["company"] == "Plaid"
+    assert fm["tier"] == "P0"
+    assert body.strip() == "body"

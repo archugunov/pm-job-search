@@ -57,3 +57,12 @@ def test_state_endpoint_returns_null_brief_when_absent(running_server: str, user
 def test_state_endpoint_returns_userdata_root_absolute(running_server: str, userdata: Path):
     body = _get_json(f"{running_server}/api/state")
     assert body["userdata_root"] == str(userdata.resolve())
+
+
+def test_state_endpoint_returns_weekly_progress_shape(running_server: str):
+    body = _get_json(f"{running_server}/api/state")
+    wp = body["weekly_progress"]
+    assert set(wp.keys()) == {"warm_outreach", "applications", "window_days"}
+    assert wp["window_days"] == 7
+    assert isinstance(wp["warm_outreach"], int)
+    assert isinstance(wp["applications"], int)
