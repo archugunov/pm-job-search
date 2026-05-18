@@ -71,7 +71,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
               >
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th w={50}>Tier</Table.Th>
+                    <Table.Th w={70}>Tier</Table.Th>
                     <Table.Th>Company / Position</Table.Th>
                     <Table.Th w={140}>Status</Table.Th>
                     <Table.Th w={70}>Last</Table.Th>

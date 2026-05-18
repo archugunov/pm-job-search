@@ -1,12 +1,10 @@
 import { Alert, Box, Container, Grid, Loader, Stack } from "@mantine/core";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { fetchState } from "./api";
 import { ApplicationsTable } from "./components/ApplicationsTable";
-import { InsightsCard } from "./components/InsightsCard";
 import { PipelineStats } from "./components/PipelineStats";
 import { TodaySection } from "./components/TodaySection";
-import { extractSection } from "./components/briefMarkdown";
 import type { DashboardState } from "./types";
 
 export function App() {
@@ -26,11 +24,6 @@ export function App() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
-
-  const headsUp = useMemo(() => {
-    if (!state?.latest_brief) return null;
-    return extractSection(state.latest_brief.markdown, /^##\s+heads[-\s]?up/i);
-  }, [state?.latest_brief]);
 
   if (error) {
     return (
@@ -53,7 +46,6 @@ export function App() {
         <Grid.Col span={{ base: 12, md: 8 }}>
           <Stack gap="md">
             <PipelineStats companies={state.companies} strategy={state.strategy} />
-            {headsUp && <InsightsCard markdown={headsUp} />}
             <ApplicationsTable companies={state.companies} onChange={refresh} />
           </Stack>
         </Grid.Col>

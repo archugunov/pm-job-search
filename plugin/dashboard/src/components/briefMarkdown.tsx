@@ -21,24 +21,3 @@ export const briefMdComponents: Components = {
     </Text>
   ),
 };
-
-// Extract a single H2-bounded section from markdown, by heading regex.
-// Returns the section body (lines between the matching ## heading and the next ## heading or EOF).
-export function extractSection(markdown: string, headingPattern: RegExp): string | null {
-  if (!markdown) return null;
-  const lines = markdown.split("\n");
-  let inSection = false;
-  const captured: string[] = [];
-  for (const line of lines) {
-    if (line.startsWith("## ")) {
-      if (inSection) break; // next H2 starts — stop
-      if (headingPattern.test(line)) {
-        inSection = true;
-        continue;
-      }
-    }
-    if (inSection) captured.push(line);
-  }
-  const body = captured.join("\n").trim();
-  return body.length > 0 ? body : null;
-}
