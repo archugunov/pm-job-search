@@ -9,10 +9,12 @@ import json as _json
 import os
 import re
 import tempfile
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from socketserver import TCPServer
 from typing import Any
+from urllib.parse import unquote
 
 
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
@@ -250,6 +252,38 @@ def _make_handler(
                 return
             self._send_status(404, b"not found")
 
+        def do_PATCH(self) -> None:  # noqa: N802
+            if self.path.startswith("/api/positions/") and self.path.endswith("/status"):
+                self._handle_status_patch()
+                return
+            self._send_status(404, b"not found")
+
+        def _handle_status_patch(self) -> None:
+            folder_path = self.path[len("/api/positions/") : -len("/status")]
+            meta_path = _resolve_meta_path(userdata_root, folder_path)
+            if meta_path is None:
+                self._send_status(400, b"invalid folder_path")
+                return
+            if not meta_path.is_file():
+                self._send_status(404, b"company not found")
+                return
+            try:
+                body = self._read_json_body()
+            except _json.JSONDecodeError:
+                self._send_status(400, b"invalid json")
+                return
+            new_status = body.get("status")
+            if not isinstance(new_status, str) or not new_status:
+                self._send_status(400, b"missing status")
+                return
+            try:
+                new_md = rewrite_status(meta_path.read_text(encoding="utf-8"), new_status)
+            except ValueError as e:
+                self._send_status(409, str(e).encode())
+                return
+            atomic_write(meta_path, new_md)
+            self._send_json(200, {"ok": True})
+
         def _handle_state(self) -> None:
             payload = {
                 "companies": collect_companies(userdata_root),
@@ -303,6 +337,19 @@ def _make_handler(
             return _json.loads(raw) if raw else {}
 
     return Handler
+
+
+def _resolve_meta_path(userdata_root: Path, folder_path: str) -> Path | None:
+    """Resolve a folder_path from the URL to a meta.md path, refusing traversal."""
+    decoded = unquote(folder_path)
+    if not decoded or ".." in decoded.split("/") or decoded.startswith("/"):
+        return None
+    target = (userdata_root / "companies" / decoded / "meta.md").resolve()
+    try:
+        target.relative_to((userdata_root / "companies").resolve())
+    except ValueError:
+        return None
+    return target
 
 
 def _guess_content_type(name: str) -> str:
