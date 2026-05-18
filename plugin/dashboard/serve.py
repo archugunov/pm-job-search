@@ -5,10 +5,14 @@ or one HTTP endpoint via TDD.
 """
 from __future__ import annotations
 
+import argparse
 import json as _json
 import os
 import re
+import signal
+import sys
 import tempfile
+import webbrowser
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -535,3 +539,64 @@ def build_server(
             last_err = e
             continue
     raise RuntimeError(f"no free port in {preferred_port}-{preferred_port+9}") from last_err
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="pm-dashboard")
+    parser.add_argument("--userdata", required=True, type=Path,
+                        help="Path to the workspace's userdata/ directory")
+    parser.add_argument("--dist", default=None, type=Path,
+                        help="Path to the built dashboard dist/ (defaults to ./dist relative to this file)")
+    parser.add_argument("--port", default=7890, type=int)
+    parser.add_argument("--no-open", action="store_true")
+    args = parser.parse_args(argv)
+
+    userdata_root = args.userdata.expanduser().resolve()
+    if not userdata_root.is_dir():
+        print(f"error: userdata directory not found: {userdata_root}", file=sys.stderr)
+        return 1
+
+    dist_dir = args.dist or (Path(__file__).parent / "dist")
+    dist_dir = dist_dir.expanduser().resolve()
+    if not dist_dir.is_dir():
+        print(
+            f"error: dashboard bundle not found at {dist_dir}.\n"
+            "If you're a contributor, build it first: cd plugin/dashboard && npm install && npm run build",
+            file=sys.stderr,
+        )
+        return 1
+
+    try:
+        server, port = build_server(
+            userdata_root=userdata_root,
+            preferred_port=args.port,
+            dist_dir=dist_dir,
+        )
+    except RuntimeError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    url = f"http://localhost:{port}"
+    print(f"pm-job-search dashboard: {url}", flush=True)
+    print("Press ctrl-C to stop.", flush=True)
+
+    if not args.no_open:
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
+
+    def _handle_sigint(_signum: int, _frame: Any) -> None:
+        print("\nshutting down...", flush=True)
+        server.shutdown()
+
+    signal.signal(signal.SIGINT, _handle_sigint)
+    try:
+        server.serve_forever()
+    finally:
+        server.server_close()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
