@@ -18,7 +18,8 @@ Synthetic reference install for pm-job-search. Demonstrates a lived-in state at 
 - Trigger C condition 3 (cadence-drift escalation) — reachable by emulating /today 4 weeks forward from 2026-05-18 (weekly target gaps would compound).
 
 Trigger A (cadence drift 3 weeks), Trigger B (closed-without-applying + empty anti-goals), and Trigger C conditions 1 and 2 are NOT cleanly reachable from this install as shipped:
-- Trigger A and Trigger C condition 3 — would require simulated longer time history; the install has 4 weeks of journal which is at the cusp.
+- Trigger A — fires from this install as shipped: three consecutive application weeks under 50% target (0/3, 0/3, 1/3 for the windows ending 2026-05-18). No forward emulation needed.
+- Trigger C condition 3 — would require simulated longer time history (Trigger A firing in 4+ consecutive /today runs, which would require persistent state or 4 weeks of continued cadence drift).
 - Trigger B — Maya has 5 populated anti-goals in `strategy.md` (the populated state is part of her persona). To exercise Trigger B locally, comment out the anti-goal bullets in `strategy.md` and re-run /today.
 - Trigger C condition 1 (long search, thin pipeline) — Maya has 2 active interviews and 1 offer; condition requires <2 interviews + 0 offers. Diego's install demonstrates this.
 - Trigger C condition 2 (pattern-of-rejection same stage) — Maya has only 1 rejection (Stripe at take-home); condition requires 3. Diego's install demonstrates this.
