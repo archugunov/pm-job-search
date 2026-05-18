@@ -1,0 +1,16 @@
+userdata/*
+!userdata/examples/
+!userdata/.gitkeep
+.env
+.DS_Store
+.claude/
+.superpowers/
+SPEC.md
+/docs/
+# Dashboard build deps and artefacts
+plugin/dashboard/node_modules/
+.venv/
+**/.venv/
+**/*.tsbuildinfo
+plugin/dashboard/vite.config.d.ts
+plugin/dashboard/vite.config.js
