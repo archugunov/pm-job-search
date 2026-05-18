@@ -69,6 +69,7 @@ def _strip_quotes(value: str) -> str:
 
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
+_BRIEF_NAME_RE = re.compile(r"^daily-brief-(\d{4}-\d{2}-\d{2})\.md$")
 
 
 def position_slug(position: str) -> str:
@@ -191,3 +192,20 @@ def _build_record(
         if field in fm:
             record[field] = fm[field]
     return record
+
+
+def latest_brief(userdata_root: Path) -> dict[str, str] | None:
+    """Return {date, markdown} for the most recent daily-brief, or None if absent."""
+    outputs = userdata_root / "outputs"
+    if not outputs.is_dir():
+        return None
+    candidates: list[tuple[str, Path]] = []
+    for path in outputs.iterdir():
+        m = _BRIEF_NAME_RE.match(path.name)
+        if m:
+            candidates.append((m.group(1), path))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda pair: pair[0], reverse=True)
+    date, path = candidates[0]
+    return {"date": date, "markdown": path.read_text(encoding="utf-8")}
