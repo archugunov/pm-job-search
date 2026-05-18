@@ -42,7 +42,16 @@ export function TodaySection({ brief }: Props) {
             From {brief.date} — run <Text component="code">/today</Text> to refresh.
           </Alert>
         )}
-        <ScrollArea style={{ flex: 1, minHeight: 0 }} type="hover" scrollHideDelay={300}>
+        <ScrollArea
+          style={{ flex: 1, minHeight: 0 }}
+          type="hover"
+          scrollHideDelay={500}
+          scrollbarSize={6}
+          styles={{
+            thumb: { backgroundColor: "rgba(255,255,255,0.12)" },
+            scrollbar: { transition: "opacity 300ms ease" },
+          }}
+        >
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={briefMdComponents}>
             {brief.markdown}
           </ReactMarkdown>
