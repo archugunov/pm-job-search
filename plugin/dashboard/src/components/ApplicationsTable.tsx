@@ -71,7 +71,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
               </Group>
             </Accordion.Control>
             <Accordion.Panel>
-              <Table highlightOnHover verticalSpacing="xs" layout="fixed">
+              <Table highlightOnHover highlightOnHoverColor="dark.5" verticalSpacing="xs" layout="fixed">
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th w={60}>Tier</Table.Th>
@@ -84,7 +84,11 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                 </Table.Thead>
                 <Table.Tbody>
                   {group.rows.map((p) => (
-                    <Table.Tr key={p.folder_path}>
+                    <Table.Tr
+                      key={p.folder_path}
+                      style={{ cursor: "pointer" }}
+                      onClick={() => setNotePosition(p)}
+                    >
                       <Table.Td>
                         <Badge color={TIER_COLORS[p.tier] ?? "gray"}>{p.tier || "—"}</Badge>
                       </Table.Td>
@@ -94,7 +98,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                       <Table.Td>
                         <Text>{p.position || <Text component="span" c="dimmed">(pending)</Text>}</Text>
                       </Table.Td>
-                      <Table.Td>
+                      <Table.Td onClick={(e) => e.stopPropagation()}>
                         <StatusSelect
                           folderPath={p.folder_path}
                           current={p.status}
@@ -110,7 +114,10 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                           variant="light"
                           radius="xl"
                           leftSection={<IconPlus size={12} />}
-                          onClick={() => setNotePosition(p)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNotePosition(p);
+                          }}
                         >
                           note
                         </Button>
