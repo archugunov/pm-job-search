@@ -1,26 +1,4 @@
 <!-- Example file. Replace with your own via /setup. -->
-<!--
-  pm-job-search — strategy template.
-
-  /setup writes a populated copy of this file to userdata/strategy.md when you
-  install: target_offer_date from Q11, weekly_targets + pipeline_targets
-  auto-derived from your timeline (see /setup SKILL.md for the cadence table),
-  and the headline goal auto-composed from your profile.md.
-
-  Deeper sections (## Anti-goals, checkpoints) start empty. To fill them in:
-  - Edit this file directly, OR
-  - Ask `pm-job-search:career-coach` ("help me think through my anti-goals",
-    "set my checkpoints", "rebalance my weekly cadence") — the agent walks
-    you through one theme at a time and proposes edits for you to paste.
-
-  This file drives the progress-tracking behaviour of /today. Any unset value
-  (null) is gracefully skipped — /today doesn't report against numbers you
-  haven't committed to.
-
-  This example file shows Maya's strategy after she ran /setup and edited
-  the auto-derived cadences down to a level she could sustain, plus added
-  her own anti-goals and checkpoints via the career-coach agent.
--->
 ---
 # YYYY-MM-DD — when "done" should happen.
 target_offer_date: 2026-08-01

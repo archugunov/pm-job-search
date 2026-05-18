@@ -11,7 +11,3 @@ Recruiter screen with Lisa. Role is on the Lending + Credit team — perfect fit
 ## 2026-05-10 09:15
 
 HM interview with Tom. Good conversation; he pushed hard on "how do you balance product velocity with credit risk discipline?" Used the activation-funnel story. Felt solid.
-
-## 2026-05-15 11:00
-
-Tom sent a polite rejection via email. Cited "going with a candidate who has more direct consumer-credit experience." Disappointing — but the domain-fit concern was real. Flag for re-engagement if a Senior PM role on their Compliance or Identity surfaces opens.
