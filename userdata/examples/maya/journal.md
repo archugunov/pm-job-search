@@ -1,7 +1,7 @@
 # Journal
 
 ## 2026-05-15
-- [Plaid] CPO round scheduled Thu 2026-05-21 14:00. (source: calendar, confirmed)
+- [Plaid] CPO round (Consumer Credit) scheduled Thu 2026-05-21 14:00. (source: calendar, confirmed)
 - [Klarna] Recruiter Anna replied — wants intro call next week, will send slots. (source: gmail, confirmed)
 - Mock with Sasha on the pricing-experiment story — landed better than the Stripe take-home version. Saving the new opening to the bank. (source: user)
 
