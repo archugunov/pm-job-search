@@ -5,7 +5,10 @@ or one HTTP endpoint via TDD.
 """
 from __future__ import annotations
 
+import os
 import re
+import tempfile
+from pathlib import Path
 from typing import Tuple
 
 
@@ -108,3 +111,23 @@ def rewrite_status(md: str, new_status: str) -> str:
         raise ValueError("no status line in frontmatter")
 
     return f"---\n{new_block}\n---\n{body}"
+
+
+def atomic_write(target: Path, content: str) -> None:
+    """Write content to target atomically: write to temp file in same dir, then rename.
+
+    Creates the target's parent directory if missing.
+    """
+    target.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_path_str = tempfile.mkstemp(
+        prefix=f".{target.name}.",
+        suffix=".tmp",
+        dir=str(target.parent),
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(content)
+        os.replace(tmp_path_str, target)
+    except Exception:
+        Path(tmp_path_str).unlink(missing_ok=True)
+        raise
