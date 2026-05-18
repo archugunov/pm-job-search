@@ -13,7 +13,7 @@ import signal
 import sys
 import tempfile
 import webbrowser
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from socketserver import TCPServer
@@ -23,6 +23,7 @@ from urllib.parse import unquote
 
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
 _INDENT_RE = re.compile(r"^(\s+)(\S)")
+_LEADING_NOISE_RE = re.compile(r"\A(?:\s+|<!--.*?-->\s*)+", re.DOTALL)
 
 
 def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
@@ -32,10 +33,16 @@ def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
     strings (quotes stripped). Nested one-level mappings are flattened with
     dot-notation keys, e.g. `weekly_targets.outreach` -> "7".
 
+    Leading blank lines and HTML comment blocks before the opening `---`
+    are skipped, so template files can carry inline documentation above
+    the frontmatter without breaking the parse.
+
     Lines starting with '#' inside the frontmatter are treated as comments
     and ignored. Returns ({}, original_md) if no frontmatter present.
     """
-    match = _FRONTMATTER_RE.match(md)
+    noise = _LEADING_NOISE_RE.match(md)
+    trimmed = md[noise.end():] if noise else md
+    match = _FRONTMATTER_RE.match(trimmed)
     if not match:
         return {}, md
 
@@ -271,6 +278,18 @@ def _make_handler(
                 return
             self._send_status(404, b"not found")
 
+        def do_PUT(self) -> None:  # noqa: N802
+            if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
+                self._handle_note_mutate(op="edit")
+                return
+            self._send_status(404, b"not found")
+
+        def do_DELETE(self) -> None:  # noqa: N802
+            if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
+                self._handle_note_mutate(op="delete")
+                return
+            self._send_status(404, b"not found")
+
         def _handle_notes_get(self) -> None:
             folder_path = self.path[len("/api/positions/") : -len("/notes")]
             meta_path = _resolve_meta_path(userdata_root, folder_path)
@@ -331,10 +350,48 @@ def _make_handler(
             append_note(meta_path.parent / "notes.md", company, position, note)
             self._send_json(200, {"ok": True})
 
+        def _handle_note_mutate(self, *, op: str) -> None:
+            folder_path = self.path[len("/api/positions/") : -len("/notes")]
+            meta_path = _resolve_meta_path(userdata_root, folder_path)
+            if meta_path is None:
+                self._send_status(400, b"invalid folder_path")
+                return
+            notes_path = meta_path.parent / "notes.md"
+            if not notes_path.is_file():
+                self._send_status(404, b"notes file not found")
+                return
+            try:
+                body = self._read_json_body()
+            except _json.JSONDecodeError:
+                self._send_status(400, b"invalid json")
+                return
+            index = body.get("index")
+            heading = body.get("heading")
+            if not isinstance(index, int) or not isinstance(heading, str) or not heading.strip():
+                self._send_status(400, b"missing index or heading")
+                return
+            current_md = notes_path.read_text(encoding="utf-8")
+            try:
+                if op == "edit":
+                    new_body = body.get("body")
+                    if not isinstance(new_body, str) or not new_body.strip():
+                        self._send_status(400, b"missing body")
+                        return
+                    new_md = edit_note(current_md, index, heading, new_body)
+                else:  # op == "delete"
+                    new_md = delete_note(current_md, index, heading)
+            except ValueError as e:
+                self._send_status(409, str(e).encode())
+                return
+            atomic_write(notes_path, new_md)
+            self._send_json(200, {"ok": True})
+
         def _handle_state(self) -> None:
+            companies = collect_companies(userdata_root)
             payload = {
-                "companies": collect_companies(userdata_root),
+                "companies": companies,
                 "strategy": read_strategy(userdata_root),
+                "weekly_progress": compute_weekly_progress(userdata_root, companies),
                 "latest_brief": latest_brief(userdata_root),
                 "userdata_root": str(userdata_root.resolve()),
             }
@@ -408,6 +465,192 @@ def append_note(notes_path: Path, company: str, position: str, note: str) -> Non
         atomic_write(notes_path, header + entry)
         return
     atomic_write(notes_path, notes_path.read_text(encoding="utf-8") + entry)
+
+
+def split_notes(md: str) -> tuple[str, list[tuple[str, str]]]:
+    """Split a notes.md file into (preamble, [(heading, body), ...]).
+
+    Preamble is everything before the first `## ` heading (typically the `# Notes — …` title).
+    Each entry's body keeps its original spacing minus the heading line itself.
+    """
+    preamble: list[str] = []
+    entries: list[tuple[str, list[str]]] = []
+    current: tuple[str, list[str]] | None = None
+    for line in md.splitlines(keepends=True):
+        m = re.match(r"^##\s+(.+?)\s*\n?$", line)
+        if m:
+            if current is not None:
+                entries.append(current)
+            current = (m.group(1).strip(), [])
+        else:
+            if current is None:
+                preamble.append(line)
+            else:
+                current[1].append(line)
+    if current is not None:
+        entries.append(current)
+    return "".join(preamble), [(h, "".join(b)) for h, b in entries]
+
+
+def _join_notes(preamble: str, entries: list[tuple[str, str]]) -> str:
+    """Inverse of split_notes — rebuild the file with the canonical append_note spacing."""
+    parts: list[str] = []
+    if preamble:
+        parts.append(preamble.rstrip("\n") + "\n" if preamble.strip() else preamble)
+    for heading, body in entries:
+        parts.append(f"\n## {heading}\n\n{body.strip()}\n")
+    return "".join(parts)
+
+
+def edit_note(md: str, index: int, expected_heading: str, new_body: str) -> str:
+    """Replace the body of the note at `index`. Heading is preserved."""
+    if not new_body.strip():
+        raise ValueError("note body cannot be empty")
+    preamble, entries = split_notes(md)
+    if not 0 <= index < len(entries):
+        raise ValueError(f"note index {index} out of range (0-{len(entries) - 1})")
+    actual_heading = entries[index][0]
+    if actual_heading != expected_heading:
+        raise ValueError(
+            f"heading mismatch at index {index}: expected {expected_heading!r}, found {actual_heading!r}"
+        )
+    entries[index] = (actual_heading, new_body)
+    return _join_notes(preamble, entries)
+
+
+def delete_note(md: str, index: int, expected_heading: str) -> str:
+    """Drop the note at `index`. Verifies the heading matches as a concurrency check."""
+    preamble, entries = split_notes(md)
+    if not 0 <= index < len(entries):
+        raise ValueError(f"note index {index} out of range (0-{len(entries) - 1})")
+    if entries[index][0] != expected_heading:
+        raise ValueError(
+            f"heading mismatch at index {index}: expected {expected_heading!r}, found {entries[index][0]!r}"
+        )
+    entries.pop(index)
+    return _join_notes(preamble, entries)
+
+
+# -- Weekly progress -----------------------------------------------------------
+#
+# Mirrors the /today skill's contract (plugin/skills/today/SKILL.md §70):
+#   - warm_outreach: count of journal.md bullets in the last 7 days that mention
+#     any of the keywords below. Each bullet contributes at most 1.
+#   - applications: count of meta.md files with date_applied in the last 7 days.
+# Window is rolling: [today − 6, today] inclusive.
+
+_WARM_OUTREACH_KEYWORDS = (
+    "DM",
+    "outreach",
+    "coffee",
+    "intro",
+    "intro ask",
+    "reached out",
+    "messaged",
+    "connect",
+)
+
+_WARM_OUTREACH_RE = re.compile(
+    r"\b(" + "|".join(re.escape(k) for k in _WARM_OUTREACH_KEYWORDS) + r")\b",
+    re.IGNORECASE,
+)
+
+_JOURNAL_HEADING_RE = re.compile(r"^##\s+(.*?)\s*$")
+_JOURNAL_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})$")
+_BULLET_START_RE = re.compile(r"^\s*[-*]\s")
+
+
+def read_journal(userdata_root: Path) -> str:
+    """Return the raw contents of userdata/journal.md, or '' if missing."""
+    journal_path = userdata_root / "journal.md"
+    if not journal_path.is_file():
+        return ""
+    return journal_path.read_text(encoding="utf-8")
+
+
+def count_warm_outreach(journal_md: str, today: date) -> int:
+    """Count distinct journal bullets mentioning a warm-outreach keyword in the last 7 days.
+
+    Each bullet (top-level `- …` or `* …`) within the window contributes at most one
+    to the count, even if it contains multiple keywords. Continuation lines (indented
+    text following a bullet) count as part of the same bullet for keyword matching.
+    Bullets under dated headings outside [today − 6, today] are skipped.
+    Malformed date headings (non-ISO) close the window until the next valid one.
+    """
+    if not journal_md.strip():
+        return 0
+
+    window_start = today - timedelta(days=6)
+    count = 0
+    in_window = False
+    bullet_lines: list[str] = []
+
+    def _flush() -> int:
+        if bullet_lines and _WARM_OUTREACH_RE.search("\n".join(bullet_lines)):
+            return 1
+        return 0
+
+    for line in journal_md.splitlines():
+        heading = _JOURNAL_HEADING_RE.match(line)
+        if heading:
+            # Any `## ` heading closes the current bullet and resets scope.
+            # Only ISO-date headings open a new in-window section.
+            count += _flush()
+            bullet_lines = []
+            date_match = _JOURNAL_DATE_RE.match(heading.group(1))
+            if date_match:
+                try:
+                    entry_date = date.fromisoformat(date_match.group(1))
+                except ValueError:
+                    in_window = False
+                    continue
+                in_window = window_start <= entry_date <= today
+            else:
+                in_window = False
+            continue
+
+        if not in_window:
+            continue
+
+        if _BULLET_START_RE.match(line):
+            count += _flush()
+            bullet_lines = [line]
+        elif bullet_lines:
+            bullet_lines.append(line)
+
+    count += _flush()
+    return count
+
+
+def count_recent_applications(companies: list[dict[str, Any]], today: date) -> int:
+    """Count positions whose date_applied falls in [today − 6, today]."""
+    window_start = today - timedelta(days=6)
+    count = 0
+    for p in companies:
+        raw = p.get("date_applied")
+        if not isinstance(raw, str) or not raw:
+            continue
+        try:
+            applied = date.fromisoformat(raw)
+        except ValueError:
+            continue
+        if window_start <= applied <= today:
+            count += 1
+    return count
+
+
+def compute_weekly_progress(
+    userdata_root: Path,
+    companies: list[dict[str, Any]],
+    today: date | None = None,
+) -> dict[str, Any]:
+    """Build the {warm_outreach, applications, window_days} payload for /api/state."""
+    today = today or date.today()
+    return {
+        "warm_outreach": count_warm_outreach(read_journal(userdata_root), today),
+        "applications": count_recent_applications(companies, today),
+        "window_days": 7,
+    }
 
 
 def _guess_content_type(name: str) -> str:

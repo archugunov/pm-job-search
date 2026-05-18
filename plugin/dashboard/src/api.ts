@@ -48,3 +48,30 @@ export async function fetchNotes(folderPath: string): Promise<string> {
   const body = await jsonOrThrow<{ markdown: string }>(res);
   return body.markdown;
 }
+
+export async function editNote(
+  folderPath: string,
+  index: number,
+  heading: string,
+  body: string,
+): Promise<void> {
+  const res = await fetch(`/api/positions/${encodeURIComponent(folderPath)}/notes`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index, heading, body }),
+  });
+  await jsonOrThrow<{ ok: true }>(res);
+}
+
+export async function deleteNote(
+  folderPath: string,
+  index: number,
+  heading: string,
+): Promise<void> {
+  const res = await fetch(`/api/positions/${encodeURIComponent(folderPath)}/notes`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ index, heading }),
+  });
+  await jsonOrThrow<{ ok: true }>(res);
+}

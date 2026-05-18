@@ -38,9 +38,16 @@ export interface DailyBrief {
   markdown: string;
 }
 
+export interface WeeklyProgress {
+  warm_outreach: number;
+  applications: number;
+  window_days: number;
+}
+
 export interface DashboardState {
   companies: Position[];
   strategy: Strategy;
+  weekly_progress: WeeklyProgress;
   latest_brief: DailyBrief | null;
   userdata_root: string;
 }

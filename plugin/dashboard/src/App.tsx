@@ -1,4 +1,4 @@
-import { Alert, Box, Container, Grid, Loader, Stack } from "@mantine/core";
+import { Alert, Box, Container, Grid, Loader } from "@mantine/core";
 import { useCallback, useEffect, useState } from "react";
 
 import { fetchState } from "./api";
@@ -44,14 +44,27 @@ export function App() {
     <Container size="xl" py="md">
       <Grid gutter="md">
         <Grid.Col span={{ base: 12, md: 8 }}>
-          <Stack gap="md">
-            <PipelineStats companies={state.companies} strategy={state.strategy} />
-            <ApplicationsTable companies={state.companies} onChange={refresh} />
-          </Stack>
+          <ApplicationsTable companies={state.companies} onChange={refresh} />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
-          <Box style={{ position: "sticky", top: 16, height: "calc(100vh - 32px)" }}>
-            <TodaySection brief={state.latest_brief} />
+          <Box
+            style={{
+              position: "sticky",
+              top: 16,
+              height: "calc(100vh - 32px)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+            }}
+          >
+            <PipelineStats
+              companies={state.companies}
+              strategy={state.strategy}
+              weeklyProgress={state.weekly_progress}
+            />
+            <Box style={{ flex: 1, minHeight: 0 }}>
+              <TodaySection brief={state.latest_brief} />
+            </Box>
           </Box>
         </Grid.Col>
       </Grid>

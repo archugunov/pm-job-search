@@ -1,21 +1,27 @@
-import { Select } from "@mantine/core";
+import { Box, Group, Select, Text } from "@mantine/core";
 import { useState } from "react";
 
 import { patchStatus } from "../api";
-
-const STATUS_OPTIONS = [
-  "new",
-  "applied",
-  "interviewing",
-  "offer",
-  "rejected",
-  "closed",
-];
+import { STATUS_KEYS, statusColor } from "../statusColors";
 
 interface Props {
   folderPath: string;
   current: string;
   onChange: () => void;
+}
+
+function StatusDot({ status, size = 8 }: { status: string; size?: number }) {
+  return (
+    <Box
+      w={size}
+      h={size}
+      style={{
+        borderRadius: "50%",
+        backgroundColor: statusColor(status),
+        flexShrink: 0,
+      }}
+    />
+  );
 }
 
 export function StatusSelect({ folderPath, current, onChange }: Props) {
@@ -25,9 +31,19 @@ export function StatusSelect({ folderPath, current, onChange }: Props) {
   return (
     <Select
       size="xs"
-      data={STATUS_OPTIONS}
+      radius={9999}
+      variant="filled"
+      data={STATUS_KEYS}
       value={value}
       disabled={saving}
+      leftSection={<StatusDot status={value} />}
+      leftSectionWidth={22}
+      renderOption={({ option, checked }) => (
+        <Group gap="xs" align="center">
+          <StatusDot status={option.value} />
+          <Text size="sm" fw={checked ? 600 : 400}>{option.label}</Text>
+        </Group>
+      )}
       onChange={async (next) => {
         if (!next || next === value) return;
         setSaving(true);

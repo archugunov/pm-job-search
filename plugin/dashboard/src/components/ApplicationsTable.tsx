@@ -1,8 +1,8 @@
 import {
   Accordion,
   Badge,
+  Box,
   Group,
-  SegmentedControl,
   Stack,
   Table,
   Text,
@@ -10,10 +10,9 @@ import {
 import { useMemo, useState } from "react";
 
 import type { Position } from "../types";
+import { STATUS_KEYS, statusColor } from "../statusColors";
 import { NoteDrawer } from "./NoteDrawer";
 import { StatusSelect } from "./StatusSelect";
-
-type GroupKey = "Status" | "Tier";
 
 interface Props {
   companies: Position[];
@@ -27,21 +26,14 @@ const TIER_COLORS: Record<string, string> = {
   P3: "gray",
 };
 
+
 export function ApplicationsTable({ companies, onChange }: Props) {
-  const [groupBy, setGroupBy] = useState<GroupKey>("Status");
   const [notePosition, setNotePosition] = useState<Position | null>(null);
 
-  const groups = useMemo(() => buildGroups(companies, groupBy), [companies, groupBy]);
+  const groups = useMemo(() => buildGroups(companies), [companies]);
 
   return (
     <Stack gap="md">
-      <SegmentedControl
-        data={["Status", "Tier"]}
-        value={groupBy}
-        onChange={(v) => setGroupBy(v as GroupKey)}
-        w="fit-content"
-      />
-
       <Accordion
         multiple
         variant="separated"
@@ -57,7 +49,16 @@ export function ApplicationsTable({ companies, onChange }: Props) {
         {groups.map((group) => (
           <Accordion.Item key={group.key} value={group.key}>
             <Accordion.Control>
-              <Group gap="sm" align="baseline">
+              <Group gap="sm" align="center">
+                <Box
+                  w={10}
+                  h={10}
+                  style={{
+                    borderRadius: "50%",
+                    backgroundColor: statusColor(group.key),
+                    flexShrink: 0,
+                  }}
+                />
                 <Text fz="lg" fw={700} tt="capitalize">{group.label}</Text>
                 <Badge variant="light" size="lg">{group.rows.length}</Badge>
               </Group>
@@ -73,7 +74,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                   <Table.Tr>
                     <Table.Th w={70}>Tier</Table.Th>
                     <Table.Th>Company / Position</Table.Th>
-                    <Table.Th w={140}>Status</Table.Th>
+                    <Table.Th w={150}>Status</Table.Th>
                     <Table.Th w={70}>Last</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
@@ -129,19 +130,15 @@ interface GroupBucket {
   rows: Position[];
 }
 
-const STATUS_ORDER = ["new", "interviewing", "applied", "offer", "rejected", "closed"];
-const TIER_ORDER = ["P0", "P1", "P2", "P3"];
-
-function buildGroups(rows: Position[], groupBy: GroupKey): GroupBucket[] {
+function buildGroups(rows: Position[]): GroupBucket[] {
   const buckets = new Map<string, Position[]>();
   for (const row of rows) {
-    const key = groupBy === "Status" ? (row.status || "—") : (row.tier || "—");
+    const key = row.status || "—";
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key)!.push(row);
   }
-  const order = groupBy === "Status" ? STATUS_ORDER : TIER_ORDER;
   const ordered: GroupBucket[] = [];
-  for (const key of order) {
+  for (const key of STATUS_KEYS) {
     if (buckets.has(key)) {
       ordered.push({ key, label: key, rows: buckets.get(key)! });
       buckets.delete(key);
