@@ -28,7 +28,7 @@ export function TodaySection({ brief }: Props) {
   }
 
   return (
-    <Paper p="md" withBorder>
+    <Paper p="md" radius="lg" bg="dark.8">
       <Stack gap="xs">
         <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>Daily brief — {brief.date}</Text>
         {isStale && (
