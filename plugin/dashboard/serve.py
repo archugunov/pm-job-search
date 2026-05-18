@@ -5,10 +5,13 @@ or one HTTP endpoint via TDD.
 """
 from __future__ import annotations
 
+import json as _json
 import os
 import re
 import tempfile
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from socketserver import TCPServer
 from typing import Any
 
 
@@ -225,3 +228,118 @@ def read_strategy(userdata_root: Path) -> dict[str, Any]:
     if "target_offer_date" in fm:
         out["target_offer_date"] = fm["target_offer_date"]
     return out
+
+
+def _make_handler(
+    userdata_root: Path,
+    dist_dir: Path | None,
+) -> type[BaseHTTPRequestHandler]:
+    """Build a request handler class closed over the userdata + dist paths."""
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+            # Suppress default access log; tests want clean output.
+            return
+
+        def do_GET(self) -> None:  # noqa: N802
+            if self.path == "/api/state":
+                self._handle_state()
+                return
+            if dist_dir is not None:
+                self._serve_static()
+                return
+            self._send_status(404, b"not found")
+
+        def _handle_state(self) -> None:
+            payload = {
+                "companies": collect_companies(userdata_root),
+                "strategy": read_strategy(userdata_root),
+                "latest_brief": latest_brief(userdata_root),
+                "userdata_root": str(userdata_root.resolve()),
+            }
+            self._send_json(200, payload)
+
+        def _serve_static(self) -> None:
+            # Map "/" to index.html; anything else to the literal path under dist_dir.
+            assert dist_dir is not None
+            rel = self.path.lstrip("/") or "index.html"
+            file_path = (dist_dir / rel).resolve()
+            try:
+                file_path.relative_to(dist_dir.resolve())
+            except ValueError:
+                self._send_status(403, b"forbidden")
+                return
+            if not file_path.is_file():
+                # SPA fallback: serve index.html for unknown routes
+                file_path = dist_dir / "index.html"
+                if not file_path.is_file():
+                    self._send_status(404, b"not found")
+                    return
+            content = file_path.read_bytes()
+            ctype = _guess_content_type(file_path.name)
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+
+        def _send_json(self, status: int, payload: Any) -> None:
+            body = _json.dumps(payload).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _send_status(self, status: int, body: bytes) -> None:
+            self.send_response(status)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def _read_json_body(self) -> dict[str, Any]:
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length) if length else b""
+            return _json.loads(raw) if raw else {}
+
+    return Handler
+
+
+def _guess_content_type(name: str) -> str:
+    if name.endswith(".html"):
+        return "text/html; charset=utf-8"
+    if name.endswith(".js"):
+        return "application/javascript; charset=utf-8"
+    if name.endswith(".css"):
+        return "text/css; charset=utf-8"
+    if name.endswith(".svg"):
+        return "image/svg+xml"
+    if name.endswith(".json"):
+        return "application/json"
+    return "application/octet-stream"
+
+
+def build_server(
+    userdata_root: Path,
+    *,
+    preferred_port: int,
+    dist_dir: Path | None,
+) -> tuple[TCPServer, int]:
+    """Bind a ThreadingHTTPServer on preferred_port or next free port if preferred is busy.
+
+    If preferred_port is 0, the OS picks any free port (used in tests).
+    """
+    handler_cls = _make_handler(userdata_root, dist_dir)
+    if preferred_port == 0:
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler_cls)
+        return server, server.server_address[1]
+
+    last_err: OSError | None = None
+    for port in range(preferred_port, preferred_port + 10):
+        try:
+            server = ThreadingHTTPServer(("127.0.0.1", port), handler_cls)
+            return server, port
+        except OSError as e:
+            last_err = e
+            continue
+    raise RuntimeError(f"no free port in {preferred_port}-{preferred_port+9}") from last_err
