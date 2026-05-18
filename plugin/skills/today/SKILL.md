@@ -80,6 +80,45 @@ Writes are idempotent per `/today` run: if the user runs `/today` twice the same
 
 After step 5 completes, proceed to the existing "Output: the daily brief" section.
 
+## Write contracts (used by the input phase)
+
+### journal.md format
+
+The existing free-form append convention is preserved. The input phase adds two conventions on top:
+
+- Bullets begin with `[<Company>]` when the fact is company-scoped. Bullets without a tag are global / personal (mock interviews, energy notes, structural reflections).
+- Bullets end with `(source: <integration|user>[, confirmed])`. Provenance lets future skills filter by trust level.
+
+One bullet per fact. Multi-fact compound entries get split into separate bullets.
+
+Example block written by a single input phase:
+
+```
+## 2026-05-18
+- [Plaid] Round 2 panel scheduled Fri 2026-05-22 14:00. (source: calendar, confirmed)
+- [Lendable] Reply from Sarah, declined — seniority mismatch cited. (source: gmail, confirmed)
+- Mock with Sasha on pricing story — felt rusty, need to re-practise. (source: user)
+```
+
+Rules:
+- If today's `## YYYY-MM-DD` heading already exists in journal.md (e.g. a prior /today run today added entries), append the new bullets beneath the existing heading rather than creating a duplicate heading.
+- If today's heading does not exist, create it at the end of the file (with a blank line before it).
+- Never edit or remove bullets that were already in journal.md — the file is append-only from /today's perspective.
+
+### meta.md updates
+
+Per-company meta.md uses (or gains, if not already present) three fields written by the input phase. Existing fields (`company`, `position`, `tier`, `link`, `date_applied`, `date_added`, `monitoring`) are untouched.
+
+- **`next_event:`** — string, free-form. Examples: `"R2 panel Fri 2026-05-22 14:00"`, `"Recruiter call Thu 2026-05-21 10:00"`. Cleared (set to empty string or removed) when the input phase confirms the event passed without follow-up OR when it was cancelled. Updated in-place when an event is rescheduled.
+- **`status:`** — enum, one of: `new`, `to_apply`, `applied`, `interviewing`, `offer`, `rejected`, `closed`. The input phase only transitions OUT of an active state when a fact unambiguously implies it: a confirmed rejection → `rejected`, a confirmed offer → `offer`. Confirmed scheduling events do NOT auto-promote `applied` → `interviewing` (other skills own that transition based on richer signal).
+- **`## History` block** — chronological list of state transitions, one line per change. Format: `2026-05-18: status → rejected (seniority mismatch — Sarah at Lendable, gmail confirmed)`. Append to the end of the block; create the `## History` heading at the bottom of meta.md if it doesn't exist.
+
+Rules:
+- When an event is rescheduled, update `next_event` AND append a History line: `2026-05-18: next_event → "R2 panel Fri 2026-05-22 14:00" (rescheduled from Wed, calendar confirmed)`.
+- When an event passes without action (e.g. yesterday's recruiter call happened), clear `next_event` and append: `2026-05-18: next_event cleared (passed, no follow-up captured yet)`.
+- When the input phase has no implication for a given company in meta.md, do not touch that file at all.
+- Frontmatter changes are YAML-safe: preserve other fields, preserve quoting style, preserve trailing comments.
+
 ## Inputs
 
 Read in this order. Skip gracefully if a file is missing — the brief degrades section-by-section, never errors out wholesale.
