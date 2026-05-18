@@ -181,6 +181,11 @@ A CI workflow scans every push and PR for the plugin author's personal-data bloc
 
 Contributions welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers scope, dev install, the privacy hard rule, testing conventions, and what's in scope for issues vs not.
 
+## Feedback & support
+
+- **Found a bug or have a feature request?** Open an issue on [GitHub](https://github.com/archugunov/pm-job-search/issues) — include the skill you ran, what you expected, and what happened. Repro steps help.
+- **Like the plugin?** You can [support me on Ko-fi](https://ko-fi.com/archugunov).
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
