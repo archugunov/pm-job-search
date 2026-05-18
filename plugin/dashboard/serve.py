@@ -258,6 +258,12 @@ def _make_handler(
                 return
             self._send_status(404, b"not found")
 
+        def do_POST(self) -> None:  # noqa: N802
+            if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
+                self._handle_note_post()
+                return
+            self._send_status(404, b"not found")
+
         def _handle_status_patch(self) -> None:
             folder_path = self.path[len("/api/positions/") : -len("/status")]
             meta_path = _resolve_meta_path(userdata_root, folder_path)
@@ -283,6 +289,31 @@ def _make_handler(
                 return
             atomic_write(meta_path, new_md)
             self._send_json(200, {"ok": True})
+
+        def _handle_note_post(self) -> None:
+            folder_path = self.path[len("/api/positions/") : -len("/notes")]
+            meta_path = _resolve_meta_path(userdata_root, folder_path)
+            if meta_path is None:
+                self._send_status(400, b"invalid folder_path")
+                return
+            if not meta_path.is_file():
+                self._send_status(404, b"company not found")
+                return
+            try:
+                body = self._read_json_body()
+            except _json.JSONDecodeError:
+                self._send_status(400, b"invalid json")
+                return
+            note = body.get("note")
+            if not isinstance(note, str) or not note.strip():
+                self._send_status(400, b"missing note")
+                return
+            fm, _ = parse_frontmatter(meta_path.read_text(encoding="utf-8"))
+            company = fm.get("company", meta_path.parent.name)
+            position = fm.get("position", "")
+            append_note(meta_path.parent / "notes.md", company, position, note)
+            self._send_json(200, {"ok": True})
+
 
         def _handle_state(self) -> None:
             payload = {
@@ -350,6 +381,19 @@ def _resolve_meta_path(userdata_root: Path, folder_path: str) -> Path | None:
     except ValueError:
         return None
     return target
+
+
+def append_note(notes_path: Path, company: str, position: str, note: str) -> None:
+    """Append a timestamped note to notes_path. Create with title heading on first write."""
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    entry = f"\n## {timestamp}\n\n{note.strip()}\n"
+    if not notes_path.exists():
+        header = f"# Notes — {company} {position}\n".rstrip() + "\n"
+        atomic_write(notes_path, header + entry)
+        return
+    atomic_write(notes_path, notes_path.read_text(encoding="utf-8") + entry)
+
+
 
 
 def _guess_content_type(name: str) -> str:
