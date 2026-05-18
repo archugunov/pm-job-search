@@ -5,3 +5,4 @@ userdata/*
 .DS_Store
 .claude/settings.local.json
 SPEC.md
+docs/
