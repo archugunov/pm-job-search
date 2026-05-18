@@ -24,7 +24,7 @@ export function PipelineStats({ companies, strategy }: Props) {
   const countdown = useMemo(() => buildCountdown(strategy.target_offer_date), [strategy.target_offer_date]);
 
   return (
-    <Paper p="md" withBorder>
+    <Paper p="md" bg="dark.8">
       <Group justify="space-between" wrap="wrap" gap="xl">
         <Group gap="xl">
           {ACTIVE_STATUSES.map((status) => (
