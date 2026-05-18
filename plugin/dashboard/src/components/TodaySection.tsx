@@ -1,4 +1,4 @@
-import { Alert, Paper, Spoiler, Stack, Text } from "@mantine/core";
+import { Alert, Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -16,7 +16,7 @@ export function TodaySection({ brief }: Props) {
 
   if (brief === null) {
     return (
-      <Paper p="md" radius="lg" bg="dark.8">
+      <Paper p="md" radius="lg" bg="dark.8" h="100%">
         <Stack gap="xs">
           <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>Daily brief</Text>
           <Text size="sm" c="dimmed">
@@ -28,19 +28,25 @@ export function TodaySection({ brief }: Props) {
   }
 
   return (
-    <Paper p="md" radius="lg" bg="dark.8">
-      <Stack gap="xs">
+    <Paper
+      p="md"
+      radius="lg"
+      bg="dark.8"
+      h="100%"
+      style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}
+    >
+      <Stack gap="xs" style={{ height: "100%", minHeight: 0 }}>
         <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>Daily brief — {brief.date}</Text>
         {isStale && (
           <Alert color="yellow" variant="light">
             From {brief.date} — run <Text component="code">/today</Text> to refresh.
           </Alert>
         )}
-        <Spoiler maxHeight={220} showLabel="Show more" hideLabel="Show less">
+        <ScrollArea style={{ flex: 1, minHeight: 0 }} type="auto">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={briefMdComponents}>
             {brief.markdown}
           </ReactMarkdown>
-        </Spoiler>
+        </ScrollArea>
       </Stack>
     </Paper>
   );

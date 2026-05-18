@@ -58,7 +58,7 @@ export function App() {
           </Stack>
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 4 }}>
-          <Box style={{ position: "sticky", top: 16 }}>
+          <Box style={{ position: "sticky", top: 16, height: "calc(100vh - 32px)" }}>
             <TodaySection brief={state.latest_brief} />
           </Box>
         </Grid.Col>
