@@ -1,0 +1,39 @@
+name: dashboard-build-check
+
+on:
+  pull_request:
+    paths:
+      - 'plugin/dashboard/**'
+  push:
+    branches: [main]
+    paths:
+      - 'plugin/dashboard/**'
+
+jobs:
+  verify-dist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plugin/dashboard/package-lock.json
+      - name: Install dashboard dependencies
+        working-directory: plugin/dashboard
+        run: npm ci
+      - name: Build dashboard
+        working-directory: plugin/dashboard
+        run: npm run build
+      - name: Verify dist/ matches committed bundle
+        run: |
+          if ! git diff --quiet -- plugin/dashboard/dist/; then
+            echo "::error::plugin/dashboard/dist/ is out of date. Rebuild and commit."
+            git diff --stat -- plugin/dashboard/dist/
+            exit 1
+          fi
+      - name: Verify dashboard tests
+        working-directory: plugin/dashboard
+        run: |
+          pip install -r requirements-dev.txt
+          python3 -m pytest -v
