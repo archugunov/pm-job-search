@@ -45,11 +45,11 @@ export function TodaySection({ brief }: Props) {
         <ScrollArea
           style={{ flex: 1, minHeight: 0 }}
           type="hover"
-          scrollHideDelay={500}
+          scrollHideDelay={100}
           scrollbarSize={6}
           styles={{
             thumb: { backgroundColor: "rgba(255,255,255,0.12)" },
-            scrollbar: { transition: "opacity 300ms ease" },
+            scrollbar: { transition: "opacity 150ms ease" },
           }}
         >
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={briefMdComponents}>
