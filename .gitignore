@@ -5,6 +5,7 @@ userdata/*
 .DS_Store
 .claude/settings.local.json
 SPEC.md
+docs/
 # Dashboard build deps and artefacts
 plugin/dashboard/node_modules/
 .venv/

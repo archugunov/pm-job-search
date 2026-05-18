@@ -1,6 +1,6 @@
 ---
 name: today
-description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a sorted view of every active company plus today's actions. Reads userdata/strategy.md, all userdata/companies/*/meta.md, and the last entries of userdata/journal.md; when userdata/integrations.md is present, optionally folds in Calendar (upcoming events) and Gmail (recruiter activity, new inbound) data via the wired MCPs; writes a 3-section daily brief (top actions, pipeline, heads-up) to userdata/outputs/daily-brief-<date>.md; regenerates the GENERATED block of userdata/outputs/applications.md.
+description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a sorted view of every active company plus today's actions. Two-phase: input phase captures fresh facts since the last journal entry (via wired Calendar/Gmail/Granola integrations + an open catch-all prompt), then writes them to userdata/journal.md and relevant userdata/companies/*/meta.md; output phase reads userdata/strategy.md + all meta.md + last 7 days of journal.md, writes a 3-section daily brief (top actions, pipeline, heads-up) to userdata/outputs/daily-brief-<date>.md, regenerates the GENERATED block of userdata/outputs/applications.md, and on the first run of each ISO week offers a hand-off to pm-job-search:career-coach for a weekly reflection.
 ---
 
 # /today — daily brief
@@ -8,6 +8,117 @@ description: This skill should be used when the user asks for "/today", "my dail
 Produce a short (~half a screen) snapshot that combines: where the user is against their stated strategy, what to actually do next, and a sorted view of the pipeline. Save the brief, regenerate the applications.md index, then print the brief to chat.
 
 **Voice:** all chat output and drafted content (the daily brief, summary lines, warnings) follows `${CLAUDE_PLUGIN_ROOT}/TONE.md`.
+
+## Input phase (runs before brief generation)
+
+Capture fresh facts since the last journal entry. Each confirmed fact gets appended to `userdata/journal.md` and — when it has structured implications — pushed to the relevant `userdata/companies/<Co>/meta.md`. Then the output phase runs against the just-written state.
+
+This phase always runs (even with no integrations wired) but degrades gracefully — inference and confirms are skipped when there is nothing to scan, and the catch-all prompt becomes the only input surface.
+
+### Step 1 — determine the input window
+
+Read `userdata/journal.md`. Find the most recent dated heading (`## YYYY-MM-DD`).
+
+- Gap < 24h → window = 24h. Print nothing; this is the normal daily case.
+- Gap 1–6 days → window = the actual gap. Print one line: `Last entry was N days ago — pulling the full window.`
+- Gap ≥ 7 days → window = the actual gap. Print: `You've been away N days — heavier sweep ahead, may take a moment.`
+- `journal.md` absent or empty → window = 24h. Treat as a fresh install. Do not print anything special.
+
+### Step 2 — inference pass (when integrations wired)
+
+Read `userdata/integrations.md` to find which MCPs are wired. For each wired integration, scan the window. Same auth-error rule as the existing Integration-data section: surface one line per failed integration at the top of the input phase, do not silently skip, continue with the others.
+
+- **Gmail (when wired).** Reuse the existing gmail filter (saved in integrations.md). Fetch subject + from + date metadata over the window (not the 7d hardcoded in the output-phase fetch). For each result, classify into one of: `recruiter-reply`, `rejection`, `scheduling`, `offer`, `unclear`. Match against `userdata/companies/*/meta.md` + `*/*/meta.md` by alias + domain + recruiter-name-in-journal as the output-phase fetch already does.
+- **Calendar (when wired).** Fetch events in the window. Filter by the same keywords as the output-phase fetch (`interview`, `recruiter`, `screen`, `round`, `intro call`, `final loop`, `panel`, `take-home review`) plus matched company names. For each kept event, classify into: `new-event`, `rescheduled`, `cancelled` (rescheduled / cancelled requires comparing against any prior `next_event` value in the matched company's meta.md).
+- **Granola (when wired).** Reuse the auto-Granola lookup pattern documented in `/interview-analysis`: call the wired Granola list_meetings tool over the window, match meeting titles against company names + interview/recruiter keywords. For each match, capture title + date.
+
+Dedup across integrations: if the same fact surfaces via two sources (e.g. a calendar event + a gmail confirmation), present it ONCE in the confirms list with both sources noted (`source: calendar + gmail`).
+
+### Step 3 — targeted confirms
+
+Render inferred deltas as a numbered list, grouped by source. Skip this step entirely if step 2 produced no items. Example output shape:
+
+```
+Since your last entry (2026-05-15), I see:
+
+From calendar:
+1. Plaid — Round 2 panel scheduled Fri 2026-05-22 14:00
+2. Klarna — Recruiter call moved from Wed to Thu
+
+From gmail:
+3. Lendable — Reply from Sarah at Lendable (likely rejection — want me to read it?)
+4. Stripe — New inbound from a recruiter named James (no company match yet)
+
+From granola:
+5. Klarna recruiter call transcript captured Mon 2026-05-15
+
+Confirm 1-5 ('all', '1 3 5', or describe corrections). Anything I should edit or skip?
+```
+
+User response handling:
+- `all` / `yes` → confirm every inferred item as-is.
+- Numbered subset (`1 3 5`) → confirm only those.
+- `1 wrong — that was R3 not R2` → confirm with edit applied before write.
+- `skip 3` → drop item 3 from this run.
+- `4 is for company X` → re-route the unmatched inbound to company X before write.
+
+If the user response is ambiguous, ask one clarifying question rather than guessing. Never write an item the user has not explicitly confirmed.
+
+### Step 4 — open catch-all
+
+After targeted confirms (or in place of them when step 2 produced nothing), print one prompt:
+
+> Anything else that moved? Mock interviews, prep work, energy notes, new leads, structural thoughts — anything you want logged. (Press enter to skip.)
+
+User responds in free text. Parse for company tags: explicit `[Plaid]`, `Plaid:`, or first-token match against the company list. Lines without a company tag are logged to `journal.md` only (no meta.md write, no guessing). Lines WITH a company tag are also logged to `journal.md` only — catch-all input is free text and never writes to meta.md, even when the tag matches a known company. Only integration-sourced facts that pass through the Step 3 confirm flow may update meta.md.
+
+### Step 5 — write phase
+
+Commit the confirmed facts. See "Write contracts" section below for the exact journal.md and meta.md formats.
+
+Writes are idempotent per `/today` run: if the user runs `/today` twice the same day with no new facts (step 2 finds nothing new, step 4 skipped), no journal write occurs and no `## YYYY-MM-DD` heading is added or modified.
+
+After step 5 completes, proceed to the existing "Output: the daily brief" section.
+
+## Write contracts (used by the input phase)
+
+### journal.md format
+
+The existing free-form append convention is preserved. The input phase adds two conventions on top:
+
+- Bullets begin with `[<Company>]` when the fact is company-scoped. Bullets without a tag are global / personal (mock interviews, energy notes, structural reflections).
+- Bullets end with `(source: <integration|user>[, confirmed])`. The `, confirmed` trailer applies only to integration-sourced facts that the user explicitly approved in Step 3 — never to user-sourced bullets from the catch-all (those are inherently the user's own input). So: `(source: calendar, confirmed)` is valid, `(source: user, confirmed)` is not — user-sourced bullets always read `(source: user)`.
+- Provenance lets future skills filter by trust level.
+
+One bullet per fact. Multi-fact compound entries get split into separate bullets.
+
+Example block written by a single input phase:
+
+```
+## 2026-05-18
+- [Plaid] Round 2 panel scheduled Fri 2026-05-22 14:00. (source: calendar, confirmed)
+- [Lendable] Reply from Sarah, declined — seniority mismatch cited. (source: gmail, confirmed)
+- Mock with Sasha on pricing story — felt rusty, need to re-practise. (source: user)
+```
+
+Rules:
+- If today's `## YYYY-MM-DD` heading already exists in journal.md (e.g. a prior /today run today added entries), append the new bullets beneath the existing heading rather than creating a duplicate heading.
+- If today's heading does not exist, create it at the end of the file (with a blank line before it).
+- Never edit or remove bullets that were already in journal.md — the file is append-only from /today's perspective.
+
+### meta.md updates
+
+Per-company meta.md uses (or gains, if not already present) three fields written by the input phase. Existing fields owned by other skills — `company`, `position`, `tier`, `link`, `date_applied`, `date_added`, `monitoring`, `last_inbound`, `rejection_stage`, `date_rejected`, `date_closed` — are untouched.
+
+- **`next_event:`** — string, free-form. Examples: `"R2 panel Fri 2026-05-22 14:00"`, `"Recruiter call Thu 2026-05-21 10:00"`. Cleared (set to empty string or removed) when the input phase confirms the event passed without follow-up OR when it was cancelled. Updated in-place when an event is rescheduled.
+- **`status:`** — enum, one of: `new`, `to_apply`, `applied`, `interviewing`, `offer`, `rejected`, `closed`. The input phase only transitions OUT of an active state when a fact unambiguously implies it: a confirmed rejection → `rejected`, a confirmed offer → `offer`. Confirmed scheduling events do NOT auto-promote `applied` → `interviewing` (other skills own that transition based on richer signal).
+- **`## History` block** — chronological list of state transitions, one line per change. Format: `2026-05-18: status → rejected (seniority mismatch — Sarah at Lendable, gmail confirmed)`. Append to the end of the block; create the `## History` heading at the bottom of meta.md if it doesn't exist.
+
+Rules:
+- When an event is rescheduled, update `next_event` AND append a History line: `2026-05-18: next_event → "R2 panel Fri 2026-05-22 14:00" (rescheduled from Wed, calendar confirmed)`.
+- When an event passes without action (e.g. yesterday's recruiter call happened), clear `next_event` and append: `2026-05-18: next_event cleared (passed, no follow-up captured yet)`.
+- When the input phase has no implication for a given company in meta.md, do not touch that file at all.
+- Frontmatter changes are YAML-safe: preserve other fields, preserve quoting style, preserve trailing comments.
 
 ## Inputs
 
@@ -23,9 +134,9 @@ Read in this order. Skip gracefully if a file is missing — the brief degrades 
 
 Do not read `userdata/profile.md`. /today does not need profile content; trust strategy.md and the per-company meta.
 
-## Integration data (silent — fold into output sections)
+## Integration data (output-phase fold-in)
 
-If `userdata/integrations.md` exists, this skill optionally folds in live data from Calendar and Gmail MCPs to make the brief richer. Both are fully optional — when absent or failing, /today degrades silently to the markdown-only flow.
+If `userdata/integrations.md` exists, this skill optionally folds in live data from Calendar and Gmail MCPs to make the brief richer. Both are fully optional — when absent or failing, /today degrades gracefully to the markdown-only flow.
 
 ### Calendar fetch (when calendar wired)
 
@@ -46,11 +157,15 @@ When `userdata/integrations.md ## gmail` shows status `wired` with a tool prefix
 
 Same auth-error rule as Calendar: surface a single line at the top of heads-up, don't silently skip.
 
+### Granola fetch (when granola wired)
+
+Granola data is consumed by the INPUT phase only — see `## Input phase` Step 2. The output phase (this section's brief enrichments) does not surface anything from Granola. If `userdata/integrations.md ## granola` shows status `wired`, the input phase will list interview / recruiter meeting transcripts captured in the window; the output phase ignores Granola entirely.
+
 ### What never happens
 
 - /today never writes to integrations.md.
-- /today never persists Calendar/Gmail data to disk. Events + email metadata live only in this run's context; the saved brief includes the rendered output, not the raw API response.
-- /today never auto-updates `last_inbound` on company meta.md based on Gmail matches — that's a journal-update concern, not /today's. (A future `/journal-update` skill could.)
+- /today never persists raw Calendar/Gmail responses verbatim. Only the user-confirmed facts that pass through the input phase land on disk (see `## Input phase` for the contract); the saved brief includes the rendered output, not raw API responses.
+- /today never auto-updates `last_inbound` on company meta.md based on Gmail matches alone. The input phase may update `next_event`, `status`, and the `## History` block when the user confirms an inferred fact, but `last_inbound` is still maintained by other skills.
 
 ## Output: the daily brief
 
@@ -79,7 +194,7 @@ A markdown table sorted by status group then tier then most recent activity with
 
 The "Next event" column only renders when Calendar is wired AND at least one row has a matched future event. If absent or empty, drop the column entirely (revert to the 5-column shape).
 
-Group order: `interviewing` → `applied` → `to_apply` → `new`. Within each group, P0 first, then P1, then P2. Within each tier, most recent `last_inbound` first; if no `last_inbound`, fall back to `date_applied`, then `date_added`.
+Group order: `offer` → `interviewing` → `applied` → `to_apply` → `new`. (`offer` ranks above `interviewing` because an offer in hand is the highest-signal Active state — a decision is imminent, surface it first.) Within each group, P0 first, then P1, then P2. Within each tier, most recent `last_inbound` first; if no `last_inbound`, fall back to `date_applied`, then `date_added`.
 
 "Last activity" is the most recent date among `last_inbound`, `date_applied`, `date_added`, rendered as `Nd ago` (e.g. `2d ago`, `today`). For "today", use `today` not `0d ago`.
 
@@ -125,7 +240,7 @@ Default: write the full brief to `userdata/outputs/daily-brief-<YYYY-MM-DD>.md` 
 
 Also regenerate `userdata/outputs/applications.md` (see next section).
 
-If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks.
+If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks. `--ephemeral` suppresses the brief and applications.md writes only — the input phase still runs and writes confirmed facts to journal.md + meta.md. Skip the catch-all (press enter) for a fully no-side-effect spot-check.
 
 Always print the brief to chat regardless of save mode.
 
@@ -155,6 +270,42 @@ Skip this if you'd rather drive it manually. This nudge fires once — delete `u
 The nudge is informational. /today does NOT attempt to set up scheduling itself — different OSes, different shells, permission considerations. The user picks the path that fits their setup.
 
 If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write nudge marker — automation prompt will repeat on next /today run.` and continue without erroring. The nudge resurfacing is annoying, not destructive.
+
+## Weekly reflection trigger
+
+After the brief renders (and after the first-run automation nudge has been considered), check whether to offer a weekly reflection hand-off to `pm-job-search:career-coach`.
+
+**Trigger conditions (ALL must be true):**
+
+1. The run is non-ephemeral (the `--ephemeral` flag was NOT passed).
+2. Today is the first `/today` run of the current ISO week. Determined by reading the marker file `userdata/outputs/.last-weekly-reflection`:
+   - If the file does not exist → trigger fires.
+   - If the file exists, read the single ISO date on the first line. If that date falls in a prior ISO week (compare ISO week numbers, not just day counts), trigger fires. Otherwise it does not.
+   - "ISO week" = ISO-8601 week (Monday is day 1, Sunday is day 7). A Sunday belongs to the ISO week that STARTED on the preceding Monday — not the upcoming one. So `isoweek(Sunday)` equals `isoweek(the preceding Monday)`; the next Monday starts a new ISO week. Compare ISO week numbers, not raw day counts.
+
+**When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the offer is a one-time chat surface, not part of the brief history):
+
+```
+---
+
+It's the start of a new week. Want a 5-min reflection on last week? (y / skip)
+```
+
+Wait for user response.
+
+- If user replies `y` (or any affirmative) → invoke the `pm-job-search:career-coach` agent with the mode hint `weekly-reflection`. The agent reads journal.md + strategy.md, runs 3-4 reflection prompts, and appends a `## Weekly reflection <YYYY-MM-DD>` block to journal.md. See `plugin/agents/career-coach.md` for the mode's behaviour.
+- If user replies `skip` (or any negative / non-affirmative) → do not invoke career-coach.
+- In BOTH cases (accept and skip), update the marker file by writing today's ISO date as the only line:
+
+  ```bash
+  date +%Y-%m-%d > userdata/outputs/.last-weekly-reflection
+  ```
+
+  This ensures the offer fires at most once per ISO week regardless of whether the user took it.
+
+If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write weekly-reflection marker — offer may repeat later this week.` and continue without erroring.
+
+The weekly reflection is invoked by the user explicitly accepting the offer; /today never invokes career-coach silently.
 
 ## `applications.md` regeneration
 
@@ -217,21 +368,48 @@ Each meta.md represents one `(company, position)` pair. Counts (active threads, 
 
 ## What /today never does
 
-- Never edits `meta.md` files (status, dates, positions). Other skills own meta.md changes.
-- Never writes `userdata/profile.md`, `userdata/strategy.md`, or `userdata/journal.md`, or `userdata/integrations.md`.
+- Never writes `userdata/profile.md`, `userdata/strategy.md`, or `userdata/integrations.md`.
 - Never touches text outside the GENERATED markers in `applications.md`.
 - Never invents data. If `last_inbound` is missing, do not guess; rank by what is available.
-- Never persists Calendar / Gmail responses to disk. Integration data lives in-context for the run; only the rendered output is saved.
-- Never auto-updates `last_inbound` from a Gmail match. /today reads + surfaces; meta.md updates belong to other skills.
+- Never persists Calendar / Gmail / Granola responses to disk verbatim. Integration data lives in-context for the run; only the user-confirmed facts written to journal.md and meta.md persist.
+- Never writes to journal.md or meta.md without explicit user confirmation in the input phase. Inferred facts must be confirmed (or corrected) before they land — no silent writes from integration data.
+- Never auto-fills meta.md fields beyond the input-phase contract (`next_event`, `status`, `## History` block). Other skills still own positions, tier, link, date_applied, date_added.
 
 ## Smoke test against the Maya example
 
-When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`, so the integration fold-in must NOT fire — output should match the markdown-only 3-section shape exactly. Expected output highlights:
+When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`. The brief is the 3-section shape (Top 3 actions → Pipeline state → Heads-up) — there are no "Where you are" or "This week's progress" sections any more.
 
-- "Top 3 actions" (triggers in section 1): Plaid prep nudge (Plaid is `interviewing`, `last_inbound: 2026-05-13` within 7d) + applications gap nudge (`applications` count 0/3 against strategy.md target, further behind than warm_outreach 1/5). No checkpoint trigger (next checkpoint 2026-06-15 is 31d out). 2026-05-15 is a Friday, so no Monday batch. No imminent-event or recruiter-reply bullets — Calendar + Gmail not wired.
-- "Pipeline state": Plaid row only. 5-column shape (no "Next event" column — Calendar not wired). Closed summary: `1 closed this search; 1 rejected.` (the `0 withdrew` clause is dropped).
-- "Heads-up": no checkpoints in 14d, no stale `applied`, no upcoming-events or new-inbound bullets (no integrations), late-stage prompts triggered by Plaid; three founder-vetting questions printed verbatim.
+### Input phase against Maya
 
-If the output diverges materially from the above against the Maya snapshot, the skill has a bug — fix before promoting. To exercise the integration fold-in code paths, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the new bullets and column render.
+- Step 1 (window): Maya's journal currently opens with `## 2026-05-15`. If today is 2026-05-18 in the harness, gap = 3 days → print `Last entry was 3 days ago — pulling the full window.` (Update this assertion if the example install is refreshed with a different most-recent date.)
+- Step 2 (inference): integrations.md absent → skipped silently. No items rendered.
+- Step 3 (targeted confirms): skipped (step 2 produced nothing).
+- Step 4 (open catch-all): single prompt printed. If the user replies with free text mentioning a company, that line should be parsed and routed; if they press enter / skip, the input phase exits cleanly with no writes.
+- Step 5 (write phase): only runs if the catch-all returned content. With no input from the user, journal.md is not touched and no `## 2026-05-18` heading is created.
 
-The first-run automation nudge fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
+To exercise the integration-fold-in code paths AND the targeted-confirms flow, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the input phase renders inferred deltas grouped by source.
+
+### Output phase against Maya (after input phase)
+
+With the catch-all skipped, the output phase against Maya's expanded install (8 status slots, Plaid multi-role, Lendable in `offer` status) should produce the 3-section brief:
+
+- **Section 1 "Top 3 actions"**: (4) Plaid prep — `last_inbound: 2026-05-13` is 5d ago, within 7d → fires. (5) iwoca chase/close — `date_applied: 2026-04-22` is 26d ago, >14d → fires. (6) Applications gap — 1/3 = 67% gap, fires. If today is Monday, the Monday warm-outreach batch nudge may also fire (count is at 3/5 — depends on weekend warm-outreach activity). No checkpoint trigger (next is 2026-06-15 = 28d out). No imminent-event or recruiter-reply bullets (no integrations).
+- **Section 2 "Pipeline state"**: 7 active rows in this group order — Lendable (offer P0) → Plaid CC + Cleo (interviewing P0 then P1) → Marshmallow + iwoca (applied P0 then P1) → Plaid Growth Loops + Zopa (to_apply P1). Multi-role Plaid renders BOTH rows via the dual-glob; each linked to its role-slug subfolder. 5-column shape (no "Next event" column — Calendar not wired). Closed summary: `2 closed this search; 1 rejected, 1 withdrew.` (Stripe rejected + Atom Bank closed.)
+- **Section 3 "Heads-up"**: stale-applied bullet fires for iwoca (26d). Shape-mismatch warning fires for Cleo (180 ppl, no equity signal — though strict reading of the trigger requires the company NOT to be in `target_industries`; Cleo's consumer-finance vertical is borderline against Maya's `fintech` / `consumer credit` targets — an LLM may interpret either way). Late-stage prompts fire for Plaid CC with the three founder-vetting questions printed verbatim. Trigger A coach nudge may fire (applications cadence under 50% for 3 weeks running — depends on journal counts per week).
+
+If the catch-all DOES return content (e.g. the user types `[Plaid] CPO round confirmed Thu` during step 4), verify that:
+- journal.md gains a `## 2026-05-18` heading (if not already present today) with the bullet `- [Plaid] CPO round confirmed Thu (source: user)`.
+- `userdata/examples/maya/companies/Plaid/consumer-credit/meta.md` is NOT modified by step 4 alone (free-text doesn't imply a structured field; only inferred + confirmed integration facts update meta.md per the contract).
+
+### Weekly reflection trigger against Maya
+
+- If today is Monday AND `userdata/examples/maya/outputs/.last-weekly-reflection` does not exist → offer block prints after the brief.
+- If today is Monday AND the marker file dates to the prior ISO week → offer block prints.
+- If today is Tuesday AND the marker file dates to Monday (same ISO week) → offer block does NOT print.
+- On accept (`y`) → career-coach invoked with `weekly-reflection` mode; on skip → marker file updated, no agent invocation. In both cases, the marker file's content reads today's ISO date as the only line.
+
+### First-run automation nudge
+
+The first-run automation nudge still fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
+
+If the output diverges materially from any of the above against the Maya snapshot, the skill has a bug — fix before promoting.

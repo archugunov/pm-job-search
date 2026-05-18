@@ -51,7 +51,7 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:today` | Daily brief: where you are, weekly progress vs targets, top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy itself needs rework. First run offers to set up 9am daily auto-runs. |
+| `/pm-job-search:today` | Two-phase daily ritual. Input phase first: scans Calendar/Gmail/Granola (when wired) for pipeline deltas, asks you to confirm or correct, plus an open catch-all prompt — writes confirmed facts to `journal.md` + relevant `meta.md`. Then the brief: top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy needs rework. First run of each ISO week: offers a 5-min weekly reflection. First run ever: offers to set up 9am daily auto-runs. |
 | `/pm-job-search:dashboard` | Visual dashboard — pipeline view, inline status changes, quick notes per company. Reads the same md files all other skills use; writes status changes + notes back. React + Mantine, pre-built bundle, zero install. |
 | `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric with company-shape adjustment. Hard-filter + anti-goal gates, posting-liveness check, user-override. Writes the company folder (meta + ~200-word research brief). |
 | `/pm-job-search:job-search` | Weekly sweep. Parallel subagents recheck your P0/P1 companies via public ATS APIs (Ashby / Greenhouse / Lever) and discover new roles via `site:`-scoped search. Scores and files results via `/evaluate-position`. Optional `--with-playwright` for link verification. |
@@ -69,7 +69,7 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:integrations` | Probes for Granola / Calendar / Gmail MCPs and wires the ones you have. Granola feeds `/interview-analysis`, Calendar feeds `/today` heads-up, Gmail feeds journal updates. Saves invocation patterns to `userdata/integrations.md`. Optional — the plugin works fine without any of them. See [INTEGRATIONS.md](plugin/INTEGRATIONS.md) for Notion, Playwright, Slack as manual-setup. |
+| `/pm-job-search:integrations` | Probes for Granola / Calendar / Gmail MCPs and wires the ones you have. Granola feeds `/interview-analysis` and `/today`'s input phase, Calendar feeds `/today`'s heads-up and input phase, Gmail feeds `/today`'s input phase — every inferred delta is surfaced for you to confirm before it lands in `journal.md` / `meta.md`. Saves invocation patterns to `userdata/integrations.md`. Optional — the plugin works fine without any of them. See [INTEGRATIONS.md](plugin/INTEGRATIONS.md) for Notion, Playwright, Slack as manual-setup. |
 
 ## Agents — 6 personas
 
@@ -94,9 +94,9 @@ Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`.
 
 Markdown-only is the default, but you can wire in MCP servers you're already running to make specific skills more capable. See [INTEGRATIONS.md](plugin/INTEGRATIONS.md) for the prompt patterns, covering:
 
-- **Granola** — pull meeting transcripts straight into `/interview-analysis`
-- **Gmail (or any inbox MCP)** — extract recruiter conversations into `journal.md`
-- **Calendar (gcal / iCal)** — surface upcoming interviews in `/today`
+- **Granola** — pull meeting transcripts into `/interview-analysis` + surface interview recordings as input-phase confirms in `/today`
+- **Gmail (or any inbox MCP)** — surface recruiter replies, rejections, and offer language as input-phase confirms in `/today`
+- **Calendar (gcal / iCal)** — surface upcoming interviews in `/today`'s heads-up + flag new / rescheduled / cancelled events as input-phase confirms
 - **Notion** — sync companies as Notion DB rows alongside the markdown source
 - **Playwright** — link-liveness verification + interviewer research
 - **Slack / Telegram / Discord** — pipe `/today` digests to an accountability channel

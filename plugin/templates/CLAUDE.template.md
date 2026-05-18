@@ -45,7 +45,7 @@ For reviewing any draft — story, research brief, outreach message, take-home a
 - `userdata/profile.md` — your profile (identity, positioning, tier rubric). Single source of truth for who you are.
 - `userdata/strategy.md` — your plan (target offer date, weekly targets, checkpoints). Drives `/today`'s progress tracking. Revisit every 2-3 weeks.
 - `userdata/cv.md` — optional. Drop your CV here as md or txt and `/setup` will use it to seed positioning and proof points.
-- `userdata/journal.md` — free-form daily notes you append to.
+- `userdata/journal.md` — daily log. You append free-form notes; `/today`'s input phase appends confirmed pipeline facts (tagged `[Company]` with a `(source: ...)` suffix). Weekly reflection blocks appear here too when you accept `/today`'s Monday offer.
 - `userdata/companies/<Company>/` — one folder per company. If you're pursuing a single role, `meta.md` and supporting docs (research, prep, debriefs) live directly inside. If two or more roles at the same company are tracked, each role gets its own slug subfolder: `userdata/companies/<Company>/<role-slug>/meta.md`. Skills handle the 1→2 migration automatically.
 - `meta.md` frontmatter per role: `company`, `position`, `status`, `tier`, `link`, dates, optional `monitoring: true|false`.
 - `userdata/stories/<filename>.md` — universal STAR-story bank. Filenames are auto-derived from each story's title.

@@ -2,8 +2,8 @@
 title: Payments pricing experiment
 themes: [growth, pricing, experimentation, post-PMF]
 role_lens: [strategy, execution, analytics]
-companies_used_in: [Plaid]
-last_practised: 2026-05-11
+companies_used_in: [Cleo, Lendable, Plaid]
+last_practised: 2026-05-15
 ---
 
 # Payments pricing experiment
