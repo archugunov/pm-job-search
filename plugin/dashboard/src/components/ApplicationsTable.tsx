@@ -73,7 +73,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
             <Accordion.Panel>
               <Table
                 highlightOnHover
-                highlightOnHoverColor="color-mix(in srgb, var(--mantine-color-dark-8) 50%, var(--mantine-color-dark-7) 50%)"
+                highlightOnHoverColor="dark.7"
                 verticalSpacing="xs"
                 layout="fixed"
               >
