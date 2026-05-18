@@ -228,7 +228,7 @@ A markdown table sorted by status group then tier then most recent activity with
 
 The "Next event" column only renders when Calendar is wired AND at least one row has a matched future event. If absent or empty, drop the column entirely (revert to the 5-column shape).
 
-Group order: `interviewing` → `applied` → `to_apply` → `new`. Within each group, P0 first, then P1, then P2. Within each tier, most recent `last_inbound` first; if no `last_inbound`, fall back to `date_applied`, then `date_added`.
+Group order: `offer` → `interviewing` → `applied` → `to_apply` → `new`. (`offer` ranks above `interviewing` because an offer in hand is the highest-signal Active state — a decision is imminent, surface it first.) Within each group, P0 first, then P1, then P2. Within each tier, most recent `last_inbound` first; if no `last_inbound`, fall back to `date_applied`, then `date_added`.
 
 "Last activity" is the most recent date among `last_inbound`, `date_applied`, `date_added`, rendered as `Nd ago` (e.g. `2d ago`, `today`). For "today", use `today` not `0d ago`.
 
@@ -422,17 +422,17 @@ To exercise the integration-fold-in code paths AND the targeted-confirms flow, c
 
 ### Output phase against Maya (after input phase)
 
-The existing output-phase expectations still hold when the input phase makes no writes (the catch-all skip path). Quick recap:
+With the catch-all skipped, the output phase against Maya's expanded install (8 status slots, Plaid multi-role, Lendable in `offer` status) should produce:
 
-- "Where you are": pulls Maya's headline goal, countdown to 2026-08-01.
-- "This week's progress": warm_outreach 1/5, applications 0/3, active_threads 1/4 (Plaid). No "Interviews held last week" line — Calendar not wired.
-- "Top 3 actions": Plaid prep nudge + applications gap nudge. No checkpoint trigger, no Monday batch (if today is not Monday), no imminent-event or recruiter-reply bullets (no integrations).
-- "Pipeline state": Plaid row only. 5-column shape (no "Next event" column). Closed summary: `1 closed this search; 1 rejected.`
-- "Heads-up": no checkpoints, no stale `applied`, no integration bullets, late-stage prompts triggered by Plaid with the three founder-vetting questions printed verbatim.
+- "Where you are": pulls Maya's headline goal, countdown to 2026-08-01 (75 days from 2026-05-18).
+- "This week's progress": warm_outreach 3/5 (`intro` / `DM` keywords in 2026-05-13, 2026-05-14, 2026-05-15 entries), applications 1/3 (Marshmallow `date_applied: 2026-05-13`, within 7d), active_threads 2/4 (Plaid CC + Cleo, both `status: interviewing`). Monday retrospective line fires if today is Mon. No "Interviews held last week" line — Calendar not wired.
+- "Top 3 actions": (4) Plaid prep — `last_inbound: 2026-05-13` is 5d ago, within 7d → fires. (5) iwoca chase/close — `date_applied: 2026-04-22` is 26d ago, >14d → fires. (6) Applications gap — 1/3 = 67% gap. If today is Monday, the Monday warm-outreach batch nudge may also fire (count is at 3/5 — depends on weekend warm-outreach activity). No checkpoint trigger (next is 2026-06-15 = 28d out). No imminent-event or recruiter-reply bullets (no integrations).
+- "Pipeline state": 7 active rows in this group order — Lendable (offer P0) → Plaid CC + Cleo (interviewing P0 then P1) → Marshmallow + iwoca (applied P0 then P1) → Plaid Growth Loops + Zopa (to_apply P1). Multi-role Plaid renders BOTH rows via the dual-glob; each linked to its role-slug subfolder. 5-column shape (no "Next event" column — Calendar not wired). Closed summary: `2 closed this search; 1 rejected, 1 withdrew.` (Stripe rejected + Atom Bank closed.)
+- "Heads-up": stale-applied bullet fires for iwoca (26d). Shape-mismatch warning fires for Cleo (180 ppl, no equity signal — though strict reading of the trigger requires the company NOT to be in `target_industries`; Cleo's consumer-finance vertical is borderline against Maya's `fintech` / `consumer credit` targets — an LLM may interpret either way). Late-stage prompts fire for Plaid CC with the three founder-vetting questions printed verbatim. Trigger A coach nudge may fire (applications cadence under 50% for 3 weeks running — depends on journal counts per week).
 
 If the catch-all DOES return content (e.g. the user types `[Plaid] CPO round confirmed Thu` during step 4), verify that:
 - journal.md gains a `## 2026-05-18` heading (if not already present today) with the bullet `- [Plaid] CPO round confirmed Thu (source: user)`.
-- `userdata/examples/maya/companies/Plaid/meta.md` is NOT modified by step 4 alone (free-text doesn't imply a structured field; only inferred + confirmed integration facts update meta.md per the contract).
+- `userdata/examples/maya/companies/Plaid/consumer-credit/meta.md` is NOT modified by step 4 alone (free-text doesn't imply a structured field; only inferred + confirmed integration facts update meta.md per the contract).
 
 ### Weekly reflection trigger against Maya
 
