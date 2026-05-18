@@ -110,7 +110,7 @@ Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`.
 
 A browser view of your pipeline that reads the same markdown files as every other skill — useful when you want to scan, not act.
 
-<video src="docs/dashboard.mp4" controls poster="docs/dashboard.png" width="100%"></video>
+https://github.com/user-attachments/assets/e1b39e00-d600-4ef4-bd16-ccda8025c8c4
 
 Three panels:
 
