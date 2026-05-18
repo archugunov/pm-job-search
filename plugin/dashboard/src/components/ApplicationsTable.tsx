@@ -73,12 +73,11 @@ export function ApplicationsTable({ companies, onChange }: Props) {
               >
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th w={60}>Tier</Table.Th>
-                    <Table.Th>Company</Table.Th>
-                    <Table.Th>Position</Table.Th>
-                    <Table.Th w={150}>Status</Table.Th>
-                    <Table.Th w={80}>Last activity</Table.Th>
-                    <Table.Th w={90} />
+                    <Table.Th w={50}>Tier</Table.Th>
+                    <Table.Th>Company / Position</Table.Th>
+                    <Table.Th w={140}>Status</Table.Th>
+                    <Table.Th w={70}>Last</Table.Th>
+                    <Table.Th w={80} />
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -95,9 +94,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                       </Table.Td>
                       <Table.Td>
                         <Text fw={600}>{p.company}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Text>{p.position || <Text component="span" c="dimmed">(pending)</Text>}</Text>
+                        <Text size="xs" c="dimmed">{p.position || "(pending)"}</Text>
                       </Table.Td>
                       <Table.Td onClick={(e) => e.stopPropagation()}>
                         <StatusSelect
