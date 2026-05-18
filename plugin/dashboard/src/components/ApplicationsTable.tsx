@@ -95,7 +95,9 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                       onClick={() => setNotePosition(p)}
                     >
                       <Table.Td>
-                        <Badge color={TIER_COLORS[p.tier] ?? "gray"}>{p.tier || "—"}</Badge>
+                        {p.tier
+                          ? <Badge color={TIER_COLORS[p.tier] ?? "gray"}>{p.tier}</Badge>
+                          : <Text size="xs" c="dimmed">?</Text>}
                       </Table.Td>
                       <Table.Td>
                         <Text fw={600}>{p.company}</Text>
