@@ -408,14 +408,41 @@ Each meta.md represents one `(company, position)` pair. Counts (active threads, 
 
 ## Smoke test against the Maya example
 
-When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`, so the integration fold-in must NOT fire — output should match the original 5-section markdown-only shape exactly. Expected output highlights:
+When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`.
+
+### Input phase against Maya
+
+- Step 1 (window): last journal entry is `## 2026-05-15` (after Task 7's example refresh). If today is 2026-05-18 in the harness, gap = 3 days → print `Last entry was 3 days ago — pulling the full window.`
+- Step 2 (inference): integrations.md absent → skipped silently. No items rendered.
+- Step 3 (targeted confirms): skipped (step 2 produced nothing).
+- Step 4 (open catch-all): single prompt printed. If the user replies with free text mentioning a company, that line should be parsed and routed; if they press enter / skip, the input phase exits cleanly with no writes.
+- Step 5 (write phase): only runs if the catch-all returned content. With no input from the user, journal.md is not touched and no `## 2026-05-18` heading is created.
+
+To exercise the integration-fold-in code paths AND the targeted-confirms flow, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the input phase renders inferred deltas grouped by source.
+
+### Output phase against Maya (after input phase)
+
+The existing output-phase expectations still hold when the input phase makes no writes (the catch-all skip path). Quick recap:
 
 - "Where you are": pulls Maya's headline goal, countdown to 2026-08-01.
-- "This week's progress": warm_outreach 1/5 (`DM` keyword in 2026-05-13 entry), applications 0/3 (no `date_applied` in last 7d), active_threads 1/4 (Plaid). No "Interviews held last week" line — Calendar not wired.
-- "Top 3 actions": Plaid prep nudge (Plaid is `interviewing`, `last_inbound: 2026-05-13` within 7d) + applications gap nudge (0/3, further behind than warm_outreach 1/5). No checkpoint trigger (next checkpoint 2026-06-15 is 31d out). 2026-05-15 is a Friday, so no Monday batch. No imminent-event or recruiter-reply bullets — Calendar + Gmail not wired.
-- "Pipeline state": Plaid row only. 5-column shape (no "Next event" column — Calendar not wired). Closed summary: `1 closed this search; 1 rejected.` (the `0 withdrew` clause is dropped).
-- "Heads-up": no checkpoints in 14d, no stale `applied`, no upcoming-events or new-inbound bullets (no integrations), late-stage prompts triggered by Plaid; three founder-vetting questions printed verbatim.
+- "This week's progress": warm_outreach 1/5, applications 0/3, active_threads 1/4 (Plaid). No "Interviews held last week" line — Calendar not wired.
+- "Top 3 actions": Plaid prep nudge + applications gap nudge. No checkpoint trigger, no Monday batch (if today is not Monday), no imminent-event or recruiter-reply bullets (no integrations).
+- "Pipeline state": Plaid row only. 5-column shape (no "Next event" column). Closed summary: `1 closed this search; 1 rejected.`
+- "Heads-up": no checkpoints, no stale `applied`, no integration bullets, late-stage prompts triggered by Plaid with the three founder-vetting questions printed verbatim.
 
-If the output diverges materially from the above against the Maya snapshot, the skill has a bug — fix before promoting. To exercise the integration fold-in code paths, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the new bullets and column render.
+If the catch-all DOES return content (e.g. the user types `[Plaid] CPO round confirmed Thu` during step 4), verify that:
+- journal.md gains a `## 2026-05-18` heading (if not already present today) with the bullet `- [Plaid] CPO round confirmed Thu (source: user)`.
+- `userdata/examples/maya/companies/Plaid/meta.md` is NOT modified by step 4 alone (free-text doesn't imply a structured field; only inferred + confirmed integration facts update meta.md per the contract).
 
-The first-run automation nudge fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
+### Weekly reflection trigger against Maya
+
+- If today is Monday AND `userdata/examples/maya/outputs/.last-weekly-reflection` does not exist → offer block prints after the brief.
+- If today is Monday AND the marker file dates to the prior ISO week → offer block prints.
+- If today is Tuesday AND the marker file dates to Monday (same ISO week) → offer block does NOT print.
+- On accept (`y`) → career-coach invoked with `weekly-reflection` mode; on skip → marker file updated, no agent invocation. In both cases, the marker file's content reads today's ISO date as the only line.
+
+### First-run automation nudge
+
+The first-run automation nudge still fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
+
+If the output diverges materially from any of the above against the Maya snapshot, the skill has a bug — fix before promoting.
