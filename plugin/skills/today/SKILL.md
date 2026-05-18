@@ -94,9 +94,9 @@ Read in this order. Skip gracefully if a file is missing — the brief degrades 
 
 Do not read `userdata/profile.md`. /today does not need profile content; trust strategy.md and the per-company meta.
 
-## Integration data (silent — fold into output sections)
+## Integration data (output-phase fold-in)
 
-If `userdata/integrations.md` exists, this skill optionally folds in live data from Calendar and Gmail MCPs to make the brief richer. Both are fully optional — when absent or failing, /today degrades silently to the markdown-only flow.
+If `userdata/integrations.md` exists, this skill optionally folds in live data from Calendar and Gmail MCPs to make the brief richer. Both are fully optional — when absent or failing, /today degrades gracefully to the markdown-only flow.
 
 ### Calendar fetch (when calendar wired)
 
@@ -118,11 +118,15 @@ When `userdata/integrations.md ## gmail` shows status `wired` with a tool prefix
 
 Same auth-error rule as Calendar: surface a single line at the top of heads-up, don't silently skip.
 
+### Granola fetch (when granola wired)
+
+Granola data is consumed by the INPUT phase only — see `## Input phase` Step 2. The output phase (this section's brief enrichments) does not surface anything from Granola. If `userdata/integrations.md ## granola` shows status `wired`, the input phase will list interview / recruiter meeting transcripts captured in the window; the output phase ignores Granola entirely.
+
 ### What never happens
 
 - /today never writes to integrations.md.
-- /today never persists Calendar/Gmail data to disk. Events + email metadata live only in this run's context; the saved brief includes the rendered output, not the raw API response.
-- /today never auto-updates `last_inbound` on company meta.md based on Gmail matches — that's a journal-update concern, not /today's. (A future `/journal-update` skill could.)
+- /today never persists raw Calendar/Gmail responses verbatim. Only the user-confirmed facts that pass through the input phase land on disk (see `## Input phase` for the contract); the saved brief includes the rendered output, not raw API responses.
+- /today never auto-updates `last_inbound` on company meta.md based on Gmail matches alone. The input phase may update `next_event`, `status`, and the `## History` block when the user confirms an inferred fact, but `last_inbound` is still maintained by other skills.
 
 ## Output: the daily brief
 
