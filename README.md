@@ -110,7 +110,7 @@ Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`.
 
 A browser view of your pipeline that reads the same markdown files as every other skill — useful when you want to scan, not act.
 
-![pm-job-search dashboard](plugin/docs/dashboard.png)
+<video src="plugin/docs/dashboard.mp4" controls poster="plugin/docs/dashboard.png" width="100%"></video>
 
 Three panels:
 
