@@ -27,4 +27,5 @@ parent company gives you compliance, infrastructure, and distribution that a
 true Series A wouldn't have — I've worked in that structure and it's the best
 of both shapes. The founder-driven nature of the Consumer Credit bet means I'd
 report close to the CEO, not through a five-layer product hierarchy. That's the
-autonomy profile I'm optimising for.
+autonomy profile I'm optimising for. London base, hybrid 2 days a week from
+the Shoreditch office — clean fit with my hybrid-only constraint.
