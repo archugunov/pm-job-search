@@ -4,13 +4,12 @@ import { useState } from "react";
 import { patchStatus } from "../api";
 
 const STATUS_OPTIONS = [
-  "discovered",
+  "new",
   "applied",
   "interviewing",
-  "offer-received",
+  "offer",
   "rejected",
-  "withdrew",
-  "paused",
+  "closed",
 ];
 
 interface Props {

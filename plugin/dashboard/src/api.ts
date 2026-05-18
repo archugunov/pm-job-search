@@ -1,4 +1,4 @@
-import type { DashboardState, NewCompanyPayload } from "./types";
+import type { DashboardState } from "./types";
 
 async function jsonOrThrow<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -43,11 +43,22 @@ export async function postNote(folderPath: string, note: string): Promise<void> 
   await jsonOrThrow<{ ok: true }>(res);
 }
 
-export async function postCompany(payload: NewCompanyPayload): Promise<{ folder_path: string }> {
+export interface NewPositionPayload {
+  link: string;
+  status: string;
+}
+
+export async function postPosition(payload: NewPositionPayload): Promise<{ folder_path: string }> {
   const res = await fetch("/api/companies", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   return jsonOrThrow<{ folder_path: string }>(res);
+}
+
+export async function fetchNotes(folderPath: string): Promise<string> {
+  const res = await fetch(`/api/positions/${encodeURIComponent(folderPath)}/notes`);
+  const body = await jsonOrThrow<{ markdown: string }>(res);
+  return body.markdown;
 }

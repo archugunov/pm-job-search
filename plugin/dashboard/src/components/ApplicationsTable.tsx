@@ -1,6 +1,5 @@
 import {
   Accordion,
-  ActionIcon,
   Badge,
   Button,
   Group,
@@ -9,11 +8,11 @@ import {
   Table,
   Text,
 } from "@mantine/core";
-import { IconCopy, IconExternalLink, IconNote, IconPlus } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 
 import type { Position } from "../types";
-import { NewCompanyModal } from "./NewCompanyModal";
+import { NewPositionModal } from "./NewPositionModal";
 import { NoteDrawer } from "./NoteDrawer";
 import { StatusSelect } from "./StatusSelect";
 
@@ -21,7 +20,6 @@ type GroupKey = "Status" | "Tier";
 
 interface Props {
   companies: Position[];
-  userdataRoot: string;
   onChange: () => void;
 }
 
@@ -32,7 +30,7 @@ const TIER_COLORS: Record<string, string> = {
   P3: "gray",
 };
 
-export function ApplicationsTable({ companies, userdataRoot, onChange }: Props) {
+export function ApplicationsTable({ companies, onChange }: Props) {
   const [groupBy, setGroupBy] = useState<GroupKey>("Status");
   const [modalOpen, setModalOpen] = useState(false);
   const [notePosition, setNotePosition] = useState<Position | null>(null);
@@ -48,7 +46,7 @@ export function ApplicationsTable({ companies, userdataRoot, onChange }: Props) 
           onChange={(v) => setGroupBy(v as GroupKey)}
         />
         <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
-          New company
+          New position
         </Button>
       </Group>
 
@@ -62,27 +60,29 @@ export function ApplicationsTable({ companies, userdataRoot, onChange }: Props) 
               </Group>
             </Accordion.Control>
             <Accordion.Panel>
-              <Table striped highlightOnHover verticalSpacing="xs">
+              <Table striped highlightOnHover verticalSpacing="xs" layout="fixed">
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Tier</Table.Th>
+                    <Table.Th w={60}>Tier</Table.Th>
                     <Table.Th>Company</Table.Th>
                     <Table.Th>Position</Table.Th>
-                    <Table.Th>Status</Table.Th>
-                    <Table.Th>Last activity</Table.Th>
-                    <Table.Th />
+                    <Table.Th w={150}>Status</Table.Th>
+                    <Table.Th w={80}>Last activity</Table.Th>
+                    <Table.Th w={90} />
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {group.rows.map((p) => (
                     <Table.Tr key={p.folder_path}>
                       <Table.Td>
-                        <Badge color={TIER_COLORS[p.tier] ?? "gray"}>{p.tier}</Badge>
+                        <Badge color={TIER_COLORS[p.tier] ?? "gray"}>{p.tier || "—"}</Badge>
                       </Table.Td>
                       <Table.Td>
                         <Text fw={600}>{p.company}</Text>
                       </Table.Td>
-                      <Table.Td>{p.position}</Table.Td>
+                      <Table.Td>
+                        <Text>{p.position || <Text component="span" c="dimmed">(pending)</Text>}</Text>
+                      </Table.Td>
                       <Table.Td>
                         <StatusSelect
                           folderPath={p.folder_path}
@@ -94,30 +94,15 @@ export function ApplicationsTable({ companies, userdataRoot, onChange }: Props) 
                         <Text size="xs" c="dimmed">{relativeDate(p.last_inbound ?? p.date_applied ?? p.date_added)}</Text>
                       </Table.Td>
                       <Table.Td>
-                        <Group gap={4}>
-                          <ActionIcon variant="subtle" aria-label="Add note" onClick={() => setNotePosition(p)}>
-                            <IconNote size={16} />
-                          </ActionIcon>
-                          <ActionIcon
-                            variant="subtle"
-                            component="a"
-                            href={`vscode://file/${absolutePath(userdataRoot, p.folder_path)}`}
-                            aria-label="Open in VS Code"
-                            title="Open in VS Code"
-                          >
-                            <IconExternalLink size={16} />
-                          </ActionIcon>
-                          <ActionIcon
-                            variant="subtle"
-                            aria-label="Copy meta.md path"
-                            title="Copy meta.md path"
-                            onClick={() => {
-                              void navigator.clipboard.writeText(absolutePath(userdataRoot, p.folder_path));
-                            }}
-                          >
-                            <IconCopy size={16} />
-                          </ActionIcon>
-                        </Group>
+                        <Button
+                          size="xs"
+                          variant="light"
+                          radius="xl"
+                          leftSection={<IconPlus size={12} />}
+                          onClick={() => setNotePosition(p)}
+                        >
+                          note
+                        </Button>
                       </Table.Td>
                     </Table.Tr>
                   ))}
@@ -128,7 +113,7 @@ export function ApplicationsTable({ companies, userdataRoot, onChange }: Props) 
         ))}
       </Accordion>
 
-      <NewCompanyModal
+      <NewPositionModal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
         onCreated={onChange}
@@ -150,21 +135,13 @@ interface GroupBucket {
   rows: Position[];
 }
 
-const STATUS_ORDER = [
-  "interviewing",
-  "applied",
-  "discovered",
-  "offer-received",
-  "paused",
-  "withdrew",
-  "rejected",
-];
+const STATUS_ORDER = ["interviewing", "applied", "new", "offer", "rejected", "closed"];
 const TIER_ORDER = ["P0", "P1", "P2", "P3"];
 
 function buildGroups(rows: Position[], groupBy: GroupKey): GroupBucket[] {
   const buckets = new Map<string, Position[]>();
   for (const row of rows) {
-    const key = groupBy === "Status" ? row.status : row.tier;
+    const key = groupBy === "Status" ? (row.status || "—") : (row.tier || "—");
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key)!.push(row);
   }
@@ -193,10 +170,4 @@ function relativeDate(iso: string | undefined): string {
   if (days < 14) return "1w";
   if (days < 60) return `${Math.floor(days / 7)}w`;
   return `${Math.floor(days / 30)}mo`;
-}
-
-function absolutePath(userdataRoot: string, folderPath: string): string {
-  // userdataRoot comes from /api/state and is the server-resolved absolute path
-  // to userdata/. vscode://file/ requires absolute paths to open files reliably.
-  return `${userdataRoot}/companies/${folderPath}/meta.md`;
 }

@@ -46,7 +46,6 @@ export function App() {
         <PipelineStats companies={state.companies} strategy={state.strategy} />
         <ApplicationsTable
           companies={state.companies}
-          userdataRoot={state.userdata_root}
           onChange={refresh}
         />
         <TodaySection brief={state.latest_brief} />

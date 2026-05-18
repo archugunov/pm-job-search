@@ -1,11 +1,10 @@
 export type Status =
-  | "discovered"
+  | "new"
   | "applied"
   | "interviewing"
-  | "offer-received"
+  | "offer"
   | "rejected"
-  | "withdrew"
-  | "paused";
+  | "closed";
 
 export type Tier = "P0" | "P1" | "P2" | "P3";
 
@@ -44,12 +43,4 @@ export interface DashboardState {
   strategy: Strategy;
   latest_brief: DailyBrief | null;
   userdata_root: string;
-}
-
-export interface NewCompanyPayload {
-  company: string;
-  position: string;
-  tier: string;
-  link: string;
-  status: string;
 }
