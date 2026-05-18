@@ -78,3 +78,33 @@ def position_slug(position: str) -> str:
     lowered = position.lower()
     hyphenated = _SLUG_RE.sub("-", lowered)
     return hyphenated.strip("-")
+
+
+_STATUS_LINE_RE = re.compile(r"^(\s*status\s*:\s*)(\"[^\"]*\"|'[^']*'|[^\n]*)$", re.MULTILINE)
+
+
+def rewrite_status(md: str, new_status: str) -> str:
+    """Replace the `status:` value in the frontmatter, preserving quoting style.
+
+    Raises ValueError if no frontmatter is present or no status line is found.
+    Only the frontmatter block (between the first two `---` lines) is searched.
+    """
+    match = _FRONTMATTER_RE.match(md)
+    if not match:
+        raise ValueError("no frontmatter")
+    fm_block = match.group(1)
+    body = match.group(2)
+
+    def _replace(m: re.Match[str]) -> str:
+        prefix, current = m.group(1), m.group(2)
+        if current.startswith('"') and current.endswith('"'):
+            return f'{prefix}"{new_status}"'
+        if current.startswith("'") and current.endswith("'"):
+            return f"{prefix}'{new_status}'"
+        return f"{prefix}{new_status}"
+
+    new_block, count = _STATUS_LINE_RE.subn(_replace, fm_block, count=1)
+    if count == 0:
+        raise ValueError("no status line in frontmatter")
+
+    return f"---\n{new_block}\n---\n{body}"
