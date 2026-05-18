@@ -7,7 +7,7 @@
     {
       "name": "pm-job-search",
       "source": "./plugin",
-      "description": "An opinionated daily-driver for senior PM / Head of Product job searches. Pure markdown, zero external dependencies."
+      "description": "For senior product leaders running a job search. Finds open roles, scores fit, tracks your pipeline, runs live interview practice, and gives you an honest career coach. Markdown by default — optional browser dashboard and MCP integrations on top."
     }
   ]
 }

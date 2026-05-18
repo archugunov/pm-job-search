@@ -1,6 +1,6 @@
 # pm-job-search
 
-A Claude Code plugin for senior PM and Head of Product job searches. Finds open roles, scores fit, tracks your pipeline, runs live interview practice, and gives you an honest career coach. Markdown by default — optional browser dashboard and MCP integrations on top.
+A Claude Code plugin for senior product leaders running a job search. Finds open roles, scores fit, tracks your pipeline, runs live interview practice, and gives you an honest career coach. Markdown by default — optional browser dashboard and MCP integrations on top.
 
 ## Who it's for
 
