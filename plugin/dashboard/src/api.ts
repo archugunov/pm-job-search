@@ -49,6 +49,30 @@ export async function fetchNotes(folderPath: string): Promise<string> {
   return body.markdown;
 }
 
+export interface PrepDoc {
+  date: string;
+  filename: string;
+  markdown: string;
+}
+
+export interface DebriefDoc {
+  date: string;
+  stage: string;
+  filename: string;
+  markdown: string;
+}
+
+export interface Artifacts {
+  research: string | null;
+  preps: PrepDoc[];
+  debriefs: DebriefDoc[];
+}
+
+export async function fetchArtifacts(folderPath: string): Promise<Artifacts> {
+  const res = await fetch(`/api/positions/${encodeURIComponent(folderPath)}/artifacts`);
+  return jsonOrThrow<Artifacts>(res);
+}
+
 export async function editNote(
   folderPath: string,
   index: number,

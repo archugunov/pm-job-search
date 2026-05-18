@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 
 import type { Position } from "../types";
 import { STATUS_KEYS, statusColor } from "../statusColors";
-import { NoteDrawer } from "./NoteDrawer";
+import { CompanyDrawer } from "./CompanyDrawer";
 import { StatusSelect } from "./StatusSelect";
 
 interface Props {
@@ -113,7 +113,7 @@ export function ApplicationsTable({ companies, onChange }: Props) {
         ))}
       </Accordion>
 
-      <NoteDrawer
+      <CompanyDrawer
         opened={notePosition !== null}
         onClose={() => setNotePosition(null)}
         folderPath={notePosition?.folder_path ?? ""}
