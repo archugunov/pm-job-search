@@ -95,3 +95,39 @@ def test_skips_leading_html_comments_before_frontmatter():
     assert fm["company"] == "Plaid"
     assert fm["tier"] == "P0"
     assert body.strip() == "body"
+
+
+def test_strips_inline_yaml_comments_from_unquoted_values():
+    md = dedent("""\
+        ---
+        company: Stripe
+        monitoring: true  # watch for future Consumer Credit roles
+        score: 12  # leaving room to bump
+        ---
+        """)
+    fm, _ = parse_frontmatter(md)
+    assert fm["company"] == "Stripe"
+    assert fm["monitoring"] == "true"
+    assert fm["score"] == "12"
+
+
+def test_preserves_hash_inside_quoted_values():
+    md = dedent("""\
+        ---
+        link: "https://example.com/page#section"
+        note: "uses # as a literal marker"
+        ---
+        """)
+    fm, _ = parse_frontmatter(md)
+    assert fm["link"] == "https://example.com/page#section"
+    assert fm["note"] == "uses # as a literal marker"
+
+
+def test_preserves_hash_with_no_whitespace_before_it():
+    md = dedent("""\
+        ---
+        link: https://example.com/path#anchor
+        ---
+        """)
+    fm, _ = parse_frontmatter(md)
+    assert fm["link"] == "https://example.com/path#anchor"

@@ -24,6 +24,9 @@ from urllib.parse import unquote
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
 _INDENT_RE = re.compile(r"^(\s+)(\S)")
 _LEADING_NOISE_RE = re.compile(r"\A(?:\s+|<!--.*?-->\s*)+", re.DOTALL)
+# Match an unquoted inline ` # comment` tail on a YAML value line.
+# Requires whitespace before # so URLs like https://example.com#frag stay intact.
+_INLINE_COMMENT_RE = re.compile(r"\s+#.*$")
 
 
 def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
@@ -60,7 +63,7 @@ def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
 
         if is_nested and current_parent is not None:
             key, _, value = stripped.partition(":")
-            out[f"{current_parent}.{key.strip()}"] = _strip_quotes(value.strip())
+            out[f"{current_parent}.{key.strip()}"] = _clean_value(value.strip())
             continue
 
         key, sep, value = stripped.partition(":")
@@ -73,7 +76,7 @@ def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
             current_parent = key
         else:
             current_parent = None
-            out[key] = _strip_quotes(value)
+            out[key] = _clean_value(value)
 
     return out, body
 
@@ -82,6 +85,18 @@ def _strip_quotes(value: str) -> str:
     if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
         return value[1:-1]
     return value
+
+
+def _clean_value(value: str) -> str:
+    """Strip inline YAML comments from unquoted values, then strip quotes.
+
+    `true  # re-open in Q3` -> `true`
+    `"some # literal"` -> `some # literal` (quoted, comment preserved)
+    `https://example.com#frag` -> `https://example.com#frag` (no whitespace before #)
+    """
+    if value and value[0] not in ('"', "'"):
+        value = _INLINE_COMMENT_RE.sub("", value).rstrip()
+    return _strip_quotes(value)
 
 
 _SLUG_RE = re.compile(r"[^a-z0-9]+")
