@@ -5,7 +5,8 @@ import type { Components } from "react-markdown";
 // Maps heading and inline elements to compact Mantine Text so the surface
 // doesn't blow up with default browser heading sizes.
 export const briefMdComponents: Components = {
-  h1: ({ children }) => <Text fz="md" fw={700} mt="sm">{children}</Text>,
+  // Hide H1 — the surrounding Paper already shows the brief's title.
+  h1: () => null,
   h2: ({ children }) => <Text fz="xs" fw={700} mt="md" tt="uppercase" c="dimmed">{children}</Text>,
   h3: ({ children }) => <Text fz="sm" fw={600} mt="sm">{children}</Text>,
   p: ({ children }) => <Text size="sm" my={4}>{children}</Text>,
