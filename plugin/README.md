@@ -47,7 +47,7 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:today` | Daily brief: where you are, weekly progress vs targets, top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy itself needs rework. First run offers to set up 9am daily auto-runs. |
+| `/pm-job-search:today` | Two-phase daily ritual. Input phase first: scans Calendar/Gmail/Granola (when wired) for pipeline deltas, asks you to confirm or correct, plus an open catch-all prompt — writes confirmed facts to `journal.md` + relevant `meta.md`. Then the brief: where you are, weekly progress vs targets, top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy needs rework. Mondays: offers a 5-min weekly reflection. First run offers to set up 9am daily auto-runs. |
 | `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric with company-shape adjustment. Hard-filter + anti-goal gates, posting-liveness check, user-override. Writes the company folder (meta + ~200-word research brief). |
 | `/pm-job-search:job-search` | Weekly sweep. Parallel subagents recheck your P0/P1 companies via public ATS APIs (Ashby / Greenhouse / Lever) and discover new roles via `site:`-scoped search. Scores and files results via `/evaluate-position`. Optional `--with-playwright` for link verification. |
 
