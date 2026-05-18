@@ -87,7 +87,8 @@ After step 5 completes, proceed to the existing "Output: the daily brief" sectio
 The existing free-form append convention is preserved. The input phase adds two conventions on top:
 
 - Bullets begin with `[<Company>]` when the fact is company-scoped. Bullets without a tag are global / personal (mock interviews, energy notes, structural reflections).
-- Bullets end with `(source: <integration|user>[, confirmed])`. Provenance lets future skills filter by trust level.
+- Bullets end with `(source: <integration|user>[, confirmed])`. The `, confirmed` trailer applies only to integration-sourced facts that the user explicitly approved in Step 3 — never to user-sourced bullets from the catch-all (those are inherently the user's own input). So: `(source: calendar, confirmed)` is valid, `(source: user, confirmed)` is not — user-sourced bullets always read `(source: user)`.
+- Provenance lets future skills filter by trust level.
 
 One bullet per fact. Multi-fact compound entries get split into separate bullets.
 
@@ -107,7 +108,7 @@ Rules:
 
 ### meta.md updates
 
-Per-company meta.md uses (or gains, if not already present) three fields written by the input phase. Existing fields (`company`, `position`, `tier`, `link`, `date_applied`, `date_added`, `monitoring`) are untouched.
+Per-company meta.md uses (or gains, if not already present) three fields written by the input phase. Existing fields owned by other skills — `company`, `position`, `tier`, `link`, `date_applied`, `date_added`, `monitoring`, `last_inbound`, `rejection_stage`, `date_rejected`, `date_closed` — are untouched.
 
 - **`next_event:`** — string, free-form. Examples: `"R2 panel Fri 2026-05-22 14:00"`, `"Recruiter call Thu 2026-05-21 10:00"`. Cleared (set to empty string or removed) when the input phase confirms the event passed without follow-up OR when it was cancelled. Updated in-place when an event is rescheduled.
 - **`status:`** — enum, one of: `new`, `to_apply`, `applied`, `interviewing`, `offer`, `rejected`, `closed`. The input phase only transitions OUT of an active state when a fact unambiguously implies it: a confirmed rejection → `rejected`, a confirmed offer → `offer`. Confirmed scheduling events do NOT auto-promote `applied` → `interviewing` (other skills own that transition based on richer signal).
