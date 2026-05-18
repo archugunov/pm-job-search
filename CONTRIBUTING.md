@@ -72,6 +72,39 @@ Two example installs exist for testing: `userdata/examples/maya/` (full — prof
 
 For larger spec changes, consider running through one of the multi-step skills (`/pm-job-search:setup` end-to-end, or `/pm-job-search:interview-prep <Company>` end-to-end) mentally and writing out what each step would produce.
 
+## Modifying the dashboard
+
+The visual dashboard at `plugin/dashboard/` is a React + Mantine + Vite app. Its
+built output (`plugin/dashboard/dist/`) is **committed** to this repo so plugin
+users install zero JS dependencies. When you modify dashboard source, you MUST
+rebuild and commit `dist/` in the same PR.
+
+```bash
+cd plugin/dashboard
+npm install            # one-time per fresh checkout
+npm run build          # produces dist/
+cd ../..
+git add plugin/dashboard/src/ plugin/dashboard/dist/
+git commit -m "feat(dashboard): <what you changed>"
+```
+
+Contributors need Node 20+ (any modern LTS). The `dashboard-build-check` CI
+workflow will fail if `dist/` is out of date relative to `src/`.
+
+### Running the Python tests
+
+```bash
+cd plugin/dashboard
+pip install -r requirements-dev.txt  # one-time, in a venv if you prefer
+python3 -m pytest -v
+```
+
+### Running the dashboard locally
+
+```bash
+python3 plugin/dashboard/serve.py --userdata <path-to-userdata>
+```
+
 ## Commit messages
 
 Lower-case, verb-first, scope-prefixed where it helps. Examples from the repo:
