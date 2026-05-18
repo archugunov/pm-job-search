@@ -1,14 +1,12 @@
 import {
   Accordion,
   Badge,
-  Button,
   Group,
   SegmentedControl,
   Stack,
   Table,
   Text,
 } from "@mantine/core";
-import { IconPlus } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 
 import type { Position } from "../types";
@@ -77,7 +75,6 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                     <Table.Th>Company / Position</Table.Th>
                     <Table.Th w={140}>Status</Table.Th>
                     <Table.Th w={70}>Last</Table.Th>
-                    <Table.Th w={80} />
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -105,20 +102,6 @@ export function ApplicationsTable({ companies, onChange }: Props) {
                       </Table.Td>
                       <Table.Td>
                         <Text size="xs" c="dimmed">{relativeDate(p.last_inbound ?? p.date_applied ?? p.date_added)}</Text>
-                      </Table.Td>
-                      <Table.Td>
-                        <Button
-                          size="xs"
-                          variant="light"
-                          radius="xl"
-                          leftSection={<IconPlus size={12} />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setNotePosition(p);
-                          }}
-                        >
-                          note
-                        </Button>
                       </Table.Td>
                     </Table.Tr>
                   ))}
