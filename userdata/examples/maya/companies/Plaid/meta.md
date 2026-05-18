@@ -1,6 +1,6 @@
 ---
 company: Plaid
-status: discovered
+status: rejected
 tier: P0
 score: 14
 position: Senior PM, Consumer Credit
