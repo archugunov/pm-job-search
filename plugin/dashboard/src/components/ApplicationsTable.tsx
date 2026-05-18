@@ -71,7 +71,12 @@ export function ApplicationsTable({ companies, onChange }: Props) {
               </Group>
             </Accordion.Control>
             <Accordion.Panel>
-              <Table highlightOnHover highlightOnHoverColor="dark.9" verticalSpacing="xs" layout="fixed">
+              <Table
+                highlightOnHover
+                highlightOnHoverColor="color-mix(in srgb, var(--mantine-color-dark-8) 80%, var(--mantine-color-dark-7) 20%)"
+                verticalSpacing="xs"
+                layout="fixed"
+              >
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th w={60}>Tier</Table.Th>
