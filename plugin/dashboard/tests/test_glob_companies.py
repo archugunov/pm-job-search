@@ -47,3 +47,39 @@ def test_passes_through_optional_fields(userdata: Path):
 def test_returns_empty_list_when_no_companies(tmp_path: Path):
     (tmp_path / "companies").mkdir()
     assert collect_companies(tmp_path) == []
+
+
+def _write_meta(path: Path, company: str, position: str, status: str = "applied") -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"---\ncompany: {company}\nstatus: {status}\ntier: P1\nposition: {position}\n---\n",
+        encoding="utf-8",
+    )
+
+
+def test_flat_meta_dropped_when_company_has_subfolder_entries(tmp_path: Path):
+    """Mid-migration state: company has both flat meta.md and role-slug subfolders.
+    Per /today spec, prefer subfolder entries; drop the flat one to avoid duplicates."""
+    companies = tmp_path / "companies"
+    _write_meta(companies / "Plaid" / "meta.md", "Plaid", "Stale Position", status="rejected")
+    _write_meta(companies / "Plaid" / "consumer-credit" / "meta.md", "Plaid", "Senior PM, Consumer Credit", status="interviewing")
+    _write_meta(companies / "Plaid" / "growth-loops" / "meta.md", "Plaid", "Senior PM, Growth Loops", status="to_apply")
+
+    positions = collect_companies(tmp_path)
+    folder_paths = sorted(p["folder_path"] for p in positions)
+    assert folder_paths == ["Plaid/consumer-credit", "Plaid/growth-loops"]
+    assert all(p["is_multi_role"] for p in positions)
+    # the stale flat "Stale Position" must NOT appear
+    assert not any(p["position"] == "Stale Position" for p in positions)
+
+
+def test_flat_meta_kept_when_no_subfolder_for_same_company(tmp_path: Path):
+    """Sanity check: a flat-only company keeps its flat entry; only companies
+    with mixed flat+sub layout drop the flat one."""
+    companies = tmp_path / "companies"
+    _write_meta(companies / "Lendable" / "meta.md", "Lendable", "Head of Product", status="offer")
+    _write_meta(companies / "Stripe" / "lead-pm-growth" / "meta.md", "Stripe", "Lead PM, Growth", status="rejected")
+
+    positions = collect_companies(tmp_path)
+    folder_paths = sorted(p["folder_path"] for p in positions)
+    assert folder_paths == ["Lendable", "Stripe/lead-pm-growth"]

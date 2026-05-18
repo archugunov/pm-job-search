@@ -164,7 +164,14 @@ def atomic_write(target: Path, content: str) -> None:
 
 
 def collect_companies(userdata_root: Path) -> list[dict[str, Any]]:
-    """Glob both flat and subfolder meta.md files; return one record per position."""
+    """Glob both flat and subfolder meta.md files; return one record per position.
+
+    When a company has BOTH a flat meta.md and at least one role-slug
+    subfolder (mid-migration state), the flat entry is dropped in favour of
+    the subfolder entries — matches /today's "prefer the role-slug-subfolder
+    entries" rule. Prevents the dashboard from showing the same company twice
+    when an install is mid-migration.
+    """
     companies_root = userdata_root / "companies"
     if not companies_root.is_dir():
         return []
@@ -172,10 +179,16 @@ def collect_companies(userdata_root: Path) -> list[dict[str, Any]]:
     flat_files = list(companies_root.glob("*/meta.md"))
     sub_files = list(companies_root.glob("*/*/meta.md"))
 
+    # Companies that have at least one subfolder meta.md — flat entries for
+    # these are stale leftovers from before the multi-role migration.
+    companies_with_subfolders = {meta_path.parent.parent.name for meta_path in sub_files}
+
     results: list[dict[str, Any]] = []
 
     for meta_path in flat_files:
         company_name = meta_path.parent.name
+        if company_name in companies_with_subfolders:
+            continue  # subfolder entries take precedence
         fm, _ = parse_frontmatter(meta_path.read_text(encoding="utf-8"))
         results.append(_build_record(fm, company_name, folder_path=company_name, is_multi_role=False))
 
