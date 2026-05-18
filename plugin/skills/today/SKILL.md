@@ -70,7 +70,7 @@ After targeted confirms (or in place of them when step 2 produced nothing), prin
 
 > Anything else that moved? Mock interviews, prep work, energy notes, new leads, structural thoughts — anything you want logged. (Press enter to skip.)
 
-User responds in free text. Parse for company tags: explicit `[Plaid]`, `Plaid:`, or first-token match against the company list. Lines without a company tag are logged to `journal.md` only (no meta.md write, no guessing).
+User responds in free text. Parse for company tags: explicit `[Plaid]`, `Plaid:`, or first-token match against the company list. Lines without a company tag are logged to `journal.md` only (no meta.md write, no guessing). Lines WITH a company tag are also logged to `journal.md` only — catch-all input is free text and never writes to meta.md, even when the tag matches a known company. Only integration-sourced facts that pass through the Step 3 confirm flow may update meta.md.
 
 ### Step 5 — write phase
 
