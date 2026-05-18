@@ -261,6 +261,9 @@ def _make_handler(
             if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
                 self._handle_notes_get()
                 return
+            if self.path.startswith("/api/positions/") and self.path.endswith("/artifacts"):
+                self._handle_artifacts_get()
+                return
             if dist_dir is not None:
                 self._serve_static()
                 return
@@ -289,6 +292,17 @@ def _make_handler(
                 self._handle_note_mutate(op="delete")
                 return
             self._send_status(404, b"not found")
+
+        def _handle_artifacts_get(self) -> None:
+            folder_path = self.path[len("/api/positions/") : -len("/artifacts")]
+            meta_path = _resolve_meta_path(userdata_root, folder_path)
+            if meta_path is None:
+                self._send_status(400, b"invalid folder_path")
+                return
+            if not meta_path.is_file():
+                self._send_status(404, b"position not found")
+                return
+            self._send_json(200, collect_artifacts(meta_path.parent))
 
         def _handle_notes_get(self) -> None:
             folder_path = self.path[len("/api/positions/") : -len("/notes")]
@@ -637,6 +651,78 @@ def count_recent_applications(companies: list[dict[str, Any]], today: date) -> i
         if window_start <= applied <= today:
             count += 1
     return count
+
+
+# -- Per-position artifacts ---------------------------------------------------
+#
+# Each company folder may contain artifacts beyond meta.md + notes.md:
+#   - research-brief.md (single, written by /evaluate-position)
+#   - interview-prep-YYYY-MM-DD.md (multiple, written by /interview-prep)
+#   - interview-debrief-YYYY-MM-DD-<stage>.md (multiple, written by
+#     /interview-analysis; <stage> is free-form, e.g. "hm", "panel",
+#     "cpo-round")
+# These helpers feed the company drawer's tabs in the dashboard.
+
+_PREP_FILENAME_RE = re.compile(r"^interview-prep-(\d{4}-\d{2}-\d{2})\.md$")
+_DEBRIEF_FILENAME_RE = re.compile(r"^interview-debrief-(\d{4}-\d{2}-\d{2})-(.+)\.md$")
+
+
+def read_artifact(folder: Path, filename: str) -> str | None:
+    """Return the file contents, or None if it doesn't exist."""
+    path = folder / filename
+    if not path.is_file():
+        return None
+    return path.read_text(encoding="utf-8")
+
+
+def list_prep_docs(folder: Path) -> list[dict[str, str]]:
+    """Return interview-prep docs in the folder, newest first.
+
+    Filenames not matching `interview-prep-YYYY-MM-DD.md` are silently skipped
+    so a user's accidental `interview-prep-rough.md` doesn't break the API.
+    """
+    out: list[dict[str, str]] = []
+    for path in sorted(folder.glob("interview-prep-*.md")):
+        m = _PREP_FILENAME_RE.match(path.name)
+        if not m:
+            continue
+        out.append({
+            "date": m.group(1),
+            "filename": path.name,
+            "markdown": path.read_text(encoding="utf-8"),
+        })
+    out.sort(key=lambda d: d["date"], reverse=True)
+    return out
+
+
+def list_debrief_docs(folder: Path) -> list[dict[str, str]]:
+    """Return interview-debrief docs in the folder, newest first.
+
+    Stage is whatever appears between the date and `.md` — free-form so a user
+    can write `interview-debrief-2026-05-12-cpo-round.md` without us mangling it.
+    """
+    out: list[dict[str, str]] = []
+    for path in sorted(folder.glob("interview-debrief-*.md")):
+        m = _DEBRIEF_FILENAME_RE.match(path.name)
+        if not m:
+            continue
+        out.append({
+            "date": m.group(1),
+            "stage": m.group(2),
+            "filename": path.name,
+            "markdown": path.read_text(encoding="utf-8"),
+        })
+    out.sort(key=lambda d: d["date"], reverse=True)
+    return out
+
+
+def collect_artifacts(folder: Path) -> dict[str, Any]:
+    """Build the {research, preps, debriefs} payload for the company drawer."""
+    return {
+        "research": read_artifact(folder, "research-brief.md"),
+        "preps": list_prep_docs(folder),
+        "debriefs": list_debrief_docs(folder),
+    }
 
 
 def compute_weekly_progress(
