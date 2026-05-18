@@ -412,7 +412,7 @@ When debugging this skill, run it against `userdata/examples/maya/` as a synthet
 
 ### Input phase against Maya
 
-- Step 1 (window): last journal entry is `## 2026-05-15` (after Task 7's example refresh). If today is 2026-05-18 in the harness, gap = 3 days → print `Last entry was 3 days ago — pulling the full window.`
+- Step 1 (window): Maya's journal currently opens with `## 2026-05-15`. If today is 2026-05-18 in the harness, gap = 3 days → print `Last entry was 3 days ago — pulling the full window.` (Update this assertion if the example install is refreshed with a different most-recent date.)
 - Step 2 (inference): integrations.md absent → skipped silently. No items rendered.
 - Step 3 (targeted confirms): skipped (step 2 produced nothing).
 - Step 4 (open catch-all): single prompt printed. If the user replies with free text mentioning a company, that line should be parsed and routed; if they press enter / skip, the input phase exits cleanly with no writes.
