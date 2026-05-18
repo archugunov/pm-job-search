@@ -1,10 +1,10 @@
 # Research brief — Linear
 
-## What they do
+## Company snapshot
 
 Linear is a project management tool for software teams — issue tracking, cycle planning, and roadmap coordination. About 80 people, Series C-equivalent funding stage, bootstrapped-to-product-led-growth (PLG) motion: free tier, self-serve trial, conversion at the workspace-feature gate. Not sales-led. The Group PM, Workflow Automation role owns the rules-engine surface — the layer that automates Linear issue lifecycles: cross-team handoffs, status transitions, recurring workflows, and any API-triggered automation. It is a distinct surface from the core issue-tracking product, positioned as a power-user multiplier.
 
-## Why it's a fit
+## Why this fits
 
 The PLG motion here is real, not a marketing label bolted onto an inside-sales company. Free-to-paid conversion runs through product gates, not BDR sequences — which is exactly Diego's operating context for the last four years. The company is founder-led: CEO Karri Saarinen and co-founders are still visibly in product debates on Twitter and in changelogs, which means a GPM at this stage is shaping product decisions, not executing a roadmap handed down from a GM layer. Size (~80 ppl) means GPM scope is closer to IC-leadership than general management — a clear fit with Diego's anti-goal of avoiding >8 direct reports. Remote-first culture aligns with Mexico City geography and Americas-timezone overlap.
 

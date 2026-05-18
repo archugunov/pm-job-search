@@ -1,6 +1,6 @@
 # Plaid — Senior PM, Growth Loops
 
-## What they do
+## Company snapshot
 
 The Growth Loops PM at Plaid owns the referral and viral mechanisms that sit
 across both the developer (API) side and the consumer product side. In practice
@@ -13,7 +13,7 @@ advantage means the PM can run experiments that competitors can't — but the
 growth surface spans two very different user types (developers and consumers),
 which makes focus hard.
 
-## Why it's a fit
+## Why this fits
 
 Honest answer: it's a softer fit than Consumer Credit. My positioning is
 consumer-credit, thin-file, messy-middle — not developer growth or PLG. I
@@ -23,3 +23,9 @@ Consumer Credit doesn't land. The Plaid brand still matters for the CV, and the
 team-size and autonomy shape are similar to the CC role. Treating it as a
 backup — P1, not P0 — and I'll apply softly once the CC outcome is clear rather
 than running a parallel process that splits my prep.
+
+## Open questions
+
+- Is the Growth Loops PM role expected to own both the developer and consumer growth surfaces simultaneously, or can they specialise toward one?
+- What does "growth loop" mean concretely at Plaid — are there live referral mechanics already running, or is this a greenfield build?
+- How much does this role interact with the Consumer Credit team, and would success here create a natural path to move into the CC PM role if it opens up?
