@@ -305,6 +305,42 @@ The nudge is informational. /today does NOT attempt to set up scheduling itself 
 
 If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write nudge marker — automation prompt will repeat on next /today run.` and continue without erroring. The nudge resurfacing is annoying, not destructive.
 
+## Weekly reflection trigger
+
+After the brief renders (and after the first-run automation nudge has been considered), check whether to offer a weekly reflection hand-off to `pm-job-search:career-coach`.
+
+**Trigger conditions (ALL must be true):**
+
+1. The run is non-ephemeral (the `--ephemeral` flag was NOT passed).
+2. Today is the first `/today` run of the current ISO week. Determined by reading the marker file `userdata/outputs/.last-weekly-reflection`:
+   - If the file does not exist → trigger fires.
+   - If the file exists, read the single ISO date on the first line. If that date falls in a prior ISO week (compare ISO week numbers, not just day counts), trigger fires. Otherwise it does not.
+   - "ISO week" = ISO-8601 week (Monday is day 1). On a Sunday boundary, a date from "last Sunday" is the same ISO week as Monday-Wednesday earlier; check the week number not the day-of-week.
+
+**When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the offer is a one-time chat surface, not part of the brief history):
+
+```
+---
+
+It's the start of a new week. Want a 5-min reflection on last week? (y / skip)
+```
+
+Wait for user response.
+
+- If user replies `y` (or any affirmative) → invoke the `pm-job-search:career-coach` agent with the mode hint `weekly-reflection`. The agent reads journal.md + strategy.md, runs 3-4 reflection prompts, and appends a `## Weekly reflection <YYYY-MM-DD>` block to journal.md. See `plugin/agents/career-coach.md` for the mode's behaviour.
+- If user replies `skip` (or any negative / non-affirmative) → do not invoke career-coach.
+- In BOTH cases (accept and skip), update the marker file by writing today's ISO date as the only line:
+
+  ```bash
+  date +%Y-%m-%d > userdata/outputs/.last-weekly-reflection
+  ```
+
+  This ensures the offer fires at most once per ISO week regardless of whether the user took it.
+
+If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write weekly-reflection marker — offer may repeat later this week.` and continue without erroring.
+
+The weekly reflection is invoked by the user explicitly accepting the offer; /today never invokes career-coach silently.
+
 ## `applications.md` regeneration
 
 `applications.md` is a hybrid file: /today owns one HTML-comment-delimited block; the user owns everything outside it. Spec is in plan §I.2.
