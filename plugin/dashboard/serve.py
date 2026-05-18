@@ -9,14 +9,13 @@ import os
 import re
 import tempfile
 from pathlib import Path
-from typing import Tuple
 
 
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
 _INDENT_RE = re.compile(r"^(\s+)(\S)")
 
 
-def parse_frontmatter(md: str) -> Tuple[dict[str, str], str]:
+def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
     """Parse YAML-ish frontmatter from a markdown string.
 
     Returns (frontmatter_dict, body). Frontmatter values are returned as
@@ -33,7 +32,6 @@ def parse_frontmatter(md: str) -> Tuple[dict[str, str], str]:
     raw_block, body = match.group(1), match.group(2)
     out: dict[str, str] = {}
     current_parent: str | None = None
-    current_indent = 0
 
     for raw_line in raw_block.splitlines():
         stripped = raw_line.strip()
@@ -56,7 +54,6 @@ def parse_frontmatter(md: str) -> Tuple[dict[str, str], str]:
 
         if value == "":
             current_parent = key
-            current_indent = 0
         else:
             current_parent = None
             out[key] = _strip_quotes(value)
