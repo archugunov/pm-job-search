@@ -5,3 +5,10 @@ userdata/*
 .DS_Store
 .claude/settings.local.json
 SPEC.md
+# Dashboard build deps and artefacts
+plugin/dashboard/node_modules/
+.venv/
+**/.venv/
+**/*.tsbuildinfo
+plugin/dashboard/vite.config.d.ts
+plugin/dashboard/vite.config.js

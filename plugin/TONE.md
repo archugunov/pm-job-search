@@ -102,3 +102,11 @@ Hard rule for skill / agent authors: never hardcode reference content into a SKI
 ## When in doubt
 
 Read the line aloud. If a senior PM friend wouldn't say it to you over coffee, rewrite it.
+
+## Dashboard
+
+The visual dashboard at `plugin/dashboard/` uses Mantine v7 component defaults.
+No custom theming beyond dark scheme, no new design tokens, no wrapper
+components. The low-friction principle that makes the markdown-first workflow
+work also applies to the dashboard's visual layer — use library primitives
+straight off the shelf so the entire surface stays small and obvious.
