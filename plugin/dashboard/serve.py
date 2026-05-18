@@ -209,3 +209,23 @@ def latest_brief(userdata_root: Path) -> dict[str, str] | None:
     candidates.sort(key=lambda pair: pair[0], reverse=True)
     date, path = candidates[0]
     return {"date": date, "markdown": path.read_text(encoding="utf-8")}
+
+
+def read_strategy(userdata_root: Path) -> dict[str, Any]:
+    """Read strategy.md frontmatter, returning {target_offer_date, weekly_targets}."""
+    strategy_path = userdata_root / "strategy.md"
+    if not strategy_path.is_file():
+        return {}
+    fm, _ = parse_frontmatter(strategy_path.read_text(encoding="utf-8"))
+    weekly: dict[str, int] = {}
+    for key, value in fm.items():
+        if key.startswith("weekly_targets."):
+            sub_key = key.split(".", 1)[1]
+            try:
+                weekly[sub_key] = int(value)
+            except ValueError:
+                continue
+    out: dict[str, Any] = {"weekly_targets": weekly}
+    if "target_offer_date" in fm:
+        out["target_offer_date"] = fm["target_offer_date"]
+    return out
