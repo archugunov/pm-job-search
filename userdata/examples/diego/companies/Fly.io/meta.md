@@ -15,7 +15,7 @@ monitoring: true
 
 # Fly.io
 
-Edge compute platform — global app deployment with per-region runtime. ~60 ppl, Series A. HoP role owns the runtime + DX product surface end-to-end. Closed at take-home: take-home revealed Diego's relative weakness on infra-shape (his strength is apps + workflow). Monitoring on for future Apps-shape roles.
+Edge compute platform — global app deployment with per-region runtime. ~60 ppl, Series A. HoP role owns the runtime + DX product surface end-to-end. Closed at take-home: take-home revealed my relative weakness on infra-shape (my strength is apps + workflow). Monitoring on for future Apps-shape roles.
 
 ## History
 

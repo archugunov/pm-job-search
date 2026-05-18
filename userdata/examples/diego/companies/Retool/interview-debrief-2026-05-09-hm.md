@@ -7,7 +7,7 @@
 - Referral context helped with credibility setup. Carla's introduction gave Tom a pre-warm on the PLG background; the early minutes felt like confirmation rather than introduction, which left more time for substance.
 
 ## What didn't land
-- When Tom probed on Workflows scope — specifically "how do you think about Apps vs Workflows over the next 12 months?" — Diego didn't have a sharp answer. I gave a generic sequencing framework (grow the core, then expand adjacently) rather than a view grounded in Retool's specific product architecture. Tom didn't follow up, but the topic was visibly left unresolved.
+- When Tom probed on Workflows scope — specifically "how do you think about Apps vs Workflows over the next 12 months?" — I didn't have a sharp answer. I gave a generic sequencing framework (grow the core, then expand adjacently) rather than a view grounded in Retool's specific product architecture. Tom didn't follow up, but the topic was visibly left unresolved.
 - No sharp answer on the org interface between Apps and Workflows. Tom asked once whether I'd expect to own Workflows growth or just be consulted; I hedged. The right answer was probably "I'd want that scoped explicitly before accepting — here's why it matters for how I'd prioritise the roadmap."
 
 ## Interviewer signals

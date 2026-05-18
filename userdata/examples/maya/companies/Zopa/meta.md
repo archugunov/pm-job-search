@@ -10,7 +10,7 @@ date_added: 2026-05-15
 
 # Zopa
 
-UK digital bank with consumer credit roots (originally a P2P lender). ~600 ppl, IPO-track. Hiring a Senior PM Consumer Credit. Way over Maya's size preference (P1 only), but strong product-surface fit.
+UK digital bank with consumer credit roots (originally a P2P lender). ~600 ppl, IPO-track. Hiring a Senior PM Consumer Credit. Way over my size preference (P1 only), but strong product-surface fit.
 
 ## History
 

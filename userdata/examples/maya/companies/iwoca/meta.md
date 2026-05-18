@@ -11,7 +11,7 @@ date_applied: 2026-04-22
 
 # iwoca
 
-SMB lending platform — fast-decision flexible loans for small businesses. ~250 ppl, profitable, Series D-ish maturity. Hiring a Senior PM SMB Lending. Above Maya's preferred size band but the SMB lending motion is interesting enough to chase.
+SMB lending platform — fast-decision flexible loans for small businesses. ~250 ppl, profitable, Series D-ish maturity. Hiring a Senior PM SMB Lending. Above my preferred size band but the SMB lending motion is interesting enough to chase.
 
 ## History
 

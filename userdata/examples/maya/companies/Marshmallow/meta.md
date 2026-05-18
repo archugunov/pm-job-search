@@ -11,7 +11,7 @@ date_applied: 2026-05-13
 
 # Marshmallow
 
-Insurtech for non-standard motor insurance (immigrants, expats, new UK arrivals without local credit history). Series B, ~100 ppl, founder-led. Hiring a Senior PM for Pricing & Risk — exact crossover with Maya's positioning (pricing + risk in consumer credit, applied to insurance).
+Insurtech for non-standard motor insurance (immigrants, expats, new UK arrivals without local credit history). Series B, ~100 ppl, founder-led. Hiring a Senior PM for Pricing & Risk — exact crossover with my positioning (pricing + risk in consumer credit, applied to insurance).
 
 ## History
 

@@ -25,7 +25,7 @@
 
 The round was substantively good on PLG mechanics but had a visible warning sign that explains the post-HM silence. Signals:
 - Positive build signal: Karri's follow-up on cohort methodology extended into a 4-minute side-thread on adoption measurement for power-user surfaces — that's active intellectual engagement, not a box-check interview.
-- Mixed signal: disengagement on platform-framing suggests the role's evaluation axis is narrower than the JD implied. This is a product-feature GPM role, not a platform-architecture role. That's a smaller scope than Diego's prior work.
+- Mixed signal: disengagement on platform-framing suggests the role's evaluation axis is narrower than the JD implied. This is a product-feature GPM role, not a platform-architecture role. That's a smaller scope than my prior work.
 - Mixed signal: the api-deprecation story's weak landing (enterprise-context mismatch) suggests Karri is pattern-matching against small-team, bottom-up product work — and stories from 200+ person companies don't transfer cleanly.
 - No next-step commitment from Karri despite a follow-up note from Anna on 2026-05-04 — "coming soon" is recruiter-speak for a decision that isn't moving quickly. The post-HM silence is consistent with a 🟡 round.
 

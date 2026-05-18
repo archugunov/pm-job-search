@@ -13,7 +13,7 @@ next_event: ""
 
 # Cleo
 
-AI personal finance assistant. ~180 ppl, Series C, US/UK consumer-facing. Hiring a Senior PM Growth to own activation funnels across the AI chat surface. Deliberately on the size edge of Maya's preferred ceiling — pursued for the consumer-facing growth motion fit; now 10 days post-HM with no response.
+AI personal finance assistant. ~180 ppl, Series C, US/UK consumer-facing. Hiring a Senior PM Growth to own activation funnels across the AI chat surface. Deliberately on the size edge of my preferred ceiling — pursued for the consumer-facing growth motion fit; now 10 days post-HM with no response.
 
 ## History
 

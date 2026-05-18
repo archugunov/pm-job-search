@@ -11,7 +11,7 @@ date_closed: 2026-05-03
 
 # Replit
 
-Browser-based IDE + education arm — collaborative coding + AI-native code-gen. ~150 ppl, Series B. Education HoP role owns the K-12 + university surface. Closed pre-application: Education segment + AI-codegen positioning is far from Diego's apps-PLG dev-tools lane.
+Browser-based IDE + education arm — collaborative coding + AI-native code-gen. ~150 ppl, Series B. Education HoP role owns the K-12 + university surface. Closed pre-application: Education segment + AI-codegen positioning is far from my apps-PLG dev-tools lane.
 
 ## History
 
