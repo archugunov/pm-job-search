@@ -315,7 +315,7 @@ After the brief renders (and after the first-run automation nudge has been consi
 2. Today is the first `/today` run of the current ISO week. Determined by reading the marker file `userdata/outputs/.last-weekly-reflection`:
    - If the file does not exist → trigger fires.
    - If the file exists, read the single ISO date on the first line. If that date falls in a prior ISO week (compare ISO week numbers, not just day counts), trigger fires. Otherwise it does not.
-   - "ISO week" = ISO-8601 week (Monday is day 1). On a Sunday boundary, a date from "last Sunday" is the same ISO week as Monday-Wednesday earlier; check the week number not the day-of-week.
+   - "ISO week" = ISO-8601 week (Monday is day 1, Sunday is day 7). A Sunday belongs to the ISO week that STARTED on the preceding Monday — not the upcoming one. So `isoweek(Sunday)` equals `isoweek(the preceding Monday)`; the next Monday starts a new ISO week. Compare ISO week numbers, not raw day counts.
 
 **When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the offer is a one-time chat surface, not part of the brief history):
 
