@@ -141,10 +141,6 @@ def collect_companies(userdata_root: Path) -> list[dict[str, Any]]:
     flat_files = list(companies_root.glob("*/meta.md"))
     sub_files = list(companies_root.glob("*/*/meta.md"))
 
-    multi_role_companies: set[str] = set()
-    for sub_meta in sub_files:
-        multi_role_companies.add(sub_meta.parent.parent.name)
-
     results: list[dict[str, Any]] = []
 
     for meta_path in flat_files:
