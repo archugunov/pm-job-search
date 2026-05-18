@@ -8,6 +8,10 @@ A Claude Code plugin for senior PM and Head of Product job searches. Finds open 
 2. **Daily loop.** `/pm-job-search:today` for the morning brief. `/pm-job-search:evaluate-position <url>` to score new roles. Before interviews: `/pm-job-search:interview-prep <Company>` to prep, `pm-job-search:interviewer-simulator` to rehearse, `/pm-job-search:interview-analysis` after.
 3. **Coach on call.** `pm-job-search:career-coach` for anything strategic — offer to weigh, feeling stuck, positioning not landing. Figures out what's actually wrong before proposing a fix.
 
+### Visual dashboard
+
+Run `/pm-job-search:dashboard` to open a browser view of your pipeline. The dashboard reads the same md files all other skills use (`userdata/companies/*/meta.md`, `userdata/strategy.md`, latest `userdata/outputs/daily-brief-*.md`) and can write three things back: status changes, timestamped notes (`notes.md` per company), and scaffolded `meta.md` for a brand-new company-position pair. Built with React + Mantine; the bundle is pre-built and committed, so installation costs zero. Stops on ctrl-C.
+
 ## What makes it different
 
 Built for senior PMs. Tracks your pipeline like other tools — and pushes back when it's not working.
@@ -35,7 +39,7 @@ cd <your-workspace>
 # ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
 ```
 
-## The workflow — 9 skills
+## The workflow — 10 skills
 
 **One-time setup (~10-15 min):**
 
@@ -48,6 +52,7 @@ cd <your-workspace>
 | Skill | What it does |
 |---|---|
 | `/pm-job-search:today` | Daily brief: where you are, weekly progress vs targets, top 3 actions, pipeline state, heads-up. Routes you to `pm-job-search:career-coach` when multi-week patterns suggest the strategy itself needs rework. First run offers to set up 9am daily auto-runs. |
+| `/pm-job-search:dashboard` | Visual dashboard — pipeline view, inline status changes, quick notes against companies, "+ new company" scaffold. Reads the same md files all other skills use; writes status changes + notes + new-company meta.md scaffolds. React + Mantine, pre-built bundle, zero install. |
 | `/pm-job-search:evaluate-position <url-or-paste>` | Score a posting against your tier rubric with company-shape adjustment. Hard-filter + anti-goal gates, posting-liveness check, user-override. Writes the company folder (meta + ~200-word research brief). |
 | `/pm-job-search:job-search` | Weekly sweep. Parallel subagents recheck your P0/P1 companies via public ATS APIs (Ashby / Greenhouse / Lever) and discover new roles via `site:`-scoped search. Scores and files results via `/evaluate-position`. Optional `--with-playwright` for link verification. |
 
