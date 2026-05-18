@@ -1,12 +1,11 @@
 # pm-job-search dashboard
 
 Status: design (approved by user 2026-05-18)
-Owner: Arkadii
-Implementation plan: TBD (next step — writing-plans)
+Implementation plan: docs/superpowers/plans/2026-05-18-dashboard.md
 
 ## Problem
 
-Day-to-day pipeline operation in pm-job-search lives in two places: skills write canonical state to `userdata/companies/*/meta.md`, but Arkadii uses a separate Notion DB to actually *look at* the pipeline — drag cards between status columns, scan tier and last-activity at a glance, capture quick notes against a company. Two surfaces drift. Either Notion goes stale and stops being useful, or the user spends time mirroring state from md back into Notion by hand.
+Day-to-day pipeline operation in pm-job-search lives in two places: skills write canonical state to `userdata/companies/*/meta.md`, but the user keeps a separate Notion DB to actually *look at* the pipeline — drag cards between status columns, scan tier and last-activity at a glance, capture quick notes against a company. Two surfaces drift. Either Notion goes stale and stops being useful, or the user spends time mirroring state from md back into Notion by hand.
 
 The user wants one surface. Markdown remains the source of truth, but a browser-based dashboard replaces Notion for daily operation. Pipeline view, quick notes, status changes, and new-company capture all happen there. Skills (`/today`, `/evaluate-position`, `/interview-prep`, etc.) keep running as before — they read and write the same md files.
 

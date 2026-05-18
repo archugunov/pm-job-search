@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship a browser-based dashboard that replaces Notion as Arkadii's daily working surface for the pm-job-search plugin. Read pipeline state from md; write status changes, timestamped notes, and new-company scaffolds back to md.
+**Goal:** Ship a browser-based dashboard that replaces Notion as the user's daily working surface for the pm-job-search plugin. Read pipeline state from md; write status changes, timestamped notes, and new-company scaffolds back to md.
 
 **Architecture:** Python stdlib HTTP server serves a pre-built React + Mantine SPA. Browser ↔ server ↔ md files. Source of truth stays markdown; dashboard is the working view. `dist/` is committed so installation costs zero.
 
@@ -3374,15 +3374,16 @@ git commit -m "docs: plugin/dashboard/README points at spec + rebuild commands"
 
 **Files:** (no file changes — verification only)
 
-- [ ] **Step 1: Run privacy scan on all new dashboard files**
+- [ ] **Step 1: Run the privacy scan on all new dashboard files**
 
-Run:
+Extract the blocklist pattern from `.github/workflows/privacy-check.yml` (look for the `PATTERN=` line) and run `rg -i "$PATTERN"` against the new dashboard files:
 
 ```bash
-rg -i 'arkadii|arcady|samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140' plugin/dashboard/ plugin/skills/dashboard/ .github/workflows/dashboard-build-check.yml
+PATTERN=$(awk -F"'" '/PATTERN=/ {print $2; exit}' .github/workflows/privacy-check.yml)
+rg -i "$PATTERN" plugin/dashboard/ plugin/skills/dashboard/ .github/workflows/dashboard-build-check.yml
 ```
 
-Expected: zero hits. If any hit appears, fix the offending file before proceeding.
+Expected: zero hits (rg exits non-zero with no matches, which is what we want here — wrap with `|| echo clean` if you want a positive signal). If any hit appears, fix the offending file before proceeding.
 
 - [ ] **Step 2: Run full Python test suite**
 
