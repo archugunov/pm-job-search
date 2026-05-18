@@ -37,16 +37,12 @@ export function ApplicationsTable({ companies, onChange }: Props) {
 
   return (
     <Stack gap="md">
-      <Group justify="space-between">
-        <SegmentedControl
-          data={["Status", "Tier"]}
-          value={groupBy}
-          onChange={(v) => setGroupBy(v as GroupKey)}
-        />
-        <Text size="xs" c="dimmed">
-          New positions land via <Text component="code">/pm-job-search:evaluate-position &lt;link&gt;</Text>
-        </Text>
-      </Group>
+      <SegmentedControl
+        data={["Status", "Tier"]}
+        value={groupBy}
+        onChange={(v) => setGroupBy(v as GroupKey)}
+        w="fit-content"
+      />
 
       <Accordion
         multiple
