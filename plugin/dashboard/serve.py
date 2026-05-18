@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from socketserver import TCPServer
 from typing import Any
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
 
 
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
@@ -266,9 +266,6 @@ def _make_handler(
             self._send_status(404, b"not found")
 
         def do_POST(self) -> None:  # noqa: N802
-            if self.path == "/api/companies":
-                self._handle_new_company()
-                return
             if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
                 self._handle_note_post()
                 return
@@ -333,31 +330,6 @@ def _make_handler(
             position = fm.get("position", "")
             append_note(meta_path.parent / "notes.md", company, position, note)
             self._send_json(200, {"ok": True})
-
-        def _handle_new_company(self) -> None:
-            try:
-                body = self._read_json_body()
-            except _json.JSONDecodeError:
-                self._send_status(400, b"invalid json")
-                return
-            link = body.get("link")
-            status = body.get("status", "new")
-            if not isinstance(link, str) or not link.strip():
-                self._send_status(400, b"missing link")
-                return
-            if not isinstance(status, str) or not status:
-                self._send_status(400, b"missing status")
-                return
-            try:
-                folder_path = create_position_scaffold(
-                    userdata_root,
-                    link=link.strip(),
-                    status=status,
-                )
-            except ValueError as e:
-                self._send_json(400, {"error": str(e)})
-                return
-            self._send_json(201, {"folder_path": folder_path})
 
         def _handle_state(self) -> None:
             payload = {
@@ -436,86 +408,6 @@ def append_note(notes_path: Path, company: str, position: str, note: str) -> Non
         atomic_write(notes_path, header + entry)
         return
     atomic_write(notes_path, notes_path.read_text(encoding="utf-8") + entry)
-
-
-_ATS_HOSTS = (
-    "greenhouse.io",
-    "lever.co",
-    "ashbyhq.com",
-    "workable.com",
-    "jobs.lever.co",
-    "boards.greenhouse.io",
-    "myworkdayjobs.com",
-)
-
-
-def derive_company_from_url(url: str) -> str:
-    """Best-effort company-name guess from a job URL host or path. User can edit later."""
-    parsed = urlparse(url)
-    host = (parsed.hostname or "").lower().removeprefix("www.")
-    if not host:
-        return "Unknown"
-    if any(host.endswith(ats) for ats in _ATS_HOSTS):
-        parts = [p for p in parsed.path.split("/") if p]
-        if parts:
-            return parts[0].replace("-", " ").title()
-    segments = host.split(".")
-    if len(segments) >= 2:
-        return segments[-2].title()
-    return host.title()
-
-
-def create_position_scaffold(
-    userdata_root: Path,
-    *,
-    link: str,
-    status: str,
-) -> str:
-    """Scaffold a placeholder position entry from just a link + status.
-
-    Derives a placeholder company name from the URL. The position field is
-    left blank — /evaluate-position fills in company/position/tier/score
-    from the JD when the user runs it against the link.
-    """
-    if not link or "://" not in link:
-        raise ValueError("link must be a full URL with scheme")
-
-    companies_root = userdata_root / "companies"
-    companies_root.mkdir(parents=True, exist_ok=True)
-
-    company = derive_company_from_url(link)
-    base_folder = companies_root / company
-    target_dir = base_folder
-    # If a flat-layout entry already exists at that name, append a suffix
-    # so the new entry doesn't collide. User can rename later or let
-    # /evaluate-position migrate to a proper subfolder layout.
-    suffix = 1
-    while (target_dir / "meta.md").exists():
-        suffix += 1
-        target_dir = companies_root / f"{company}-{suffix}"
-
-    today = datetime.now().strftime("%Y-%m-%d")
-    meta_md = (
-        "---\n"
-        f"company: {company}\n"
-        f"status: {status}\n"
-        "tier: \n"
-        "score: 0\n"
-        "position: \n"
-        f"link: {link}\n"
-        f"date_added: {today}\n"
-        "---\n"
-        "\n"
-        f"# {company}\n"
-        "\n"
-        f"(Scaffolded from dashboard on {today}. Run `/pm-job-search:evaluate-position {link}` to fill in tier, position, score, and the research brief.)\n"
-    )
-
-    target_dir.mkdir(parents=True, exist_ok=True)
-    atomic_write(target_dir / "meta.md", meta_md)
-    return target_dir.relative_to(companies_root).as_posix()
-
-
 
 
 def _guess_content_type(name: str) -> str:

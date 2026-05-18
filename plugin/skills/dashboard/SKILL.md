@@ -1,6 +1,6 @@
 ---
 name: dashboard
-description: This skill should be used when the user asks to "/dashboard", "open the dashboard", "show me my pipeline visually", "launch the dashboard", or wants a browser-based view of their job-search pipeline. Launches a local Python server that serves a React + Mantine SPA reading from `userdata/companies/*/meta.md`, `userdata/strategy.md`, and the latest `userdata/outputs/daily-brief-*.md`. Supports inline status changes, timestamped notes per company, and scaffolding a new company entry. The dashboard reads and writes the same md files all other skills use — markdown remains the source of truth.
+description: This skill should be used when the user asks to "/dashboard", "open the dashboard", "show me my pipeline visually", "launch the dashboard", or wants a browser-based view of their job-search pipeline. Launches a local Python server that serves a React + Mantine SPA reading from `userdata/companies/*/meta.md`, `userdata/strategy.md`, and the latest `userdata/outputs/daily-brief-*.md`. Supports inline status changes and timestamped notes per company. New positions are created via `/pm-job-search:evaluate-position <link>`, not from the dashboard itself. The dashboard reads and writes the same md files all other skills use — markdown remains the source of truth.
 ---
 
 # /dashboard
@@ -16,9 +16,9 @@ Launches the pm-job-search visual dashboard.
 
 The dashboard provides:
 - A top status bar showing pipeline counts, weekly progress vs `strategy.md` targets, and days-to-target-offer countdown.
-- A grouped applications table (toggle Status / Tier) with inline status dropdowns and per-row "add note" / "open in editor" actions.
-- A "+ New company" button that scaffolds a folder + `meta.md` for a fresh company-position pair.
+- A grouped applications table (toggle Status / Tier) with inline status dropdowns; click any row to open the notes drawer.
 - A bottom panel rendering the latest `daily-brief-*.md` (with a stale-brief banner when older than today).
+- To add a new position: run `/pm-job-search:evaluate-position <link>` in Claude Code. The dashboard does not write new positions itself.
 
 ## When to invoke
 

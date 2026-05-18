@@ -12,7 +12,6 @@ import { IconPlus } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 
 import type { Position } from "../types";
-import { NewPositionModal } from "./NewPositionModal";
 import { NoteDrawer } from "./NoteDrawer";
 import { StatusSelect } from "./StatusSelect";
 
@@ -32,7 +31,6 @@ const TIER_COLORS: Record<string, string> = {
 
 export function ApplicationsTable({ companies, onChange }: Props) {
   const [groupBy, setGroupBy] = useState<GroupKey>("Status");
-  const [modalOpen, setModalOpen] = useState(false);
   const [notePosition, setNotePosition] = useState<Position | null>(null);
 
   const groups = useMemo(() => buildGroups(companies, groupBy), [companies, groupBy]);
@@ -45,9 +43,9 @@ export function ApplicationsTable({ companies, onChange }: Props) {
           value={groupBy}
           onChange={(v) => setGroupBy(v as GroupKey)}
         />
-        <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
-          New position
-        </Button>
+        <Text size="xs" c="dimmed">
+          New positions land via <Text component="code">/pm-job-search:evaluate-position &lt;link&gt;</Text>
+        </Text>
       </Group>
 
       <Accordion
@@ -138,11 +136,6 @@ export function ApplicationsTable({ companies, onChange }: Props) {
         ))}
       </Accordion>
 
-      <NewPositionModal
-        opened={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onCreated={onChange}
-      />
       <NoteDrawer
         opened={notePosition !== null}
         onClose={() => setNotePosition(null)}
