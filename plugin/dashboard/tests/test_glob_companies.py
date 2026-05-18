@@ -83,3 +83,57 @@ def test_flat_meta_kept_when_no_subfolder_for_same_company(tmp_path: Path):
     positions = collect_companies(tmp_path)
     folder_paths = sorted(p["folder_path"] for p in positions)
     assert folder_paths == ["Lendable", "Stripe/lead-pm-growth"]
+
+
+def test_passes_through_status_specific_fields(tmp_path: Path):
+    """Rejection / closed / next_event fields must pass through to API records.
+
+    Previously these were dropped by _OPTIONAL_FIELDS whitelist, leaving the
+    dashboard unable to render rejection-stage / closed-date / next-event signals.
+    """
+    companies = tmp_path / "companies"
+    rejected_path = companies / "Fly.io" / "meta.md"
+    rejected_path.parent.mkdir(parents=True, exist_ok=True)
+    rejected_path.write_text(
+        "---\n"
+        "company: Fly.io\n"
+        "status: rejected\n"
+        "tier: P1\n"
+        "position: Head of Product\n"
+        "date_rejected: 2026-04-08\n"
+        "rejection_stage: take-home\n"
+        'rejection_note: "Strong submission; prioritising infra-PM experience."\n'
+        "---\n",
+        encoding="utf-8",
+    )
+    closed_path = companies / "Replit" / "meta.md"
+    closed_path.parent.mkdir(parents=True, exist_ok=True)
+    closed_path.write_text(
+        "---\ncompany: Replit\nstatus: closed\ntier: P2\nposition: HoP, Edu\ndate_closed: 2026-05-03\n---\n",
+        encoding="utf-8",
+    )
+    upcoming_path = companies / "Lendable" / "meta.md"
+    upcoming_path.parent.mkdir(parents=True, exist_ok=True)
+    upcoming_path.write_text(
+        "---\n"
+        "company: Lendable\n"
+        "status: offer\n"
+        "tier: P0\n"
+        "position: Head of Product\n"
+        'next_event: "Reference call Wed 2026-05-20 11:00"\n'
+        "---\n",
+        encoding="utf-8",
+    )
+
+    positions = {p["company"]: p for p in collect_companies(tmp_path)}
+
+    fly = positions["Fly.io"]
+    assert fly["date_rejected"] == "2026-04-08"
+    assert fly["rejection_stage"] == "take-home"
+    assert fly["rejection_note"] == "Strong submission; prioritising infra-PM experience."
+
+    replit = positions["Replit"]
+    assert replit["date_closed"] == "2026-05-03"
+
+    lendable = positions["Lendable"]
+    assert lendable["next_event"] == "Reference call Wed 2026-05-20 11:00"

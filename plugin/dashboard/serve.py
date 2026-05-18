@@ -208,7 +208,20 @@ def collect_companies(userdata_root: Path) -> list[dict[str, Any]]:
     return results
 
 
-_OPTIONAL_FIELDS = ("score", "link", "date_added", "date_applied", "last_inbound", "monitoring")
+_OPTIONAL_FIELDS = (
+    "score",
+    "link",
+    "date_added",
+    "date_applied",
+    "last_inbound",
+    "monitoring",
+    # Status-specific fields per the /today + /evaluate-position meta.md spec:
+    "next_event",       # if a future event is scheduled (input-phase write contract)
+    "date_rejected",    # if status: rejected
+    "rejection_stage",  # if status: rejected — needed for Coach Trigger C cond 2 surface
+    "rejection_note",   # if status: rejected — short quoted recruiter feedback
+    "date_closed",      # if status: closed
+)
 
 
 def _build_record(
