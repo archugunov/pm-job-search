@@ -274,7 +274,7 @@ Default: write the full brief to `userdata/outputs/daily-brief-<YYYY-MM-DD>.md` 
 
 Also regenerate `userdata/outputs/applications.md` (see next section).
 
-If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks.
+If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks. `--ephemeral` suppresses the brief and applications.md writes only — the input phase still runs and writes confirmed facts to journal.md + meta.md. Skip the catch-all (press enter) for a fully no-side-effect spot-check.
 
 Always print the brief to chat regardless of save mode.
 

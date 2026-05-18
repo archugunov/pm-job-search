@@ -5,7 +5,7 @@
 - [Revolut] R1 with HM scheduled Mon 2026-05-19 10:00. (source: calendar, confirmed)
 
 ## 2026-05-14
-- [Revolut] Recruiter call went well; positioning landed on the messy-middle framing. They flagged the consumer-credit ICP as a perfect fit. (source: granola)
+- [Revolut] Recruiter call went well; positioning landed on the messy-middle framing. They flagged the consumer-credit ICP as a perfect fit. (source: granola, confirmed)
 - Two new founder intros from the LinkedIn post about the activation framework. Worth coffee with both. (source: user)
 
 ## 2026-05-11
