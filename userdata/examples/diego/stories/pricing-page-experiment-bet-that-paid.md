@@ -2,7 +2,7 @@
 title: Pricing page experiment bet that paid
 themes: [pricing, experimentation, growth, bet-that-paid-off]
 role_lens: [strategy, execution, analytics]
-companies_used_in: []
+companies_used_in: [Retool]
 last_practised: 2026-05-15
 ---
 
