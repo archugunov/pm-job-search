@@ -259,6 +259,9 @@ def _make_handler(
             self._send_status(404, b"not found")
 
         def do_POST(self) -> None:  # noqa: N802
+            if self.path == "/api/companies":
+                self._handle_new_company()
+                return
             if self.path.startswith("/api/positions/") and self.path.endswith("/notes"):
                 self._handle_note_post()
                 return
@@ -314,6 +317,32 @@ def _make_handler(
             append_note(meta_path.parent / "notes.md", company, position, note)
             self._send_json(200, {"ok": True})
 
+        def _handle_new_company(self) -> None:
+            try:
+                body = self._read_json_body()
+            except _json.JSONDecodeError:
+                self._send_status(400, b"invalid json")
+                return
+            required = ("company", "position", "tier", "link", "status")
+            if not all(isinstance(body.get(k), str) and body.get(k) for k in required):
+                self._send_status(400, b"missing required field")
+                return
+            try:
+                folder_path = create_company_scaffold(
+                    userdata_root,
+                    company=body["company"],
+                    position=body["position"],
+                    tier=body["tier"],
+                    link=body["link"],
+                    status=body["status"],
+                )
+            except CompanyExistsError as e:
+                self._send_json(409, {"error": str(e)})
+                return
+            except MultiRoleMigrationError as e:
+                self._send_json(409, {"error": str(e)})
+                return
+            self._send_json(201, {"folder_path": folder_path})
 
         def _handle_state(self) -> None:
             payload = {
@@ -392,6 +421,78 @@ def append_note(notes_path: Path, company: str, position: str, note: str) -> Non
         atomic_write(notes_path, header + entry)
         return
     atomic_write(notes_path, notes_path.read_text(encoding="utf-8") + entry)
+
+
+class CompanyExistsError(Exception):
+    """Raised when (company, position) already exists."""
+
+
+class MultiRoleMigrationError(Exception):
+    """Raised when adding a 2nd position to a flat-layout company."""
+
+
+def create_company_scaffold(
+    userdata_root: Path,
+    *,
+    company: str,
+    position: str,
+    tier: str,
+    link: str,
+    status: str,
+) -> str:
+    """Create a new company/position folder + scaffolded meta.md. Returns folder_path."""
+    companies_root = userdata_root / "companies"
+    companies_root.mkdir(parents=True, exist_ok=True)
+
+    co_folder = companies_root / company
+    slug = position_slug(position)
+    existing = collect_companies(userdata_root)
+    existing_for_company = [p for p in existing if p["company"] == company]
+
+    for p in existing_for_company:
+        if p["position"] == position:
+            raise CompanyExistsError(f"{company} / {position} already exists")
+
+    is_existing_flat = (
+        co_folder.is_dir()
+        and (co_folder / "meta.md").is_file()
+    )
+
+    if is_existing_flat:
+        raise MultiRoleMigrationError(
+            f"{company} is single-role (flat layout). Multi-role companies need the "
+            "subfolder layout. Run `/evaluate-position` for this new role — it "
+            "handles the migration."
+        )
+
+    is_existing_multi = any(p["is_multi_role"] for p in existing_for_company)
+    if is_existing_multi:
+        target_dir = co_folder / slug
+        folder_path = f"{company}/{slug}"
+    else:
+        target_dir = co_folder
+        folder_path = company
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    meta_md = (
+        "---\n"
+        f"company: {company}\n"
+        f"status: {status}\n"
+        f"tier: {tier}\n"
+        "score: 0\n"
+        f"position: {position}\n"
+        f"link: {link}\n"
+        f"date_added: {today}\n"
+        "---\n"
+        "\n"
+        f"# {company}\n"
+        "\n"
+        f"(Scaffolded from dashboard on {today}. Run /evaluate-position for full scoring + research brief.)\n"
+    )
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    atomic_write(target_dir / "meta.md", meta_md)
+    return folder_path
 
 
 
