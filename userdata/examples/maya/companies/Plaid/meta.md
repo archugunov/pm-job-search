@@ -1,6 +1,6 @@
 ---
 company: Plaid
-status: interviewing
+status: discovered
 tier: P0
 score: 14
 position: Senior PM, Consumer Credit
@@ -9,7 +9,6 @@ date_added: 2026-04-22
 date_applied: 2026-04-25
 last_inbound: 2026-05-13
 ---
-
 # Plaid
 
 Series B-era fintech infrastructure → moving into consumer-facing credit products.
