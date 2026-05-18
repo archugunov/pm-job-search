@@ -16,7 +16,7 @@ export function TodaySection({ brief }: Props) {
 
   if (brief === null) {
     return (
-      <Paper p="md" bg="dark.8">
+      <Paper p="md" radius="lg" bg="dark.8">
         <Stack gap="xs">
           <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>Daily brief</Text>
           <Text size="sm" c="dimmed">

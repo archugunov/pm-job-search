@@ -11,7 +11,7 @@ interface Props {
 
 export function InsightsCard({ markdown, title = "Pipeline health" }: Props) {
   return (
-    <Paper p="md" bg="dark.8">
+    <Paper p="md" radius="lg" bg="dark.8">
       <Stack gap="xs">
         <Text fz="xs" c="dimmed" tt="uppercase" fw={600}>{title}</Text>
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={briefMdComponents}>

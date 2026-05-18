@@ -50,7 +50,18 @@ export function ApplicationsTable({ companies, onChange }: Props) {
         </Button>
       </Group>
 
-      <Accordion multiple variant="separated" defaultValue={groups.map((g) => g.key)}>
+      <Accordion
+        multiple
+        variant="separated"
+        radius="lg"
+        defaultValue={groups.map((g) => g.key)}
+        styles={{
+          item: {
+            backgroundColor: "var(--mantine-color-dark-8)",
+            border: "none",
+          },
+        }}
+      >
         {groups.map((group) => (
           <Accordion.Item key={group.key} value={group.key}>
             <Accordion.Control>
