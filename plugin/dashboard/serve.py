@@ -9,6 +9,7 @@ import os
 import re
 import tempfile
 from pathlib import Path
+from typing import Any
 
 
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.DOTALL)
@@ -128,3 +129,65 @@ def atomic_write(target: Path, content: str) -> None:
     except Exception:
         Path(tmp_path_str).unlink(missing_ok=True)
         raise
+
+
+def collect_companies(userdata_root: Path) -> list[dict[str, Any]]:
+    """Glob both flat and subfolder meta.md files; return one record per position."""
+    companies_root = userdata_root / "companies"
+    if not companies_root.is_dir():
+        return []
+
+    flat_files = list(companies_root.glob("*/meta.md"))
+    sub_files = list(companies_root.glob("*/*/meta.md"))
+
+    multi_role_companies: set[str] = set()
+    for sub_meta in sub_files:
+        multi_role_companies.add(sub_meta.parent.parent.name)
+
+    results: list[dict[str, Any]] = []
+
+    for meta_path in flat_files:
+        company_name = meta_path.parent.name
+        fm, _ = parse_frontmatter(meta_path.read_text(encoding="utf-8"))
+        results.append(_build_record(fm, company_name, folder_path=company_name, is_multi_role=False))
+
+    for meta_path in sub_files:
+        company_name = meta_path.parent.parent.name
+        slug = meta_path.parent.name
+        fm, _ = parse_frontmatter(meta_path.read_text(encoding="utf-8"))
+        results.append(
+            _build_record(
+                fm,
+                company_name,
+                folder_path=f"{company_name}/{slug}",
+                is_multi_role=True,
+            )
+        )
+
+    return results
+
+
+_OPTIONAL_FIELDS = ("score", "link", "date_added", "date_applied", "last_inbound", "monitoring")
+
+
+def _build_record(
+    fm: dict[str, str],
+    company_name: str,
+    *,
+    folder_path: str,
+    is_multi_role: bool,
+) -> dict[str, Any]:
+    position = fm.get("position", "")
+    record: dict[str, Any] = {
+        "company": fm.get("company", company_name),
+        "position": position,
+        "position_slug": position_slug(position),
+        "tier": fm.get("tier", ""),
+        "status": fm.get("status", ""),
+        "folder_path": folder_path,
+        "is_multi_role": is_multi_role,
+    }
+    for field in _OPTIONAL_FIELDS:
+        if field in fm:
+            record[field] = fm[field]
+    return record
