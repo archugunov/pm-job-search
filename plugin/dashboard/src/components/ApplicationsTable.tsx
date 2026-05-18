@@ -135,7 +135,7 @@ interface GroupBucket {
   rows: Position[];
 }
 
-const STATUS_ORDER = ["interviewing", "applied", "new", "offer", "rejected", "closed"];
+const STATUS_ORDER = ["new", "interviewing", "applied", "offer", "rejected", "closed"];
 const TIER_ORDER = ["P0", "P1", "P2", "P3"];
 
 function buildGroups(rows: Position[], groupBy: GroupKey): GroupBucket[] {
