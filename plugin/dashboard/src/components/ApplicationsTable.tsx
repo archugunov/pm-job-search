@@ -50,17 +50,17 @@ export function ApplicationsTable({ companies, onChange }: Props) {
         </Button>
       </Group>
 
-      <Accordion multiple defaultValue={groups.map((g) => g.key)}>
+      <Accordion multiple variant="separated" defaultValue={groups.map((g) => g.key)}>
         {groups.map((group) => (
           <Accordion.Item key={group.key} value={group.key}>
             <Accordion.Control>
-              <Group gap="sm">
-                <Text fw={600}>{group.label}</Text>
-                <Badge variant="light">{group.rows.length}</Badge>
+              <Group gap="sm" align="baseline">
+                <Text fz="lg" fw={700} tt="capitalize">{group.label}</Text>
+                <Badge variant="light" size="lg">{group.rows.length}</Badge>
               </Group>
             </Accordion.Control>
             <Accordion.Panel>
-              <Table striped highlightOnHover verticalSpacing="xs" layout="fixed">
+              <Table highlightOnHover verticalSpacing="xs" layout="fixed">
                 <Table.Thead>
                   <Table.Tr>
                     <Table.Th w={60}>Tier</Table.Th>
