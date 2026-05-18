@@ -1,6 +1,6 @@
 ---
 name: today
-description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a snapshot of weekly progress against targets and a sorted view of every active company. Reads userdata/strategy.md, all userdata/companies/*/meta.md, and the last entries of userdata/journal.md; when userdata/integrations.md is present, optionally folds in Calendar (upcoming events, Monday last-week count) and Gmail (recruiter activity, new inbound) data via the wired MCPs; writes a 5-section daily brief to userdata/outputs/daily-brief-<date>.md; regenerates the GENERATED block of userdata/outputs/applications.md.
+description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a snapshot of weekly progress against targets and a sorted view of every active company. Two-phase: input phase captures fresh facts since the last journal entry (via wired Calendar/Gmail/Granola integrations + an open catch-all prompt), then writes them to userdata/journal.md and relevant userdata/companies/*/meta.md; output phase reads userdata/strategy.md + all meta.md + last 7 days of journal.md, writes a 5-section daily brief to userdata/outputs/daily-brief-<date>.md, regenerates the GENERATED block of userdata/outputs/applications.md, and on the first run of each ISO week offers a hand-off to pm-job-search:career-coach for a weekly reflection.
 ---
 
 # /today — daily brief
@@ -8,6 +8,77 @@ description: This skill should be used when the user asks for "/today", "my dail
 Produce a short (~half a screen) snapshot that combines: where the user is against their stated strategy, what to actually do next, and a sorted view of the pipeline. Save the brief, regenerate the applications.md index, then print the brief to chat.
 
 **Voice:** all chat output and drafted content (the daily brief, summary lines, warnings) follows `${CLAUDE_PLUGIN_ROOT}/TONE.md`.
+
+## Input phase (runs before brief generation)
+
+Capture fresh facts since the last journal entry. Each confirmed fact gets appended to `userdata/journal.md` and — when it has structured implications — pushed to the relevant `userdata/companies/<Co>/meta.md`. Then the output phase runs against the just-written state.
+
+This phase always runs (even with no integrations wired) but degrades gracefully — inference and confirms are skipped when there is nothing to scan, and the catch-all prompt becomes the only input surface.
+
+### Step 1 — determine the input window
+
+Read `userdata/journal.md`. Find the most recent dated heading (`## YYYY-MM-DD`).
+
+- Gap < 24h → window = 24h. Print nothing; this is the normal daily case.
+- Gap 1–6 days → window = the actual gap. Print one line: `Last entry was N days ago — pulling the full window.`
+- Gap ≥ 7 days → window = the actual gap. Print: `You've been away N days — heavier sweep ahead, may take a moment.`
+- `journal.md` absent or empty → window = 24h. Treat as a fresh install. Do not print anything special.
+
+### Step 2 — inference pass (when integrations wired)
+
+Read `userdata/integrations.md` to find which MCPs are wired. For each wired integration, scan the window. Same auth-error rule as the existing Integration-data section: surface one line per failed integration at the top of the input phase, do not silently skip, continue with the others.
+
+- **Gmail (when wired).** Reuse the existing gmail filter (saved in integrations.md). Fetch subject + from + date metadata over the window (not the 7d hardcoded in the output-phase fetch). For each result, classify into one of: `recruiter-reply`, `rejection`, `scheduling`, `offer`, `unclear`. Match against `userdata/companies/*/meta.md` + `*/*/meta.md` by alias + domain + recruiter-name-in-journal as the output-phase fetch already does.
+- **Calendar (when wired).** Fetch events in the window. Filter by the same keywords as the output-phase fetch (`interview`, `recruiter`, `screen`, `round`, `intro call`, `final loop`, `panel`, `take-home review`) plus matched company names. For each kept event, classify into: `new-event`, `rescheduled`, `cancelled` (rescheduled / cancelled requires comparing against any prior `next_event` value in the matched company's meta.md).
+- **Granola (when wired).** Reuse the auto-Granola lookup pattern documented in `/interview-analysis`: call the wired Granola list_meetings tool over the window, match meeting titles against company names + interview/recruiter keywords. For each match, capture title + date.
+
+Dedup across integrations: if the same fact surfaces via two sources (e.g. a calendar event + a gmail confirmation), present it ONCE in the confirms list with both sources noted (`source: calendar + gmail`).
+
+### Step 3 — targeted confirms
+
+Render inferred deltas as a numbered list, grouped by source. Skip this step entirely if step 2 produced no items. Example output shape:
+
+```
+Since your last entry (2026-05-15), I see:
+
+From calendar:
+1. Plaid — Round 2 panel scheduled Fri 2026-05-22 14:00
+2. Klarna — Recruiter call moved from Wed to Thu
+
+From gmail:
+3. Lendable — Reply from Sarah at Lendable (likely rejection — want me to read it?)
+4. Stripe — New inbound from a recruiter named James (no company match yet)
+
+From granola:
+5. Klarna recruiter call transcript captured Mon 2026-05-15
+
+Confirm 1-5 ('all', '1 3 5', or describe corrections). Anything I should edit or skip?
+```
+
+User response handling:
+- `all` / `yes` → confirm every inferred item as-is.
+- Numbered subset (`1 3 5`) → confirm only those.
+- `1 wrong — that was R3 not R2` → confirm with edit applied before write.
+- `skip 3` → drop item 3 from this run.
+- `4 is for company X` → re-route the unmatched inbound to company X before write.
+
+If the user response is ambiguous, ask one clarifying question rather than guessing. Never write an item the user has not explicitly confirmed.
+
+### Step 4 — open catch-all
+
+After targeted confirms (or in place of them when step 2 produced nothing), print one prompt:
+
+> Anything else that moved? Mock interviews, prep work, energy notes, new leads, structural thoughts — anything you want logged. (Press enter to skip.)
+
+User responds in free text. Parse for company tags: explicit `[Plaid]`, `Plaid:`, or first-token match against the company list. Lines without a company tag are logged to `journal.md` only (no meta.md write, no guessing).
+
+### Step 5 — write phase
+
+Commit the confirmed facts. See "Write contracts" section below for the exact journal.md and meta.md formats.
+
+Writes are idempotent per `/today` run: if the user runs `/today` twice the same day with no new facts (step 2 finds nothing new, step 4 skipped), no journal write occurs and no `## YYYY-MM-DD` heading is added or modified.
+
+After step 5 completes, proceed to the existing "Output: the daily brief" section.
 
 ## Inputs
 
@@ -248,12 +319,12 @@ Each meta.md represents one `(company, position)` pair. Counts (active threads, 
 
 ## What /today never does
 
-- Never edits `meta.md` files (status, dates, positions). Other skills own meta.md changes.
-- Never writes `userdata/profile.md`, `userdata/strategy.md`, or `userdata/journal.md`, or `userdata/integrations.md`.
+- Never writes `userdata/profile.md`, `userdata/strategy.md`, or `userdata/integrations.md`.
 - Never touches text outside the GENERATED markers in `applications.md`.
 - Never invents data. If `last_inbound` is missing, do not guess; rank by what is available.
-- Never persists Calendar / Gmail responses to disk. Integration data lives in-context for the run; only the rendered output is saved.
-- Never auto-updates `last_inbound` from a Gmail match. /today reads + surfaces; meta.md updates belong to other skills.
+- Never persists Calendar / Gmail / Granola responses to disk verbatim. Integration data lives in-context for the run; only the user-confirmed facts written to journal.md and meta.md persist.
+- Never writes to journal.md or meta.md without explicit user confirmation in the input phase. Inferred facts must be confirmed (or corrected) before they land — no silent writes from integration data.
+- Never auto-fills meta.md fields beyond the input-phase contract (`next_event`, `status`, `## History` block). Other skills still own positions, tier, link, date_applied, date_added.
 
 ## Smoke test against the Maya example
 
