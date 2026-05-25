@@ -156,6 +156,28 @@ Hard rule for skill / agent authors: never hardcode reference content into a SKI
 
 Read the line aloud. If a senior PM friend wouldn't say it to you over coffee, rewrite it.
 
+## Lint checklist — for skill edits
+
+Before committing a SKILL.md edit (or asking Claude to commit one), check against this list. Hard violations must be fixed; soft checks are worth catching but not always blockers.
+
+### Hard violations (fix before commit)
+
+- **Fenced code blocks used as chat summaries.** Triple-backtick blocks inside any section that prints output to the user. Convert to blockquote (`>` lines). Files written to disk and shell commands stay fenced.
+- **Two unrelated questions or decisions in one message.** Rule A. Split into sequential prompts.
+- **Reference to a non-existent skill or file.** `/pm-job-search:<name>` resolves to a directory under `plugin/skills/` or `plugin/agents/`; `${CLAUDE_PLUGIN_ROOT}/<path>` resolves to a real file.
+- **Hardcoded numbers in instructions** (e.g. "DM 10 founders", "every 9am"). Numbers and cadences come from `userdata/strategy.md` or `userdata/profile.md`.
+- **Prior-state prompts on a skill's first run.** Rule C. Detect first run by absence of the relevant file (e.g. `userdata/journal.md` for `/today`).
+- **Privacy filter hits.** Run the filter command from `memory/MEMORY.md` against the edited files. Zero hits required.
+
+### Soft checks (worth flagging, not always blockers)
+
+- **End-of-run nudge missing.** Skill closes without citing `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md` for the next-step nudge. Add one unless there's a deliberate reason not to.
+- **Smoke test section missing.** Every skill should end with `## Smoke test against the Maya example`.
+- **SKILL.md > 500 lines.** Not a bug, but a signal — does the skill do too much? Could a reference file or sibling skill split it cleanly?
+- **Frontmatter `description:` is generic.** It should contain the trigger phrases a user would actually type ("/foo", "do X for me").
+
+If Claude is editing the skill, ask: *"Review this edit against the lint checklist in TONE.md."* Claude will surface findings before committing.
+
 ## Dashboard
 
 The visual dashboard at `plugin/dashboard/` uses Mantine v7 component defaults.
