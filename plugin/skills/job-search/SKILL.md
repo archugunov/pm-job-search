@@ -1,6 +1,6 @@
 ---
 name: job-search
-description: This skill should be used when the user asks to "/job-search", "weekly job search", "find new roles", "discover postings", "recheck monitoring companies", "any new jobs at <companies>", or wants a sweep of new job postings matching their profile plus a recheck of companies they're tracking. Three-phase architecture: pre-flight extracts dedup sets from existing meta.md, Phase 1 runs Recheck-A / Recheck-B / Discovery in parallel via subagents (Recheck uses public ATS APIs — Ashby GraphQL, Greenhouse REST, Lever REST; Discovery uses site:-scoped WebSearch to skip aggregators), Phase 2 scores candidates and delegates filing to /evaluate-position. Optional Playwright MCP for link-liveness verification.
+description: This skill should be used when the user asks to "/job-search", "weekly job search", "find new roles", "discover postings", "recheck monitoring companies", "any new jobs at <companies>", or wants a sweep of new job postings matching their profile plus a recheck of companies they're tracking. Three-phase architecture: pre-flight extracts dedup sets from existing meta.md, Phase 1 runs Recheck-A / Recheck-B / Discovery in parallel via subagents (Recheck uses public ATS APIs — Ashby GraphQL, Greenhouse REST, Lever REST; Discovery uses site:-scoped WebSearch to skip aggregators, seeded by Companies of interest in profile.md), Phase 2 scores every surviving candidate and auto-files them directly (writes meta.md + research-brief.md with status: new, no manual pick step). Optional Playwright MCP for link-liveness verification.
 ---
 
 # /job-search — three-phase discovery and monitoring sweep
@@ -73,14 +73,17 @@ Unless `--no-parallel`, dispatch three Agent calls in a SINGLE message with `run
 
 Wait for all three to finish (notifications) before moving to Phase 2. With `--no-parallel`, just run each step inline.
 
-## Phase 2 — Merge, score, verify, file (main conversation)
+## Phase 2 — Score and file every surviving candidate (no manual step)
 
 1. Read all three Phase 1 output files.
 2. Re-read the existing companies/*/meta.md (the recheck agents may have surfaced new candidates that overlap with discovery — re-derive the exclusion set to be safe).
-3. For each candidate, run the scoring rubric (the same logic `/evaluate-position` uses) — but lightly, to assign a rough tier estimate. Final scoring + write happens via `/evaluate-position` per candidate.
-4. With `--with-playwright`, verify P0/P1 candidate URLs are live (`browser_navigate` + `browser_snapshot`; expired = redirect / "no longer available" / content < ~300 chars). Without Playwright, skip verification and tag each candidate `link_verified: false`.
-5. Show a preview table to the user grouped by tier-estimate. Ask which to file.
-6. For each picked candidate, invoke `/evaluate-position` with the URL — that handles real scoring, folder layout, and writing. /job-search never writes to companies/<Co>/ directly.
+3. With `--with-playwright`, verify P0/P1 candidate URLs are live (`browser_navigate` + `browser_snapshot`; expired = redirect / "no longer available" / content < ~300 chars). Without Playwright, skip verification and tag each candidate `link_verified: false`.
+
+For each candidate from Phase 1 (Discovery) and the Recheck passes:
+1. Apply the dedup rule. If `(company, position)` already exists at `userdata/companies/<Co>/[<slug>/]meta.md`, touch its `last_seen:` timestamp and skip filing. Do not duplicate.
+2. Score the candidate using the tier rubric in `userdata/profile.md` (same logic as `/evaluate-position`). If scoring fails (JD fetch error, malformed page), file a stub with `tier: unscored` and continue — do not abort the run.
+3. Write `userdata/companies/<Co>/[<slug>/]meta.md` and `research-brief.md` with `status: new`.
+4. Frontmatter of `meta.md` must include `link:` set to the live JD URL. `research-brief.md` must include a `**Source:** <url>` line as the first content line after the H1.
 
 ## Recheck subagent prompt
 
@@ -108,6 +111,8 @@ Return one line: `Recheck-{BATCH_ID}: checked N companies, found K new PM roles.
 ## Discovery subagent prompt
 
 You are running the discovery phase of a weekly job sweep.
+
+**Seed Discovery with `## Companies of interest` from `userdata/profile.md`.** If that section exists and has entries, include those companies as additional discovery targets (e.g. `site:<company>.com/careers senior product manager`). Treat them as candidates like any other — they still go through scoring and dedup. After the first run, they remain in `profile.md` but discovery does not need to re-treat them as seeds — they'll be tracked under `userdata/companies/` going forward.
 
 You receive `exclusion_pairs` and `exclusion_urls` from `/tmp/pmjs-exclusion.json`. Drop any candidate whose normalised URL OR `(company, role)` pair matches.
 
@@ -140,18 +145,7 @@ After both phases complete:
 3. For each candidate, run a light tier estimate: walk profile.md's `tier_weights` rubric mentally — score 1-3 per dimension based on the JD title + URL + (optionally) a lightweight WebFetch of the first 500 chars of the page. Sum, apply `tier_thresholds`, get a `P0?` / `P1?` / `P2?` / `skip?` tag.
 4. Discard `P2?` unless fewer than 3 P0/P1 total are surviving.
 5. If `--with-playwright` and Playwright MCP is available, navigate each P0?/P1? URL, check liveness (see "Playwright integration" below). Update or null the link.
-6. Build preview table:
-
-```
-| # | Company | Role | Tier? | Source | Link verified? |
-|---|---|---|---|---|---|
-| 1 | Lendable | Head of Product | P0? | site:ashbyhq.com | yes |
-| 2 | OakNorth | Group PM, Credit | P0? | site:greenhouse.io | unverified (no Playwright) |
-| 3 | Plaid (existing) | Lead PM, Risk Platform | P1? | ATS recheck | yes |
-```
-
-7. Ask: `Which to file? (numbers, "all", "none")`.
-8. For each picked candidate, invoke `/evaluate-position` (or, in batch mode, invoke per-candidate sequentially). The 1→2 folder migration for existing companies happens naturally inside `/evaluate-position`.
+6. For each surviving candidate, apply the auto-file logic from Phase 2 above: dedup check → score → write `meta.md` + `research-brief.md` with `status: new`. The 1→2 folder migration for existing companies follows the same rules as `/evaluate-position`.
 
 ## Playwright integration (optional)
 
@@ -168,17 +162,21 @@ NEVER fail the whole skill because Playwright is unavailable. It's a nice-to-hav
 
 ## Output to chat
 
-After Phase 2 completes:
+**Run summary (chat output):**
 
-```
-Job sweep — <YYYY-MM-DD>
-  Discovery: <N> candidates from <M> site:-scoped queries
-  Monitoring recheck: <K> companies checked, <L> new roles found
-  After dedup + filters: <X> surviving candidates
-  Filed via /evaluate-position: <Y> roles (<p0> P0, <p1> P1)
-```
+Plain prose (TONE.md Rule B — no fenced code blocks, no key-value dumps). Template:
 
-If nothing surfaces: `No new roles this week. Pipeline state unchanged.`
+> "Filed N new roles. <tier-1 count> tier-1 (<top names>), <tier-2 count> tier-2. All set to status `new`. <Stub count, if any> couldn't be scored automatically — listed below.
+>
+> <If stubs exist, list them as bullets with their links.>
+>
+> Open the dashboard to triage — or tell me here which to mark `to apply`, `not interested`, or archive."
+
+Each application row printed in chat (when the user asks to see roles, when stubs are listed, etc.) includes the JD URL inline. Format: `- <Company> — <Role> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
+
+Close the chat output with a context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. For a fresh filing pass, the typical nudge is to open `/pm-job-search:dashboard`.
+
+If nothing surfaces: "No new roles this week. Pipeline state unchanged."
 
 ## Dedup rule (recap)
 
@@ -188,8 +186,7 @@ Same company + different position = NOT a duplicate. Goes through `/evaluate-pos
 
 ## What /job-search never does
 
-- Never writes `meta.md` or `research-brief.md` directly — delegates to `/evaluate-position`.
-- Never flips `monitoring`, `status`, or any field on existing entries (read-only against existing meta.md).
+- Never flips `monitoring`, `status`, or any other field on existing entries — the only write to an existing meta.md is touching `last_seen:` when a dedup match is found.
 - Never auto-applies or sends outreach.
 - Never requires Playwright. Optional only.
 - Never invents postings. If ATS APIs return nothing and WebSearch is thin, the run is a no-op.
@@ -204,4 +201,4 @@ Same company + different position = NOT a duplicate. Goes through `/evaluate-pos
 - **Pre-flight**: scans Maya's 2 companies (Plaid, Stripe). Exclusion pairs: `(plaid, senior product manager consumer credit)`, `(stripe, lead product manager growth)`. URLs from each meta.md `link`. Recheck watchlist: Stripe (monitoring: true) + Plaid (status:interviewing — only included if it has another non-active role; in Maya's case it doesn't). Watchlist = `[Stripe]`. Tier P1.
 - **Recheck on Stripe**: extract slug from Stripe meta link (`example.com/stripe-jobs/...` → can't infer ATS, guess `stripe`); try Greenhouse → 200, get jobs list. Filter to PM keywords. Any new Consumer Credit role → emit candidate.
 - **Discovery**: 8-10 site:-scoped queries built from Maya's profile (`"head of product" fintech London site:ashbyhq.com`, etc.). Returns direct ATS URLs, not aggregator pages. Filter and emit candidates.
-- **Phase 2**: merge, light tier-estimate, ask user to pick, delegate each pick to `/evaluate-position`.
+- **Phase 2**: merge, light tier-estimate, auto-file every surviving candidate (dedup → score → write meta.md + research-brief.md with status: new). Print plain-prose run summary to chat.

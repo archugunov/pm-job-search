@@ -155,10 +155,12 @@ Body (below frontmatter): a short title-cased `# <Company>` heading + one paragr
 ### `research-brief.md` (~200-250 words, structured)
 
 Three fixed sections, no preamble, no top-level `#` heading (the dashboard and
-prep skills render their own title bar). Sections are tight bullets, not prose,
-so the brief stays scannable:
+prep skills render their own title bar). The first content line must be a source
+reference. Sections are tight bullets, not prose, so the brief stays scannable:
 
 ```markdown
+**Source:** <url>
+
 ## Company snapshot
 
 - **Stage:** <funding stage / ppl count / profitability if known>
