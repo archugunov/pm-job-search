@@ -221,3 +221,11 @@ last_practised: <YYYY-MM-DD or blank>
 - `--new "Activation funnel uplift"` flow: computes slug `activation-funnel-uplift`, no collision in Maya's bank, walks STAR + angles using Maya's `## Tone of Voice` (direct, short sentences, UK English, low-pressure CTAs). At Step 4, suggests `story_type: activation-retention` (or `pricing-monetization` if the body leans that way) — user confirms or picks another.
 - `--edit payments-pricing-experiment` loads Maya's existing story; one-line summary appends `— story_type unclassified, want to set it?` and offers `pricing-monetization` as the likely match. "Mark as practised today" action updates `last_practised: 2026-05-15`, preserves everything else.
 - `--gap-check` against Maya's bank with target_titles including "Head of Product": output reports `1/12 types covered (if user classifies the one story) / 0/12 if not, 1 unclassified`, surfaces missing types ranked by HoP-relevance — hiring-decision, strategic-pivot, ethical-edge as top 3, each with specific justification lifted from story-taxonomy.md.
+
+## End-of-run nudge
+
+After saving the story (or completing a gap-check), compose one context-aware next-step line per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious.
+
+Typical next steps for this skill:
+- After capturing or editing a story: suggest `/pm-job-search:interview-prep <Co>` if an upcoming interview is visible in the pipeline.
+- After a --gap-check: suggest `/pm-job-search:story-builder --new "<top-missing-type title>"` if a high-leverage gap was identified.

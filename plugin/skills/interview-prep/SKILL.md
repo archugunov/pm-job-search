@@ -172,3 +172,10 @@ Run `/interview-prep Plaid --stage cpo-round` against `userdata/examples/maya/`:
 - Selects stories: only one exists in Maya's bank (`payments-pricing-experiment`). Skill should handle "<3 stories in bank" gracefully — surface the one available + a note: `Only 1 story in bank — pick others via /story-builder or proceed with one.` User picks: proceed.
 - Writes `userdata/examples/maya/companies/Plaid/interview-prep-2026-05-15.md` with the one story adapted, late-stage founder-vetting questions included (cpo-round triggers them), and anchors lifted from research-brief.
 - Updates `userdata/examples/maya/stories/payments-pricing-experiment.md`: appends `Plaid` to `companies_used_in` (currently `[Plaid]` already — no-op), sets `last_practised: 2026-05-15`.
+
+## End-of-run nudge
+
+After writing the prep doc to chat, compose one context-aware next-step line per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious.
+
+Typical next steps for this skill:
+- No obvious next step until the interview happens. Remind the user to log the result with `/pm-job-search:interview-analysis <Co>` after the interview so the debrief is captured while the transcript is fresh.

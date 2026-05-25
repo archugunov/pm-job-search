@@ -224,3 +224,11 @@ Synthetic test: paste a JD for "Klarna — Senior PM, Consumer Credit" against `
 - Folder layout: `userdata/examples/maya/companies/Klarna/` doesn't exist → flat layout. Write `Klarna/meta.md` + `Klarna/research-brief.md`.
 
 Synthetic test for 1→2 migration: paste a JD for "Plaid — Lead PM, Risk Platform". Plaid folder already has flat layout with `Senior PM, Consumer Credit`. Different position → migrate existing files into `Plaid/senior-pm-consumer-credit/`, create `Plaid/lead-pm-risk-platform/` with the new files.
+
+## End-of-run nudge
+
+After writing the output to chat, compose one context-aware next-step line per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious.
+
+Typical next steps for this skill:
+- After filing a P0 or P1 role: suggest `/pm-job-search:apply <Co>` to start the application.
+- After several roles are filed in one session: suggest `/pm-job-search:dashboard` to triage the updated pipeline.

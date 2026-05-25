@@ -201,3 +201,11 @@ Run `/evaluate-offer` with a synthetic Plaid offer against `userdata/examples/ma
 - Chat summary: 4 lines per the contract.
 
 If the smoke test diverges materially, the skill is mis-reading either the profile or the references — fix before promoting.
+
+## End-of-run nudge
+
+After writing the output to chat, compose one context-aware next-step line per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious.
+
+Typical next steps for this skill:
+- After a NEGOTIATE or PUSH BACK verdict: suggest running `pm-job-search:career-coach` with the "what would I regret in 2 years?" prompt for a deeper reflection before responding.
+- After a DECLINE verdict: remind the user to keep the relationship warm and update `meta.md` status when they've sent the decline note.

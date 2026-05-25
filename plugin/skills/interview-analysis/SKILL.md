@@ -176,3 +176,11 @@ If the debrief recommends a meta.md status change, repeat it in the chat output 
 There's no transcript and no `integrations.md` in Maya's example install — this skill is exercised by the user pasting real content. A synthetic test would mock a transcript for Plaid's CPO round and verify the output structure. Defer until a real interview happens.
 
 To exercise the auto-Granola code path, run the skill in a workspace where `userdata/integrations.md` has granola wired (run `/pm-job-search:integrations` first), invoke `/interview-analysis <Company>` with NO pasted transcript and no `--from-file`, and verify the Granola query / disambiguation / fetch flow runs before any "paste the transcript" prompt would appear.
+
+## End-of-run nudge
+
+After writing the output to chat, compose one context-aware next-step line per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious.
+
+Typical next steps for this skill:
+- If the debrief surfaces a story not yet in the bank: suggest `/pm-job-search:story-builder --new "<title>"` to capture it.
+- After any round debrief: suggest `/pm-job-search:today` to update the pipeline state and surface the meta.md status recommendation.
