@@ -90,6 +90,8 @@ Commit the confirmed facts. See "Write contracts" section below for the exact jo
 
 Writes are idempotent per `/today` run: if the user runs `/today` twice the same day with no new facts (step 2 finds nothing new, step 4 skipped), no journal write occurs and no `## YYYY-MM-DD` heading is added or modified.
 
+**Dashboard nudge cross-reference.** When confirming an in-chat status change (e.g. user says "mark Plaid to apply"), check whether the "In-chat update nudge — fire once per session" rule in `${CLAUDE_PLUGIN_ROOT}/skills/dashboard/SKILL.md` should fire. If this is the first status-change-in-chat of the current Claude Code conversation, append the tip line per that rule. Track the once-per-session flag transiently in conversation context, not on disk.
+
 After step 5 completes, proceed to the existing "Output: the daily brief" section.
 
 ## Write contracts (used by the input phase)
