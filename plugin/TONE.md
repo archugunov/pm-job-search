@@ -76,6 +76,24 @@ When skills or agents DRAFT content for the user (positioning paragraphs, proof 
 
 See `/setup` Q6's "Drafting tone rules" for the full version with examples.
 
+## Briefs, heads-up, and bullet content
+
+The /today daily brief, /interview-analysis debriefs, and any other artefact that lists actions or observations as bullets follow a stricter pattern. Each line should be scannable in one read.
+
+- **Two clauses max per line.** Situation + action, or observation + implication. If you need a third, split into two bullets.
+- **Lead with the entity, bold it.** `**Brex** — HM panel scheduled.` not `Brex's HM panel is scheduled.`
+- **Drop the parenthetical context.** If a fact matters, promote it into a clause. If it doesn't, cut it. No "(so it stops dominating the funnel)", "(last reviewed 4 days ago)" parentheticals as afterthoughts — fold the important ones into the sentence.
+- **Concrete over abstract.** "6 days silent" beats "hasn't moved in a while". "If nothing by 11am, send a nudge" beats "consider following up at some point today".
+- **No internal jargon.** "Reviewer pattern overlap is non-zero" → "they rejected you once already". Write what you'd say to a friend, not what a system would log.
+- **Decision branches inline only when there are 2-3 options.** `decide: nudge, withdraw, or downgrade.` Anything longer becomes a separate prompt to the career-coach.
+
+Good shape:
+> 1. **Brex** — HM panel scheduled. Refresh your "spend mgmt cross-functional" story — last reviewed 4 days ago.
+> 2. **Mercury** — Take-home decision is 3 days overdue. Send a one-line ping.
+
+Bad shape (over-explained):
+> 1. **Brex** — There's an HM panel scheduled for this week. It would be a good idea to spend some time prepping your "spend mgmt cross-functional" story, which according to your story bank metadata was last reviewed approximately 4 days ago.
+
 ## Quick reference — phrases to use vs avoid
 
 | Use | Avoid |
