@@ -1,6 +1,6 @@
 ---
 name: today
-description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a sorted view of every active company plus today's actions. Two-phase: input phase captures fresh facts since the last journal entry (via wired Calendar/Gmail/Granola integrations + an open catch-all prompt), then writes them to userdata/journal.md and relevant userdata/companies/*/meta.md; output phase reads userdata/strategy.md + all meta.md + the current ISO week of journal.md, writes a 3-section daily brief (top actions, pipeline, heads-up) to userdata/outputs/daily-brief-<date>.md, regenerates the GENERATED block of userdata/outputs/applications.md, and on the first run of each ISO week offers a hand-off to pm-job-search:career-coach for a weekly reflection.
+description: This skill should be used when the user asks for "/today", "my daily brief", "today's brief", "where am I in my job search", "what should I work on today", "pipeline state", or wants a sorted view of every active company plus today's actions. Two-phase: input phase captures fresh facts since the last journal entry (via wired Calendar/Gmail/Granola integrations + an open catch-all prompt), then writes them to userdata/journal.md and relevant userdata/companies/*/meta.md; output phase reads userdata/strategy.md + all meta.md + the current ISO week of journal.md, writes a 3-section daily brief (top actions, heads-up, pipeline) to userdata/outputs/daily-brief-<date>.md, regenerates the GENERATED block of userdata/outputs/applications.md, and on the first run of each ISO week (when prior-week journal entries exist) offers a hand-off to pm-job-search:career-coach for a weekly reflection.
 ---
 
 # /today — daily brief
@@ -14,6 +14,10 @@ Produce a short (~half a screen) snapshot that combines: where the user is again
 Capture fresh facts since the last journal entry. Each confirmed fact gets appended to `userdata/journal.md` and — when it has structured implications — pushed to the relevant `userdata/companies/<Co>/meta.md`. Then the output phase runs against the just-written state.
 
 This phase always runs (even with no integrations wired) but degrades gracefully — inference and confirms are skipped when there is nothing to scan, and the catch-all prompt becomes the only input surface.
+
+**First-run detection (TONE Rule C — don't ask about prior state on first run):**
+
+Before prompting for updates, check `userdata/journal.md`. If the file does not exist, is empty, or contains no entries, skip the entire input phase and go straight to output generation. Do not ask "anything that moved since last time?" — there is no last time.
 
 ### Step 1 — determine the input window
 
@@ -66,9 +70,19 @@ If the user response is ambiguous, ask one clarifying question rather than guess
 
 ### Step 4 — open catch-all
 
-After targeted confirms (or in place of them when step 2 produced nothing), print one prompt:
+After targeted confirms (or in place of them when step 2 produced nothing):
 
-> Anything else that moved? Mock interviews, prep work, energy notes, new leads, structural thoughts — anything you want logged. (Press enter to skip.)
+**Input prompt (subsequent runs only):**
+
+Use `AskUserQuestion` with two options:
+
+Question: "Want to log updates since your last brief? Mock interviews, prep work, energy notes, new leads, anything structural."
+Options: **Share updates** / **Skip**
+
+If **Share updates** → open a free-text follow-up: "Go ahead — what's new?"
+If **Skip** → proceed to output phase silently.
+
+Do not rely on enter-to-skip. Do not chain a second question after this one (TONE Rule A — one ask per message).
 
 User responds in free text. Parse for company tags: explicit `[Plaid]`, `Plaid:`, or first-token match against the company list. Lines without a company tag are logged to `journal.md` only (no meta.md write, no guessing). Lines WITH a company tag are also logged to `journal.md` only — catch-all input is free text and never writes to meta.md, even when the tag matches a known company. Only integration-sourced facts that pass through the Step 3 confirm flow may update meta.md.
 
@@ -171,6 +185,8 @@ Granola data is consumed by the INPUT phase only — see `## Input phase` Step 2
 
 Three sections, in this order, ~half a screen total. Never longer. Skip a whole section (do not pad with "N/A") when the underlying data is unavailable. The brief intentionally does NOT restate the strategy headline goal or a weekly-progress meter — both were redundant with the pipeline-state table and the action triggers below, which already pull from strategy and journal data.
 
+Section order: **Top 3 actions → Heads-up → Pipeline state.**
+
 ### 1. `## Top 3 actions today`
 
 At most three bullets. Each bullet is concrete and anchored to a company name or a strategy element. Surface bullets by running the trigger rules below, in this priority order, and stopping at three:
@@ -181,11 +197,46 @@ At most three bullets. Each bullet is concrete and anchored to a company name or
 4. **Active interview thread** — any meta.md with `status: interviewing` AND `last_inbound` within the last 7 days → `Prep for <Company> — pull stories with /interview-prep <Company>` (one bullet per qualifying company, most recent inbound first; cap at two).
 5. **Stale `applied`** — any meta.md with `status: applied` AND `date_applied` more than 14 days ago AND no `last_inbound` (or last_inbound also >14d) → `Chase or close <Company> — applied <N>d ago, no response` (cap at one).
 6. **Weekly-target gap >50%** (warm_outreach OR applications, whichever is further behind) → `Send <N> more <warm outreach|applications> this week (<count>/<target>)`. Skip if no target set. "This week" = current ISO week, Monday → today inclusive; same window as the applications.md warm-outreach summary line.
-7. **Monday + no warm_outreach Sat-Sun** — when today is Monday AND the warm-outreach count for Saturday + Sunday is 0 AND a warm_outreach target is set → `Monday founder-touchpoint batch — DM N founders today` (N = the gap).
+7. **Founder outreach line (conditional on `strategy.md`)** — Read `userdata/strategy.md`. If `weekly_targets.founder_outreach` exists with a numeric target N, and today is Monday AND the warm-outreach count for Saturday + Sunday is 0, render: `Founder outreach — N this week (M done so far).` Where M is counted from journal entries tagged or describing founder DMs in the current ISO week. If `weekly_targets.founder_outreach` is absent, missing, or zero, do not render any founder line at all. Do not invent a target. (Rationale: founder outreach is a discovery channel for early-stage roles where the founder is the hiring decision-maker — see `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`.)
 
 If fewer than three triggers fire, output fewer bullets. Do not invent filler. If zero triggers fire, replace the body with: `Nothing forcing action today — pick from the pipeline below.`
 
-### 2. `## Pipeline state`
+### 2. `## Heads-up`
+
+**Heads-up section — what to surface:**
+
+Non-obvious risks or opportunities — technical, tactical, or strategic — derived from current state across all `userdata/companies/*/meta.md`, recent journal entries (`userdata/journal.md`), and `userdata/strategy.md`. Valid surfaces include but are not limited to:
+
+- **Integration auth failures (when applicable):** single line per failed integration, e.g. `Calendar fetch failed (token expired) — heads-up missing event data this run. Re-auth via your calendar MCP.` These appear FIRST in heads-up so degradation is visible.
+- Interview scheduled within 48 hours with no `interview-prep-<date>.md` for that company.
+- Company in status `to apply` for 14+ days with no journal movement.
+- Offer-evaluation deadline within `strategy.md`'s walk-away window.
+- Contradiction between two recent journal entries (e.g. "wants remote" vs "took the on-site interview").
+- Strategy weekly_target with significant under/over-pace.
+- **Upcoming events this week (when calendar wired):** matched events within the next 7 days, sorted soonest first, e.g. `Wed 21 May 14:00 — Plaid (cpo-round), Fri 23 May 11:00 — N26 (recruiter)`. Skip if none.
+- **New inbound (when gmail wired):** unmatched relevant emails (recruiter/talent senders or pipeline-keyword subjects) where no company in `userdata/companies/` matches. Format: `<count> — <Company-guess from sender domain> ("<subject>")`. Each is a prompt to evaluate adding to the pipeline. Skip if none.
+- **Checkpoints due within 14d:** comma-separated list of `<date> (<condition>)`. Skip if none.
+- **Stale items (>14d in `applied` with no movement):** count and inline list, e.g. `2 — Klarna (16d), Monzo (21d)`. Skip if none.
+- **Shape-mismatch warning on active interviews.** Trigger: any meta.md with `status: interviewing` AND (`team_size > 150` OR the company body/research-brief mentions ">150 ppl") AND the company is NOT in any `target_industries` entry from profile.md AND no explicit equity / brand signal in research-brief. When triggered: `Shape mismatch — <Company> is interviewing but <signal recap>. Re-read the role-fit verdict before next round.` This is the hollowing-risk check: a big-co interview proceeding without the shape signals the user actually wants. Skip if no qualifying meta.
+- **Coach nudge.** Surfaces when a multi-week pattern suggests `pm-job-search:career-coach` would help diagnose. Three independent triggers — fire at most ONE per /today run. **Trigger C is highest severity; if C fires, suppress A and B.** Skip if no trigger fires.
+  - **Trigger A — cadence drift.** Weekly targets (`applications` AND/OR `warm_outreach`) missed by >50% for 3 weeks running. Compute by counting `date_applied` per 7-day window AND keyword-scanning journal per window across the last 21 days. When triggered: `Cadence under 50% three weeks running — pm-job-search:career-coach can help work out if the targets or the search itself needs a rethink.`
+  - **Trigger B — passing without applying.** ≥3 meta.md files have `status: not_interested` AND `strategy.md ## Anti-goals` section body is empty. (User is passing on roles without applying — pattern suggests an unstated rule worth naming.) When triggered: `Passed on <N> roles without applying — there's probably a pattern worth naming. Ask pm-job-search:career-coach to walk you through it.`
+  - **Trigger C — sunk-cost / structural rethink.** Highest-severity trigger. Suppresses A and B if it fires. Three OR-conditions, ANY one fires it:
+    1. **Long search, thin pipeline.** weeks-since-`/setup` ≥ 8 (compute from the earliest `date_added` across all meta.md OR from `target_offer_date` if available) AND companies in `status: interviewing` count < 2 AND companies in `status: offer` count = 0.
+    2. **Pattern-of-rejection.** ≥3 meta.md files with `status: rejected` AND the same `rejection_stage` value (e.g. 3 rejections at `take-home`, or 3 rejections at `panel`).
+    3. **Cadence-drift escalation.** Trigger A has fired in 4+ consecutive `/today` runs (would require persistent state; if not implementable, fall back to: weeks-since-/setup ≥ 4 AND weekly targets missed by >50% for 4 weeks running).
+
+    When triggered, the message must **cite specific data** (which counts, which dates, which stage) — not abstract framing. Examples:
+    - Condition 1: `9 weeks since /setup, 1 active interview thread, 0 offers. This isn't a cadence problem — pm-job-search:career-coach can help work out whether the strategy itself needs restarting, not tweaking.`
+    - Condition 2: `3 rejections at the <stage> stage. Same stage, different companies — pm-job-search:career-coach can help work out what specifically is happening there.`
+    - Condition 3: `Cadence under 50% for 4 weeks running. The targets or the search shape probably need a structural change, not another push — pm-job-search:career-coach can help diagnose.`
+- **Late-stage interview prompts.** Trigger: any company with `status: interviewing` AND `last_inbound` within the last 7 days. When triggered, surface a context-aware prompt to review the interview thread and prepare for the next stage. Companies in `interviewing` whose `last_inbound` is older than 7 days do NOT trigger this — they belong to the "stale items" treatment above.
+
+Two clauses max per bullet (per TONE.md "Briefs, heads-up, and bullet content"). Lead with the entity, bold it.
+
+**If nothing flags:** render the literal line `Nothing flagged today.` Do not pad with low-value items.
+
+### 3. `## Pipeline state`
 
 A markdown table sorted by status group then tier then most recent activity within each group:
 
@@ -205,35 +256,6 @@ Below the table, one summary line for decided history (NOT a table — keep ters
 
 Where `N = M + K`, `rejected` = meta.md with `status: rejected`, and `not interested` = `status: not_interested`. Drop zero-count clauses: if K=0, render `N decided this search; M rejected.`; if M=0, render `N decided this search; K not interested.`; if both zero, skip the line entirely.
 
-### 3. `## Heads-up`
-
-Seven bullet types, in this order; omit any bullet whose list is empty:
-
-- **Integration auth failures (when applicable):** single line per failed integration, e.g. `Calendar fetch failed (token expired) — heads-up missing event data this run. Re-auth via your calendar MCP.` These appear FIRST in heads-up so degradation is visible.
-- **Upcoming events this week (when calendar wired):** matched events within the next 7 days, sorted soonest first, e.g. `Wed 21 May 14:00 — Plaid (cpo-round), Fri 23 May 11:00 — N26 (recruiter)`. Skip if none.
-- **New inbound (when gmail wired):** unmatched relevant emails (recruiter/talent senders or pipeline-keyword subjects) where no company in `userdata/companies/` matches. Format: `<count> — <Company-guess from sender domain> ("<subject>")`. Each is a prompt to evaluate adding to the pipeline. Skip if none.
-- **Checkpoints due within 14d:** comma-separated list of `<date> (<condition>)`. Skip if none.
-- **Stale items (>14d in `applied` with no movement):** count and inline list, e.g. `2 — Klarna (16d), Monzo (21d)`. Skip if none.
-- **Shape-mismatch warning on active interviews.** Trigger: any meta.md with `status: interviewing` AND (`team_size > 150` OR the company body/research-brief mentions ">150 ppl") AND the company is NOT in any `target_industries` entry from profile.md AND no explicit equity / brand signal in research-brief. When triggered: `Shape mismatch — <Company> is interviewing but <signal recap>. Re-read the role-fit verdict before next round.` This is the hollowing-risk check: a big-co interview proceeding without the shape signals the user actually wants. Skip if no qualifying meta.
-- **Coach nudge.** Surfaces when a multi-week pattern suggests `pm-job-search:career-coach` would help diagnose. Three independent triggers — fire at most ONE per /today run. **Trigger C is highest severity; if C fires, suppress A and B.** Skip if no trigger fires.
-  - **Trigger A — cadence drift.** Weekly targets (`applications` AND/OR `warm_outreach`) missed by >50% for 3 weeks running. Compute by counting `date_applied` per 7-day window AND keyword-scanning journal per window across the last 21 days. When triggered: `Cadence under 50% three weeks running — pm-job-search:career-coach can help work out if the targets or the search itself needs a rethink.`
-  - **Trigger B — passing without applying.** ≥3 meta.md files have `status: not_interested` AND `strategy.md ## Anti-goals` section body is empty. (User is passing on roles without applying — pattern suggests an unstated rule worth naming.) When triggered: `Passed on <N> roles without applying — there's probably a pattern worth naming. Ask pm-job-search:career-coach to walk you through it.`
-  - **Trigger C — sunk-cost / structural rethink.** Highest-severity trigger. Suppresses A and B if it fires. Three OR-conditions, ANY one fires it:
-    1. **Long search, thin pipeline.** weeks-since-`/setup` ≥ 8 (compute from the earliest `date_added` across all meta.md OR from `target_offer_date` if available) AND companies in `status: interviewing` count < 2 AND companies in `status: offer` count = 0.
-    2. **Pattern-of-rejection.** ≥3 meta.md files with `status: rejected` AND the same `rejection_stage` value (e.g. 3 rejections at `take-home`, or 3 rejections at `panel`).
-    3. **Cadence-drift escalation.** Trigger A has fired in 4+ consecutive `/today` runs (would require persistent state; if not implementable, fall back to: weeks-since-/setup ≥ 4 AND weekly targets missed by >50% for 4 weeks running).
-
-    When triggered, the message must **cite specific data** (which counts, which dates, which stage) — not abstract framing. Examples:
-    - Condition 1: `9 weeks since /setup, 1 active interview thread, 0 offers. This isn't a cadence problem — pm-job-search:career-coach can help work out whether the strategy itself needs restarting, not tweaking.`
-    - Condition 2: `3 rejections at the <stage> stage. Same stage, different companies — pm-job-search:career-coach can help work out what specifically is happening there.`
-    - Condition 3: `Cadence under 50% for 4 weeks running. The targets or the search shape probably need a structural change, not another push — pm-job-search:career-coach can help diagnose.`
-- **Late-stage interview prompts.** Trigger: any company with `status: interviewing` AND `last_inbound` within the last 7 days. When triggered, list the company names on one line, then surface the three founder-vetting questions verbatim:
-  - "What does a typical week look like — product vs meetings?"
-  - "Where has the last HoP spent most political capital internally?"
-  - "When something underperforms — who's in the debrief room?"
-
-  Companies in `interviewing` whose `last_inbound` is older than 7 days do NOT trigger this — they belong to the "stale items" treatment above with a slightly different framing if needed.
-
 ## Save behaviour
 
 Default: write the full brief to `userdata/outputs/daily-brief-<YYYY-MM-DD>.md` (today's date in the user's timezone — assume system local). Overwrite if the file already exists for today (no merge — the brief is a single-shot snapshot).
@@ -244,68 +266,44 @@ If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only.
 
 Always print the brief to chat regardless of save mode.
 
-## First-run automation nudge
-
-After the brief renders, check whether to surface a one-shot nudge asking the user to set up daily auto-runs.
-
-**Trigger conditions (ALL must be true):**
-
-1. The run is non-ephemeral (the `--ephemeral` flag was NOT passed).
-2. The marker file `userdata/outputs/.automation-nudge-shown` does NOT exist.
-
-**When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the nudge is a one-time chat surface, not part of the brief history). Then create the marker file with `touch userdata/outputs/.automation-nudge-shown` so the nudge never fires again on this install.
-
-```
----
-
-First daily brief filed. Want this to run automatically at 9am every day?
-
-- **Inside Claude Code (cross-platform, easiest):** run `/schedule` and follow the prompt for a daily 09:00 trigger on `/pm-job-search:today`.
-- **macOS launchd (no Claude Code session needed):** ask Claude Code to draft a `~/Library/LaunchAgents/com.<you>.pm-job-search-today.plist` for a headless `claude -p "/pm-job-search:today"` daily run. Survives reboots, no terminal needed.
-- **Linux / generic cron:** add `0 9 * * * cd <workspace> && claude -p "/pm-job-search:today"` to `crontab -e`.
-
-Skip this if you'd rather drive it manually. This nudge fires once — delete `userdata/outputs/.automation-nudge-shown` to see it again.
-```
-
-The nudge is informational. /today does NOT attempt to set up scheduling itself — different OSes, different shells, permission considerations. The user picks the path that fits their setup.
-
-If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write nudge marker — automation prompt will repeat on next /today run.` and continue without erroring. The nudge resurfacing is annoying, not destructive.
-
 ## Weekly reflection trigger
 
-After the brief renders (and after the first-run automation nudge has been considered), check whether to offer a weekly reflection hand-off to `pm-job-search:career-coach`.
+**Weekly-reflection nudge (gated — TONE Rule C):**
 
-**Trigger conditions (ALL must be true):**
+After the daily brief has been written to `userdata/outputs/daily-brief-<date>.md`, check ALL of:
 
-1. The run is non-ephemeral (the `--ephemeral` flag was NOT passed).
-2. Today is the first `/today` run of the current ISO week. Determined by reading the marker file `userdata/outputs/.last-weekly-reflection`:
-   - If the file does not exist → trigger fires.
-   - If the file exists, read the single ISO date on the first line. If that date falls in a prior ISO week (compare ISO week numbers, not just day counts), trigger fires. Otherwise it does not.
+1. Is this the first `/today` run of the current ISO week? Determined by the marker file `userdata/outputs/.last-weekly-reflection` — if the file's ISO date is older than the current ISO week's Monday, this is the first run of this week.
+   - If the file does not exist → condition met (first run of week).
+   - If the file exists, read the single ISO date on the first line. If that date falls in a prior ISO week (compare ISO week numbers, not just day counts), condition met. Otherwise it does not.
    - "ISO week" = ISO-8601 week (Monday is day 1, Sunday is day 7). A Sunday belongs to the ISO week that STARTED on the preceding Monday — not the upcoming one. So `isoweek(Sunday)` equals `isoweek(the preceding Monday)`; the next Monday starts a new ISO week. Compare ISO week numbers, not raw day counts.
+2. Are there at least one journal entry (`userdata/journal.md`) from the prior ISO week? If no, skip the nudge entirely — there's nothing to reflect on.
 
-**When triggered:** append the following block to the chat output (NOT to the saved daily-brief file — the offer is a one-time chat surface, not part of the brief history):
+The run must also be non-ephemeral (the `--ephemeral` flag was NOT passed).
 
+**If both yes:**
+
+Use `AskUserQuestion` with **Yes, reflect** / **Skip**:
+
+"It's the start of a new week. Want a 5-min reflection on last week? (y / skip)"
+
+On **Yes, reflect** → invoke the `pm-job-search:career-coach` agent with mode hint `weekly-reflection`. The agent reads `journal.md` + `strategy.md`, runs 3-4 reflection prompts, and appends a `## Weekly reflection <YYYY-MM-DD>` block to `journal.md`. See `${CLAUDE_PLUGIN_ROOT}/agents/career-coach.md` for the mode's behaviour.
+On **Skip** → do not invoke career-coach.
+
+After the offer (whether accepted or declined), write today's ISO date to the marker file:
+
+```bash
+date +%Y-%m-%d > userdata/outputs/.last-weekly-reflection
 ```
----
 
-It's the start of a new week. Want a 5-min reflection on last week? (y / skip)
-```
+This ensures the offer fires at most once per ISO week regardless of whether the user took it.
 
-Wait for user response.
+If marker write fails, print: "Couldn't write weekly-reflection marker — offer may repeat later this week." and continue.
 
-- If user replies `y` (or any affirmative) → invoke the `pm-job-search:career-coach` agent with the mode hint `weekly-reflection`. The agent reads journal.md + strategy.md, runs 3-4 reflection prompts, and appends a `## Weekly reflection <YYYY-MM-DD>` block to journal.md. See `plugin/agents/career-coach.md` for the mode's behaviour.
-- If user replies `skip` (or any negative / non-affirmative) → do not invoke career-coach.
-- In BOTH cases (accept and skip), update the marker file by writing today's ISO date as the only line:
+The weekly reflection is invoked only by the user explicitly accepting the offer; /today never invokes career-coach silently.
 
-  ```bash
-  date +%Y-%m-%d > userdata/outputs/.last-weekly-reflection
-  ```
+## End-of-run nudge
 
-  This ensures the offer fires at most once per ISO week regardless of whether the user took it.
-
-If the marker file write fails (read-only filesystem, etc.) print one line to chat: `Couldn't write weekly-reflection marker — offer may repeat later this week.` and continue without erroring.
-
-The weekly reflection is invoked by the user explicitly accepting the offer; /today never invokes career-coach silently.
+After the brief renders and the weekly-reflection check completes, compose a single one-line context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Skip the nudge entirely if no useful next step is obvious (e.g. the pipeline is healthy and there's nothing time-sensitive to flag).
 
 ## `applications.md` regeneration
 
@@ -340,7 +338,19 @@ Rules:
 3. **File exists but has neither marker** → also write a fresh complete file (same as case 2). The user's previous freeform notes are preserved only if they happen to sit below the new GENERATED block — but since this case implies the file pre-dates the partition convention, an overwrite is acceptable. Print a one-line warning to chat: `applications.md had no markers — regenerated as fresh file.`
 4. **Exactly one of the two markers is present** → DO NOT WRITE. Print a clear error to chat: `applications.md has only the <BEGIN|END> marker. Refusing to regenerate to avoid destroying user content. Fix by either adding the missing marker or deleting both.` Continue with the rest of /today (save the daily brief, print to chat).
 
-Active table columns: `| Company | Status | Tier | Position | Last activity |` — same sort as the pipeline_state table in the brief. Company cell links to the company folder: `[Plaid](../companies/Plaid/)` for flat layouts, `[Plaid](../companies/Plaid/<role-slug>/)` for multi-role.
+Active table columns: `| Company | Role | Status | Tier | Link | Last activity |` — same sort as the pipeline_state table in the brief. Company cell links to the company folder: `[Plaid](../companies/Plaid/)` for flat layouts, `[Plaid](../companies/Plaid/<role-slug>/)` for multi-role. The `Link` column contains the JD URL from the company's `meta.md` `link:` field; leave blank if absent.
+
+Example row:
+
+```markdown
+| Company | Role | Status | Tier | Link | Last update |
+|---|---|---|---|---|---|
+| Plaid | Senior PM | to apply | 1 | https://jobs.lever.co/plaid/… | 2026-05-25 |
+```
+
+Any chat output that prints application rows (pipeline section, status lists, brief output) must include the JD URL inline:
+
+Format: `- <Company> — <Role> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
 
 Decided table columns: `| Company | Status | Tier | Position | Decided |` where `Decided` is the most recent of `date_rejected` / `date_not_interested`. Sort by Decided descending. Cap at items decided within the last 30 days. (`offer` is intentionally NOT included here — an open offer is a high-signal Active state, not a decided one; surface it in the Active table at the top.)
 
@@ -378,7 +388,7 @@ Each meta.md represents one `(company, position)` pair. Counts (active threads, 
 
 ## Smoke test against the Maya example
 
-When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`. The brief is the 3-section shape (Top 3 actions → Pipeline state → Heads-up) — there are no "Where you are" or "This week's progress" sections any more.
+When debugging this skill, run it against `userdata/examples/maya/` as a synthetic install (treat that subdirectory as if it were the userdata/ root). Maya's snapshot has NO `userdata/integrations.md`. The brief is the 3-section shape (Top 3 actions → Heads-up → Pipeline state) — there are no "Where you are" or "This week's progress" sections any more.
 
 ### Input phase against Maya
 
@@ -395,8 +405,8 @@ To exercise the integration-fold-in code paths AND the targeted-confirms flow, c
 With the catch-all skipped, the output phase against Maya's expanded install (8 status slots, Plaid multi-role, Lendable in `offer` status) should produce the 3-section brief:
 
 - **Section 1 "Top 3 actions"**: (4) Plaid prep — `last_inbound: 2026-05-13` is 5d ago, within 7d → fires. (5) iwoca chase/close — `date_applied: 2026-04-22` is 26d ago, >14d → fires. (6) Applications gap — 1/3 = 67% gap, fires. If today is Monday, the Monday warm-outreach batch nudge may also fire (count is at 3/5 — depends on weekend warm-outreach activity). No checkpoint trigger (next is 2026-06-15 = 28d out). No imminent-event or recruiter-reply bullets (no integrations).
-- **Section 2 "Pipeline state"**: 7 active rows in this group order — Lendable (offer P0) → Plaid CC + Cleo (interviewing P0 then P1) → Marshmallow + iwoca (applied P0 then P1) → Plaid Growth Loops + Zopa (to_apply P1). Multi-role Plaid renders BOTH rows via the dual-glob; each linked to its role-slug subfolder. 5-column shape (no "Next event" column — Calendar not wired). Decided summary: `2 decided this search; 1 rejected, 1 not interested.` (Stripe rejected + Atom Bank not interested.)
-- **Section 3 "Heads-up"**: stale-applied bullet fires for iwoca (26d). Shape-mismatch warning fires for Cleo (180 ppl, no equity signal — though strict reading of the trigger requires the company NOT to be in `target_industries`; Cleo's consumer-finance vertical is borderline against Maya's `fintech` / `consumer credit` targets — an LLM may interpret either way). Late-stage prompts fire for Plaid CC with the three founder-vetting questions printed verbatim. Trigger A coach nudge may fire (applications cadence under 50% for 3 weeks running — depends on journal counts per week).
+- **Section 2 "Heads-up"**: stale-applied bullet fires for iwoca (26d). Shape-mismatch warning fires for Cleo (180 ppl, no equity signal — though strict reading of the trigger requires the company NOT to be in `target_industries`; Cleo's consumer-finance vertical is borderline against Maya's `fintech` / `consumer credit` targets — an LLM may interpret either way). Late-stage prompts fire for Plaid CC (active interview thread with recent inbound). Trigger A coach nudge may fire (applications cadence under 50% for 3 weeks running — depends on journal counts per week).
+- **Section 3 "Pipeline state"**: 7 active rows in this group order — Lendable (offer P0) → Plaid CC + Cleo (interviewing P0 then P1) → Marshmallow + iwoca (applied P0 then P1) → Plaid Growth Loops + Zopa (to_apply P1). Multi-role Plaid renders BOTH rows via the dual-glob; each linked to its role-slug subfolder. 5-column shape (no "Next event" column — Calendar not wired). Decided summary: `2 decided this search; 1 rejected, 1 not interested.` (Stripe rejected + Atom Bank not interested.)
 
 If the catch-all DOES return content (e.g. the user types `[Plaid] CPO round confirmed Thu` during step 4), verify that:
 - journal.md gains a `## 2026-05-18` heading (if not already present today) with the bullet `- [Plaid] CPO round confirmed Thu (source: user)`.
@@ -404,13 +414,14 @@ If the catch-all DOES return content (e.g. the user types `[Plaid] CPO round con
 
 ### Weekly reflection trigger against Maya
 
-- If today is Monday AND `userdata/examples/maya/outputs/.last-weekly-reflection` does not exist → offer block prints after the brief.
-- If today is Monday AND the marker file dates to the prior ISO week → offer block prints.
+- If today is Monday AND `userdata/examples/maya/outputs/.last-weekly-reflection` does not exist AND Maya's journal has entries from the prior ISO week → offer block prints after the brief.
+- If today is Monday AND the marker file dates to the prior ISO week AND prior-week journal entries exist → offer block prints.
 - If today is Tuesday AND the marker file dates to Monday (same ISO week) → offer block does NOT print.
+- If today is Monday AND Maya's journal has NO entries from the prior ISO week → offer block does NOT print (TONE Rule C gate).
 - On accept (`y`) → career-coach invoked with `weekly-reflection` mode; on skip → marker file updated, no agent invocation. In both cases, the marker file's content reads today's ISO date as the only line.
 
-### First-run automation nudge
+### Weekly reflection trigger notes (updated)
 
-The first-run automation nudge still fires on the first non-ephemeral run against Maya (the marker file isn't checked into the example). Subsequent runs against Maya will suppress it once `userdata/examples/maya/outputs/.automation-nudge-shown` exists; delete that file to re-trigger.
+The weekly-reflection nudge fires only when BOTH conditions are met: first run of the ISO week AND prior-week journal entries exist. Maya's journal currently has entries from the prior ISO week, so the nudge will fire on the first Monday run.
 
 If the output diverges materially from any of the above against the Maya snapshot, the skill has a bug — fix before promoting.
