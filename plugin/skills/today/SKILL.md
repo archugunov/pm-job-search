@@ -42,22 +42,20 @@ Dedup across integrations: if the same fact surfaces via two sources (e.g. a cal
 
 Render inferred deltas as a numbered list, grouped by source. Skip this step entirely if step 2 produced no items. Example output shape:
 
-```
-Since your last entry (2026-05-15), I see:
-
-From calendar:
-1. Plaid — Round 2 panel scheduled Fri 2026-05-22 14:00
-2. Klarna — Recruiter call moved from Wed to Thu
-
-From gmail:
-3. Lendable — Reply from Sarah at Lendable (likely rejection — want me to read it?)
-4. Stripe — New inbound from a recruiter named James (no company match yet)
-
-From granola:
-5. Klarna recruiter call transcript captured Mon 2026-05-15
-
-Confirm 1-5 ('all', '1 3 5', or describe corrections). Anything I should edit or skip?
-```
+> Since your last entry (2026-05-15), I see:
+>
+> From calendar:
+> 1. Plaid — Round 2 panel scheduled Fri 2026-05-22 14:00
+> 2. Klarna — Recruiter call moved from Wed to Thu
+>
+> From gmail:
+> 3. Lendable — Reply from Sarah at Lendable (likely rejection — want me to read it?)
+> 4. Stripe — New inbound from a recruiter named James (no company match yet)
+>
+> From granola:
+> 5. Klarna recruiter call transcript captured Mon 2026-05-15
+>
+> Confirm 1-5 ('all', '1 3 5', or describe corrections). Anything I should edit or skip?
 
 User response handling:
 - `all` / `yes` → confirm every inferred item as-is.
@@ -262,7 +260,7 @@ Default: write the full brief to `userdata/outputs/daily-brief-<YYYY-MM-DD>.md` 
 
 Also regenerate `userdata/outputs/applications.md` (see next section).
 
-If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks. `--ephemeral` suppresses the brief and applications.md writes only — the input phase still runs and writes confirmed facts to journal.md + meta.md. Skip the catch-all (press enter) for a fully no-side-effect spot-check.
+If invoked with `--ephemeral`, skip BOTH saves and print the brief to chat only. Useful for quick spot-checks. `--ephemeral` suppresses the brief and applications.md writes only — the input phase still runs and writes confirmed facts to journal.md + meta.md. Choose 'Skip' at the catch-all prompt for a fully no-side-effect spot-check.
 
 Always print the brief to chat regardless of save mode.
 
@@ -343,7 +341,7 @@ Active table columns: `| Company | Role | Status | Tier | Link | Last activity |
 Example row:
 
 ```markdown
-| Company | Role | Status | Tier | Link | Last update |
+| Company | Role | Status | Tier | Link | Last activity |
 |---|---|---|---|---|---|
 | Plaid | Senior PM | to apply | 1 | https://jobs.lever.co/plaid/… | 2026-05-25 |
 ```
@@ -395,7 +393,7 @@ When debugging this skill, run it against `userdata/examples/maya/` as a synthet
 - Step 1 (window): Maya's journal currently opens with `## 2026-05-15`. If today is 2026-05-18 in the harness, gap = 3 days → print `Last entry was 3 days ago — pulling the full window.` (Update this assertion if the example install is refreshed with a different most-recent date.)
 - Step 2 (inference): integrations.md absent → skipped silently. No items rendered.
 - Step 3 (targeted confirms): skipped (step 2 produced nothing).
-- Step 4 (open catch-all): single prompt printed. If the user replies with free text mentioning a company, that line should be parsed and routed; if they press enter / skip, the input phase exits cleanly with no writes.
+- Step 4 (open catch-all): single prompt printed. If the user replies with free text mentioning a company, that line should be parsed and routed; if they choose Skip, the input phase exits cleanly with no writes.
 - Step 5 (write phase): only runs if the catch-all returned content. With no input from the user, journal.md is not touched and no `## 2026-05-18` heading is created.
 
 To exercise the integration-fold-in code paths AND the targeted-confirms flow, create a temporary `userdata/examples/maya/integrations.md` with `## calendar` / `## gmail` sections wired, dispatch /today, and verify the input phase renders inferred deltas grouped by source.
