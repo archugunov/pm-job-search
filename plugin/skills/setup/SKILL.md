@@ -1,6 +1,6 @@
 ---
 name: setup
-description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a 10-question conversational install that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
+description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a 12-question conversational install that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
 ---
 
 # /setup — first-run install and re-configure
@@ -11,7 +11,7 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Opening line** (after mode detection, before Q1, fresh install only):
 
-> "OK, let's get you set up. Eleven quick questions — none of it locked in, you can rerun anytime. Ready?"
+> "OK, let's get you set up. Twelve quick questions — none of it locked in, you can rerun anytime. Ready?"
 
 Wait for a one-word confirmation, then start Q1.
 
@@ -20,13 +20,13 @@ Wait for a one-word confirmation, then start Q1.
 Run this BEFORE asking the first question:
 
 1. If `userdata/profile.md` exists → enter **re-run mode**: read the file, ask "keep current / update / skip" per field, never wipe existing answers.
-2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: ask all 10 questions in order.
+2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: ask all 12 questions in order.
 3. `--refresh` flag → re-run mode, but only re-resolve the workspace-root `CLAUDE.md` from the template using the current `profile.md` content. Skip all questions. Useful after manual edits to profile.md.
 
 Also detect CV presence (only relevant in fresh-install mode). This shapes how Q6 (Positioning) is offered — see Q6 below for the full flow:
 
-- `userdata/cv.md` or `userdata/cv.txt` exists → Q6 goes straight to Mode B (CV draft) without prompting.
-- `userdata/cv.pdf`, `userdata/cv.docx`, or any non-md/txt file → print one line: `Found userdata/cv.<ext>. v1 only reads .md or .txt — convert your CV first if you want me to draft from it.` Then Q6 offers all three options (CV-drop, skip, paste).
+- `userdata/cv.md`, `userdata/cv.txt`, or `userdata/cv.pdf` exists → Q6 goes straight to Mode B (CV draft) without prompting.
+- `userdata/cv.docx` or any other non-md/txt/pdf file → print one line: `Found userdata/cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.` Then Q6 offers all three options (CV-drop, skip, paste).
 - No cv.* file → Q6 offers all three options with CV-drop as the recommended default.
 
 ## Templates
@@ -39,9 +39,9 @@ Read these from the plugin install dir (use `${CLAUDE_PLUGIN_ROOT}` if available
 
 Do not edit these template files. Always treat them as read-only inputs.
 
-## The 10 questions
+## The 12 questions
 
-Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5, Q6); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
+Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5, Q6); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters), Q11 (companies of interest) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
 
 Each question below shows the EXACT user-facing prompt in quotes. Use the wording verbatim — don't paraphrase. The voice is locked per `TONE.md`.
 
@@ -63,17 +63,17 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
 5. **Geography** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion. Ask:
    > "Where are you looking?"
 
-   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`. For "Both", optionally follow up:
-   > "Anything specific about the geography? (e.g. 'London hybrid or EU-remote'). Or skip."
+   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
+
 6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
-   Auto-detect first: if `userdata/cv.md` or `userdata/cv.txt` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
+   Auto-detect first: if `userdata/cv.md`, `userdata/cv.txt`, or `userdata/cv.pdf` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
 
    If no CV file exists, ask via AskUserQuestion. Use this exact opener and three options:
 
    > "Positioning next — who you are and what you're best at. Three ways to handle this:"
 
-   - **A. Drop your CV (recommended)** — print: *"Save your CV as `userdata/cv.md` or `.txt`, I'll read it and draft positioning + proof points for you to edit. Say 'ready' once the file's in."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
+   - **A. Drop your CV (recommended)** — first, create the following directories and files if not already present: `userdata/`, `userdata/companies/.gitkeep`, `userdata/stories/.gitkeep`, `userdata/outputs/.gitkeep`. Then print: *"I've created `userdata/` for you — drop your CV there as `cv.md`, `cv.txt`, or `cv.pdf`. Say 'ready' when it's in."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
    - **B. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
    - **C. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
 
@@ -138,12 +138,31 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
 
     Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 people", "no five-day in-office"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
 
-11. **Target offer date** — skippable. Ask:
+11. **Companies of interest** — skippable. Ask:
+    > "Any companies you have in mind already? List a few, or skip."
+
+    Persist the answer to `userdata/profile.md` under a new section heading:
+
+    ```markdown
+    ## Companies of interest
+
+    - <Co 1>
+    - <Co 2>
+    ```
+
+    If the user skips, write the heading with an empty list (so `/job-search` can distinguish "asked, none given" from "never asked"):
+
+    ```markdown
+    ## Companies of interest
+
+    ```
+
+12. **Target offer date** — skippable. Ask:
     > "When do you want the offer signed by? Concrete date — even a best guess. Vague dates make `/today`'s countdown noisy."
 
     Parse as `YYYY-MM-DD`. If skipped, set `target_offer_date: null` in strategy.md and skip the cadence derivation below — strategy.md will only have the auto-headline-goal populated; `/today` degrades gracefully (no countdown, no progress section).
 
-After Q11 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
+After Q12 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
 
 | W | weekly_targets.applications | weekly_targets.warm_outreach | pipeline_targets.active_interview_threads | pipeline_targets.p0_pipeline_size |
 |---|---|---|---|---|
@@ -161,7 +180,7 @@ Skip clauses where the source field is unset (e.g. if salary skipped, drop the b
 
 Leave `## Anti-goals` empty and `checkpoints: []` — those need deeper reflection and belong to the user's later editing or to a `career-coach` conversation.
 
-After Q11: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
+After Q12: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
 The senior-PM-default `tier_weights` + `tier_thresholds` get written into `profile.md` from the template automatically. Tier rubric terms (P0/P1/P2, role_fit, etc.) are too technical to introduce here without context — the user encounters them organically the first time `/evaluate-position` runs and shows a scoring breakdown. That's the right teach-moment.
 
@@ -169,7 +188,7 @@ If the user wants to tune the rubric, they edit `profile.md` directly. The re-ru
 
 ## Re-run mode question loop
 
-When `userdata/profile.md` exists, iterate fields in the same order (Q1-Q10 + tier rubric). For each:
+When `userdata/profile.md` exists, iterate fields in the same order (Q1-Q12 + tier rubric). For each:
 
 1. Show the current value (one line).
 2. Ask: `keep / update / skip` (skip means "leave as-is for now, ask again next /setup").
@@ -199,10 +218,10 @@ Do NOT write `# unset` comments — they look like noise in the final file. An e
 ### 2. `userdata/strategy.md` (only if file does not already exist)
 
 Read the strategy template. Populate:
-- `target_offer_date`: from Q11. If Q11 was skipped, leave as `null`.
-- `weekly_targets.*` + `pipeline_targets.*`: from the cadence-derivation table above. If Q11 was skipped, leave all as `null` (`/today` skips them gracefully).
+- `target_offer_date`: from Q12. If Q12 was skipped, leave as `null`.
+- `weekly_targets.*` + `pipeline_targets.*`: from the cadence-derivation table above. If Q12 was skipped, leave all as `null` (`/today` skips them gracefully).
 - `checkpoints: []` (empty list — user adds later via `career-coach` or by hand).
-- `## Headline goal`: the auto-composed paragraph (from profile.md fields + target date). If Q11 was skipped, omit the date clause and drop the countdown wording.
+- `## Headline goal`: the auto-composed paragraph (from profile.md fields + target date). If Q12 was skipped, omit the date clause and drop the countdown wording.
 - `## Anti-goals`: leave the section empty (the template's HTML comment prompts the user to fill in later).
 
 Write to `userdata/strategy.md`.
@@ -253,7 +272,7 @@ Write the result to `CLAUDE.md` at the workspace root (one level above `userdata
 
 ## Closing offers
 
-First, print a brief summary of what was written — one line per file. If Q11 set a target date, include the derived cadence summary so the user can spot-check the numbers. Example with target date set:
+First, print a brief summary of what was written — one line per file. If Q12 set a target date, include the derived cadence summary so the user can spot-check the numbers. Example with target date set:
 
 > "You're set up. Wrote:
 > - `userdata/profile.md` — identity, target role, salary, hard filters
@@ -261,17 +280,38 @@ First, print a brief summary of what was written — one line per file. If Q11 s
 > - `userdata/journal.md` — empty (append daily notes here)
 > - `CLAUDE.md` — workspace root, loads your profile into every Claude Code session"
 
-If Q11 was skipped, omit the cadence summary line — just say `userdata/strategy.md — headline goal drafted; targets unset (skipped target date)`.
+If Q12 was skipped, omit the cadence summary line — just say `userdata/strategy.md — headline goal drafted; targets unset (skipped target date)`.
 
 Then offer ONE follow-up (only if Q6 produced a draft via Mode A or Mode B):
 
 > "Want to sharpen your positioning before we wrap? I can pull in the `pm-job-search:career-coach` agent — quick 5-min back-and-forth, it'll suggest a tighter version. Or skip and edit `profile.md` whenever."
 
-If yes, invoke the `career-coach` agent. If no or Q6 was skipped, end with:
+If yes, invoke the `career-coach` agent. If no or Q6 was skipped, continue to the automation offer below.
 
-> "You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief. Ask `pm-job-search:career-coach` for positioning, outreach, or search strategy. Also when something feels off and you can't name what's wrong — it diagnoses before it suggests.
->
-> Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/archugunov/pm-job-search/issues)."
+**Automation offer (split per TONE.md Rule A — one ask per message):**
+
+Step 1 — ask:
+> "Want `/pm-job-search:today` to run automatically every day? (y / n)"
+
+Use `AskUserQuestion` with two options: **Yes** / **No, I'll run it manually**.
+
+If No → skip to closing nudge.
+
+Step 2 (only if Yes) — ask:
+> "What time? (e.g. 9am)"
+
+Free-text answer. Parse to HH:MM.
+
+Step 3 (only if Yes) — write the schedule via `/schedule` automatically and reply:
+> "Done — scheduled daily at <HH:MM> via /schedule. If you'd rather not keep a Claude Code session open, ask me to set up a launchd plist (macOS) or cron entry (Linux) instead."
+
+**Closing nudge:**
+
+After all setup files are written (and after the automation step completes or is skipped), read `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md` and compose a single one-line context-aware next-step nudge based on the user's current state. For a fresh setup with no companies yet, the nudge should be:
+
+> "Setup done. Run `/pm-job-search:job-search` to seed your applications list — or `/pm-job-search:today` right now if you'd rather see a daily brief first."
+
+Do not list all three steps as numbered bullets; the recommended-flow reference handles ordering.
 
 ## What /setup never does
 
