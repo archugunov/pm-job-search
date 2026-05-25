@@ -63,6 +63,41 @@ Examples that match the voice:
 - Always offer "skip" as a valid path.
 - Order offers by leverage — the one that unlocks the most should come first.
 
+## Conversation discipline — three rules
+
+These three rules govern how questions, nudges, and summaries are structured. Every skill must follow them.
+
+### Rule A — One ask per message
+
+Never bundle two unrelated questions or nudges in one message. If a skill has two follow-ups (e.g. "want to automate this?" and "want a weekly reflection?"), ask the second only after the first is answered.
+
+Informational messages with multiple suggestions (e.g. "next steps: 1. … 2. … 3. …") are fine — the rule applies to *decisions the user has to make*, not to context the skill provides.
+
+### Rule B — Chat-output formatting is plain prose, not code blocks
+
+Skill summaries shown in chat read as readable text: short paragraphs and short bullets. Never use fenced code blocks for summaries. Never use `key: value` dumps unless the user is meant to copy-paste the block as-is into a file.
+
+Good:
+> Drafted your tailored CV for **Plaid — Senior PM** and saved it to `userdata/companies/plaid/cv-2026-05-25.md`.
+>
+> What I leaned on:
+> - Positioning angle: payments depth + 0→1 ownership
+> - Strongest proof points: pricing experiment, underwriting integration
+>
+> Open the file and edit anything that doesn't sound like you.
+
+Bad:
+> ```
+> company: Plaid
+> role: Senior PM
+> saved_to: userdata/companies/plaid/cv-2026-05-25.md
+> positioning: payments depth + 0→1 ownership
+> ```
+
+### Rule C — Don't ask about prior state on a skill's first run
+
+If a skill writes or reads state, and the state doesn't exist yet, skip prompts that assume it does ("anything that moved since last time", weekly-reflection nudge, etc.). Detect first-run by absence of the relevant file. For `/today`, the relevant file is `userdata/journal.md`. For the weekly-reflection nudge, also require at least one journal entry from the prior ISO week.
+
 ## Voice for drafted content (not just prompts)
 
 When skills or agents DRAFT content for the user (positioning paragraphs, proof points, story narratives, interview prep, review feedback), they follow the same voice rules above PLUS:
