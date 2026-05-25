@@ -150,11 +150,12 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
     - <Co 2>
     ```
 
-    If the user skips, write the heading with an empty list (so `/job-search` can distinguish "asked, none given" from "never asked"):
+    If the user skips, write the heading with an italic placeholder (so `/job-search` can distinguish "asked, none given" from "never asked"):
 
     ```markdown
     ## Companies of interest
 
+    _None yet — fill in as you discover them._
     ```
 
 12. **Target offer date** — skippable. Ask:
@@ -212,6 +213,13 @@ For skipped placeholders: write an empty YAML value, never the literal `{{NAME}}
 - `{{HARD_FILTERS}}` skipped → `hard_filters: []`.
 - `{{TARGET_TITLES}}` cannot be skipped (required).
 - `{{GEOGRAPHY_DETAIL}}` skipped → `mode_detail:` (empty).
+- Q11 (Companies of interest) skipped → write the `## Companies of interest` heading with a single italic placeholder line:
+  ```markdown
+  ## Companies of interest
+
+  _None yet — fill in as you discover them._
+  ```
+  This prevents the heading from rendering as an empty section and signals to `/job-search` that the question was asked.
 
 Do NOT write `# unset` comments — they look like noise in the final file. An empty value is self-explanatory.
 
@@ -303,7 +311,7 @@ Step 2 (only if Yes) — ask:
 Free-text answer. Parse to HH:MM.
 
 Step 3 (only if Yes) — write the schedule via `/schedule` automatically and reply:
-> "Done — scheduled daily at <HH:MM> via /schedule. If you'd rather not keep a Claude Code session open, ask me to set up a launchd plist (macOS) or cron entry (Linux) instead."
+> "Done — scheduled daily at <HH:MM> via Claude Code's built-in `/schedule`. If you'd rather not keep a Claude Code session open, ask me to set up a launchd plist (macOS) or cron entry (Linux) instead."
 
 **Closing nudge:**
 
