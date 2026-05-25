@@ -26,13 +26,11 @@ If `userdata/profile.md` is missing, tell the user to run `/setup` first.
 
 If no flag, build a picker. List every `userdata/stories/*.md` as:
 
-```
-1. Payments pricing experiment            [themes: growth, pricing, experimentation, post-PMF]  (last practised 2026-05-11)
-2. Cross-functional review process        [themes: leadership, process]                           (last practised 2026-04-22)
-3. Underwriting integration               [themes: 0-to-1, data, fintech]                         (never practised)
-4. + New story (describe one)
-5. Cancel
-```
+> 1. Payments pricing experiment            [themes: growth, pricing, experimentation, post-PMF]  (last practised 2026-05-11)
+> 2. Cross-functional review process        [themes: leadership, process]                           (last practised 2026-04-22)
+> 3. Underwriting integration               [themes: 0-to-1, data, fintech]                         (never practised)
+> 4. + New story (describe one)
+> 5. Cancel
 
 Sort by `last_practised` descending, with never-practised at the bottom but above the action items. Use AskUserQuestion for the pick if the list is ≤4; otherwise present as numbered text and ask for a number. Always include "+ New story" and "Cancel" as final options.
 
@@ -40,9 +38,7 @@ If picker is empty (no stories yet), skip straight to new-story flow.
 
 **Coverage line.** Below the picker, print a single coverage summary line drawn from the story-taxonomy reference:
 
-```
-Coverage: <N>/12 story types covered. Missing: <comma list of missing type names, max 3 shown, "+ K more" if longer>. Run /story-builder --gap-check for details.
-```
+> Coverage: <N>/12 story types covered. Missing: <comma list of missing type names, max 3 shown, "+ K more" if longer>. Run /story-builder --gap-check for details.
 
 Stories without a `story_type:` frontmatter field count as `unclassified` and don't contribute to the N/12 count. If unclassified stories exist, append: `(<M> stories unclassified — edit to add story_type)`. Skip the coverage line entirely if zero stories exist (picker goes straight to new-story flow).
 
@@ -137,24 +133,22 @@ Coverage analysis only — no edit flow. Output is read-only diagnostics.
    - **Senior-PM-track**: balanced weighting across all 12
 5. Output:
 
-```
-Story-bank coverage check — <YYYY-MM-DD>
-
-You have <N> stories: <M>/12 story types covered. <K> unclassified.
-
-Covered: ambiguity-0-to-1, pricing-monetization, ...
-Missing: hiring-decision, ethical-edge, crisis-management, ...
-Unclassified: <list of story titles with no story_type>
-
-For <target-title from profile.md>, the most leverage-gain is:
-1. hiring-decision — HoP rounds probe this near-universally; you have no story.
-2. strategic-pivot — feature-pivots count, but HoP rounds want whole-team pivots; what you have is too tactical.
-3. ethical-edge — rarely probed at Senior PM rounds, but a load-bearing differentiator at HoP rounds.
-
-Next steps:
-- /story-builder --new "<suggested title>"
-- /story-builder --edit <unclassified-slug>   (to classify what you already have)
-```
+> Story-bank coverage check — <YYYY-MM-DD>
+>
+> You have <N> stories: <M>/12 story types covered. <K> unclassified.
+>
+> Covered: ambiguity-0-to-1, pricing-monetization, ...
+> Missing: hiring-decision, ethical-edge, crisis-management, ...
+> Unclassified: <list of story titles with no story_type>
+>
+> For <target-title from profile.md>, the most leverage-gain is:
+> 1. hiring-decision — HoP rounds probe this near-universally; you have no story.
+> 2. strategic-pivot — feature-pivots count, but HoP rounds want whole-team pivots; what you have is too tactical.
+> 3. ethical-edge — rarely probed at Senior PM rounds, but a load-bearing differentiator at HoP rounds.
+>
+> Next steps:
+> - /story-builder --new "<suggested title>"
+> - /story-builder --edit <unclassified-slug>   (to classify what you already have)
 
 The "most leverage-gain" prose draws specific justifications from the story-taxonomy reference's level-differentiation section. Each ranked item must cite the SPECIFIC reason from the taxonomy (e.g. "HoP rounds probe near-universally"), not generic "you should have this".
 

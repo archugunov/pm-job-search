@@ -160,15 +160,13 @@ When two offers are in play, replace single-offer sections with side-by-side. Sa
 
 After writing the evaluation file, print to chat (compact):
 
-```
-Filed: userdata/companies/<Co>/[<role-slug>/]offer-evaluation-<date>.md
-
-Verdict: <TAKE / NEGOTIATE / PUSH BACK / DECLINE>
-Headline reason: <one line>
-Top negotiation ask: <verbatim from the negotiation moves section>
-
-Before responding: sleep 24h, then run pm-job-search:career-coach with "I'm about to <verb> — what would I regret in 2 years?"
-```
+> Filed: userdata/companies/<Co>/[<role-slug>/]offer-evaluation-<date>.md
+>
+> Verdict: <TAKE / NEGOTIATE / PUSH BACK / DECLINE>
+> Headline reason: <one line>
+> Top negotiation ask: <verbatim from the negotiation moves section>
+>
+> Before responding: sleep 24h, then run pm-job-search:career-coach with "I'm about to <verb> — what would I regret in 2 years?"
 
 ## Hard rules
 

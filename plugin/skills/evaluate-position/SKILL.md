@@ -197,12 +197,10 @@ Hard rules:
 
 After files are written, print to chat (compact):
 
-```
-Filed: <Company> / <Position> — tier <P0/P1/P2>, score <N>, posting <🟢 looks live | 🟡 looks stale | 🔴 looks dead>.
-  meta.md         → userdata/companies/<Company>/[<slug>/]meta.md
-  research-brief  → userdata/companies/<Company>/[<slug>/]research-brief.md
-  Status: new. Move to to_apply / applied as you act.
-```
+> Filed: <Company> / <Position> — tier <P0/P1/P2>, score <N>, posting <🟢 looks live | 🟡 looks stale | 🔴 looks dead>.
+> meta.md → userdata/companies/<Company>/[<slug>/]meta.md
+> research-brief → userdata/companies/<Company>/[<slug>/]research-brief.md
+> Status: new. Move to to_apply / applied as you act.
 
 If a migration happened, add: `Migrated existing role into <existing-slug>/ subfolder.`
 

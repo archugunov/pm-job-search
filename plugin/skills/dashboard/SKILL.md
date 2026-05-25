@@ -51,6 +51,24 @@ If the user is running this from somewhere other than their workspace root, ask 
 - Does not handle authentication, multi-user, or remote access. Local-only.
 - Does not add Python dependencies. Server uses stdlib only.
 
+## Launch message
+
+When the server starts and the URL is known, print this to chat:
+
+> Opening your job-search dashboard at http://localhost:<port> — you'll see every role you're tracking in one view. Change a status, add a note, or archive a role inline. To add a new role, drop the link to me here and I'll score and file it.
+
+Where `<port>` is the actual port the server bound to (e.g. 7890). Print once and stop.
+
+## In-chat update nudge — fire once per session
+
+The first time per Claude Code session that the user posts a status change in chat (e.g. "mark Plaid to apply", "I rejected the Klarna offer"), append a one-line nudge after confirming the change:
+
+> Tip: you can also click the company row in the dashboard and add this note directly — same data underneath.
+
+"Once per session" means once per Claude Code conversation. Track via a transient in-memory flag set after the first nudge; do not persist to disk. Do not depend on whether the dashboard is currently running.
+
+(Note: this nudge fires from whatever skill or context handles the status change — typically `/today` or a free-text exchange — because this file is dashboard promotion context, not a separate skill.)
+
 ## Tone
 
-Match plugin/TONE.md: low-effort, terse, no marketing voice. When announcing the URL, say it once and stop talking.
+Match plugin/TONE.md: low-effort, terse, no marketing voice.

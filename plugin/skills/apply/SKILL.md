@@ -122,20 +122,25 @@ Pure markdown, no frontmatter. Structure mirrors master CV exactly. The file is 
 
 ## Output to chat
 
-Compact, printed after the file write:
+**Chat summary (TONE Rule B — plain prose, no fenced code, no key-value dumps):**
 
-```
-Filed: <Company> / <Position>
-  cv → userdata/companies/<Company>/[<slug>/]cv-<date>.md (<N> lines, ~<M> words)
+Template:
 
-Tailoring summary:
-  - <one line per change actually made — see rules below>
+> Drafted your tailored CV for **<Company> — <Role>** and saved it to `<path>`.
+>
+> What I leaned on:
+> - Positioning angle: <one phrase from profile.md>
+> - Strongest proof points: <2–3 short references, comma-separated>
+> - Dropped: <one line on what was cut and why>
+>
+> Open the file and edit anything that doesn't sound like you before you send it. <Closing question — one only, per TONE Rule A — typically: "Want me to draft a short cover note next?">
 
-Next steps:
-  - Bump meta.md status to 'applied' when you submit
-  - Draft your cover note separately (paste this CV + the JD into a fresh conversation)
-  - Run /interview-prep <Company> once a call is booked
-```
+Rules:
+- Plain prose opener and closer.
+- One short bulleted recap (3–5 lines).
+- Never a `key: value` block, never fenced.
+- One closing question only (TONE Rule A).
+- End with a context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md` — but the closing question often already serves this role; only add a separate nudge if it points somewhere different.
 
 **Tailoring summary line rules** — only emit lines for changes that actually fired. Skip lines that would be zero/empty. This avoids misleading the user when the master CV was already well-shaped for the JD.
 
@@ -148,7 +153,7 @@ Next steps:
 - **`[CONFIRM: ...]` markers:** if N>0 markers were left inline, emit `- Flagged <N> [CONFIRM: ...] marker(s) inline — resolve before submitting`. Skip if N=0.
 - **Anti-pattern removals:** if `## What NOT to Frame As` flagged anything during drafting, add `- Removed <N> anti-pattern phrase(s)`. Skip if zero.
 
-If WebFetch was tried via `--from-url` and fell back to research-brief, add a separate line after the `Next steps` block: `Note: --from-url fetch failed, used research-brief.md instead.`
+If WebFetch was tried via `--from-url` and fell back to research-brief, add a separate line after the bulleted recap: `Note: --from-url fetch failed, used research-brief.md instead.`
 
 ## What /apply never does
 

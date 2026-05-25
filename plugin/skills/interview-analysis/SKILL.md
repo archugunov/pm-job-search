@@ -151,19 +151,14 @@ For ambiguous signals, recommend a wait period: `Hold for 5 business days before
 
 After writing the debrief file, print to chat (compact):
 
-```
-Debrief filed: userdata/companies/<Co>/interview-debrief-<date>-<stage>.md
-  - <N> stories landed, <M> didn't
-  - <K> recommended updates (see "Recommended updates" section)
-  - Next step (from interviewer): <one-line summary, or "unclear">
-```
+> Debrief filed: userdata/companies/<Co>/interview-debrief-<date>-<stage>.md
+> - <N> stories landed, <M> didn't
+> - <K> recommended updates (see "Recommended updates" section)
+> - Next step (from interviewer): <one-line summary, or "unclear">
 
 If the debrief recommends a meta.md status change, repeat it in the chat output (don't bury it in the file):
 
-```
-> Recommended next: update meta.md status to <X>. /today will surface this
-  but you make the call.
-```
+> Recommended next: update meta.md status to <X>. /today will surface this but you make the call.
 
 ## What /interview-analysis never does
 
