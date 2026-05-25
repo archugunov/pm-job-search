@@ -5,6 +5,8 @@ description: This skill should be used when the user asks for "/help", "/pm-job-
 
 # /help — print the reference card and save a copy
 
+The canonical user flow and the rules each skill follows for end-of-run nudges live in `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. Read that file to understand what to suggest next based on the user's current state.
+
 The card lives at `${CLAUDE_PLUGIN_ROOT}/skills/help/help.md`. On every run, do all three of these in order:
 
 1. Read `${CLAUDE_PLUGIN_ROOT}/skills/help/help.md` and print its contents to chat verbatim. Render exactly as written — headings, tables, code spans. Do not summarise, expand, or paraphrase.
