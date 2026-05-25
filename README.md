@@ -6,6 +6,12 @@ A Claude Code plugin for senior product leaders running a job search. Finds open
 
 If you're a senior PM, lead PM, or head of product — you're in the right place. Everything inside (scoring, pipeline, interview prep, reviewer agents) is shaped around how your search actually runs. A different role? You can fork the architecture, but the defaults will need rework.
 
+## What makes it different
+
+- **Lean and fast to set up.** Pure markdown, zero dependencies. One 10-15 min `/setup` and you're running. Everything lives in `.md` files under `userdata/` — gitignored by default, editable by hand. Optional MCP integrations (Granola / Calendar / Gmail) plug in via `/pm-job-search:integrations` when you want them.
+- **Tailored to the senior-PM context.** Reviewer agents play the four people who'll actually interview you (CPO, eng manager, design manager, interview coach), and a simulator runs mock rounds when you want to rehearse. When you're weighing an offer, it checks the role's stage against how you actually operate — builder, scaler, or operator — and flags things like hollow-HoP risk before you sign. And it pushes back when the search itself isn't working: eight weeks in with one thread, `career-coach` tells you adjusting cadence won't fix it.
+- **Visual dashboard for quick actions.** `/pm-job-search:dashboard` opens a browser view of your pipeline — accordion grouped by status, inline status changes, notes per company, latest daily brief inline. Useful for scanning, or bumping a status after a recruiter call without opening files.
+
 ## How it works
 
 Maps to the five phases of a senior-PM search.
@@ -26,12 +32,6 @@ Maps to the five phases of a senior-PM search.
 - `pm-job-search:career-coach` — anytime you're stuck, weighing something strategic, or your search itself isn't working
 - `/pm-job-search:dashboard` — visual pipeline view in the browser; inline status changes + notes
 - `/pm-job-search:story-builder` — the universal STAR-story bank that `/interview-prep` draws from; build it up over time
-
-## What makes it different
-
-- **Lean and fast to set up.** Pure markdown, zero dependencies. One 10-15 min `/setup` and you're running. Everything lives in `.md` files under `userdata/` — gitignored by default, editable by hand. Optional MCP integrations (Granola / Calendar / Gmail) plug in via `/pm-job-search:integrations` when you want them.
-- **Tailored to the senior-PM context.** Reviewer agents play the four people who'll actually interview you (CPO, eng manager, design manager, interview coach), and a simulator runs mock rounds when you want to rehearse. When you're weighing an offer, it checks the role's stage against how you actually operate — builder, scaler, or operator — and flags things like hollow-HoP risk before you sign. And it pushes back when the search itself isn't working: eight weeks in with one thread, `career-coach` tells you adjusting cadence won't fix it.
-- **Visual dashboard for quick actions.** `/pm-job-search:dashboard` opens a browser view of your pipeline — accordion grouped by status, inline status changes, notes per company, latest daily brief inline. Useful for scanning, or bumping a status after a recruiter call without opening files.
 
 ## Install
 
