@@ -52,9 +52,16 @@ cd <your-workspace>
 /pm-job-search:setup           # 10-15 min — identity, target role, salary, hard filters, target date
 # you're done. run /pm-job-search:today every morning to see your daily brief.
 # ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
+# run /pm-job-search:help anytime for a one-page scannable map of every skill and agent (also saved to userdata/help.md).
 ```
 
-## The workflow — 11 skills
+## The workflow — 12 skills
+
+**Reference:**
+
+| Skill | What it does |
+|---|---|
+| `/pm-job-search:help` | One-page scannable map: 5-phase workflow, all skills with use-when triggers, all agents grouped by purpose, first-week flow. Prints to chat and writes a copy to `userdata/help.md` so you can open the same reference anytime without re-invoking. |
 
 **One-time setup (~10-15 min):**
 
