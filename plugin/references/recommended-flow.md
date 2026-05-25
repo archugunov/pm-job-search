@@ -17,7 +17,7 @@ setup → job-search → dashboard → today (daily, ongoing)
 
 story-builder runs ad-hoc, whenever the user wants to capture a new STAR story or fill a gap.
 evaluate-offer runs when an offer arrives.
-career-coach runs on-demand for reflection, positioning, anti-goals, offer evaluation.
+career-coach (agent, dispatched by Claude — not a slash command) provides on-demand reflection, positioning, anti-goals, and offer-evaluation conversation.
 integrations runs once during onboarding (or whenever wiring changes).
 ```
 
