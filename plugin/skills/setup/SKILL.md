@@ -271,9 +271,7 @@ If yes, invoke the `career-coach` agent. If no or Q6 was skipped, end with:
 
 > "You're good — run `/pm-job-search:today` tomorrow morning to see your daily brief. Ask `pm-job-search:career-coach` for positioning, outreach, or search strategy. Also when something feels off and you can't name what's wrong — it diagnoses before it suggests.
 >
-> Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/archugunov/pm-job-search/issues).
->
-> If you like the plugin, you can [support me on Ko-fi](https://ko-fi.com/archugunov)."
+> Found a bug or have a feature request? Open an issue on [GitHub](https://github.com/archugunov/pm-job-search/issues)."
 
 ## What /setup never does
 

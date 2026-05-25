@@ -26,10 +26,17 @@ jobs:
 
       - name: Scan for personal-data leaks
         run: |
-          PATTERN='arkadii|arcady|samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140'
+          # Note: 'arkadii' and 'arcady' were intentionally removed from the
+          # blocklist on 2026-05-25 — the author's name is now an explicit,
+          # public credit via the dashboard demo's About dialog and the
+          # README's Ko-fi/GitHub links. The local home path '/Users/arkadii'
+          # is still filtered to keep filesystem layout out of public artefacts.
+          PATTERN='samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140'
           # Exclude .github/ and CONTRIBUTING.md — they legitimately contain
           # the pattern as documentation (this workflow and the contributor guide).
-          if rg -i "$PATTERN" --glob='!.github/' --glob='!CONTRIBUTING.md' . ; then
+          # Exclude *.mp4 — binary video bytes coincidentally match short patterns
+          # like hex IDs; binary assets get manual review, not regex scanning.
+          if rg -i "$PATTERN" --glob='!.github/' --glob='!CONTRIBUTING.md' --glob='!*.mp4' . ; then
             echo ""
             echo "::error::Privacy scan found matches above. The repo must contain zero personal data — fix before merging."
             exit 1

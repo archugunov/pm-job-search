@@ -163,7 +163,7 @@ export function CompanyDrawer({ opened, onClose, folderPath, company, position, 
         </Stack>
       }
       position="right"
-      size="md"
+      size={460}
       padding="xl"
     >
       <Stack gap="md">

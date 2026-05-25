@@ -1,0 +1,7 @@
+.banner-github-btn {
+  color: #000 !important;
+}
+
+.banner-github-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}

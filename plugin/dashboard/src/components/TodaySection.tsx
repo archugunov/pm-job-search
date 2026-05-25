@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { DEMO_MODE } from "../config";
 import type { DailyBrief } from "../types";
 import { briefMdComponents } from "./briefMarkdown";
 
@@ -12,7 +13,9 @@ interface Props {
 
 export function TodaySection({ brief }: Props) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const isStale = brief !== null && brief.date < today;
+  // In demo mode the snapshot is pinned to a fixed date — the visitor's
+  // wall-clock comparison is meaningless, so always treat the brief as fresh.
+  const isStale = !DEMO_MODE && brief !== null && brief.date < today;
 
   if (brief === null) {
     return (

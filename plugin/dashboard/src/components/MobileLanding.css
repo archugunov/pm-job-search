@@ -1,0 +1,100 @@
+.mobile-landing {
+  min-height: 100vh;
+  background: var(--mantine-color-body);
+}
+
+.mobile-landing-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--mantine-color-body);
+  border-top: 1px solid var(--mantine-color-dark-5);
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+  z-index: 100;
+  box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-landing-video-wrapper {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--mantine-color-dark-5);
+}
+
+.mobile-landing-video {
+  width: 100%;
+  display: block;
+  background: #000;
+}
+
+.mobile-landing-video-wrapper {
+  cursor: pointer;
+}
+
+.mobile-landing-video {
+  pointer-events: none;
+}
+
+/* Centered play/pause icon on a dark scrim. Clicks pass through to the
+   wrapper so the whole container behaves as one big toggle target. */
+.mobile-landing-video-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.25);
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.mobile-landing-video-overlay-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.mobile-landing-video-wrapper.is-playing .mobile-landing-video-overlay {
+  opacity: 0;
+}
+
+.mobile-landing-video-wrapper.is-paused .mobile-landing-video-overlay {
+  opacity: 1;
+}
+
+/* Desktop: surface the pause hint while hovering a playing video. */
+@media (hover: hover) {
+  .mobile-landing-video-wrapper.is-playing:hover .mobile-landing-video-overlay {
+    opacity: 1;
+  }
+}
+
+.mobile-landing-fullscreen-btn {
+  position: absolute !important;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
+}
+
+.mobile-landing-fullscreen-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+}
+
+@media (hover: hover) {
+  .mobile-landing-fullscreen-btn {
+    opacity: 0;
+  }
+  .mobile-landing-video-wrapper:hover .mobile-landing-fullscreen-btn,
+  .mobile-landing-video-wrapper:focus-within .mobile-landing-fullscreen-btn {
+    opacity: 1;
+  }
+}
