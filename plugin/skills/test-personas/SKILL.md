@@ -50,17 +50,17 @@ If the user's message is ambiguous, ask one clarifying question (Rule A) and sto
 Before each journey, reset `userdata/` to the journey's declared snapshot.
 
 1. Read the journey file `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/journeys/<journey>.md`. Extract `snapshot:` from frontmatter.
-2. **Confirmation prompt before clobbering:** show the user the exact `rsync` command that will run and ask permission once per run (not per journey within a run):
+2. **Confirmation prompt before clobbering:** show the user what will happen and ask permission once per run (not per journey within a run):
 
-   > "This will overwrite `userdata/` from `tests/snapshots/<snapshot>/` for each journey in this run. Existing userdata content will be lost. Continue?"
+   > "Each journey will reset `userdata/` from its declared snapshot under `tests/snapshots/`. Existing userdata content will be lost (test-run outputs are preserved between journeys). Continue?"
 
    If user declines, abort the entire run cleanly (do not partially execute).
 
-3. Run rsync via Bash:
+3. Run rsync via Bash, excluding the test-runs directory so prior journeys' outputs survive:
    ```bash
-   rsync -a --delete tests/snapshots/<snapshot>/ userdata/
+   rsync -a --delete --exclude=test-runs/ tests/snapshots/<snapshot>/ userdata/
    ```
-   (Note the trailing slash on the source — copies the contents, not the directory itself.)
+   (Note the trailing slash on the source — copies the contents, not the directory itself. The `--exclude=test-runs/` flag protects `userdata/test-runs/` from being removed between journeys in the same run.)
 
    Special case for the `empty` snapshot: the `--delete` flag plus a near-empty source effectively empties `userdata/`. The `.gitkeep` in `userdata/` should remain. Verify after rsync.
 
@@ -71,7 +71,7 @@ Before invoking sub-agents, check the snapshot's contents match what the journey
 For each journey, the validation checks vary. Use this rule of thumb:
 
 - **cold-start** (snapshot: `empty`) — no validation needed; the journey starts by writing files, not reading them.
-- **active-loop** (snapshot: `maya-active`) — check `userdata/profile.md` exists and contains sections `## Companies of interest`, `## Proof points` (or equivalent). Check `userdata/strategy.md` has frontmatter keys `target_date` and `weekly_targets`. Check `userdata/companies/` has at least one subdirectory.
+- **active-loop** (snapshot: `maya-active`) — check `userdata/profile.md` exists and contains sections `## Companies of interest` and `## Proof Points` (note the capitalization — match what's actually in the snapshot). Check `userdata/strategy.md` has frontmatter keys `target_offer_date` and `weekly_targets`. Check `userdata/companies/` has at least one subdirectory.
 - **reflection** (snapshot: `diego-reflection`) — check `userdata/journal.md` has at least 3 dated `## YYYY-MM-DD` entries.
 - **edge-recovery** (snapshot: `contrarian-messy`) — check that at least 2 directories exist in `userdata/companies/` (proves the dedup test setup landed correctly).
 
