@@ -89,8 +89,9 @@ This is the heart of the harness.
 
 1. Read the journey file. Extract `persona`, `snapshot`, `max_turns`, the `Opening message`, the `Mid-journey instructions`, the `Termination` conditions, and the `Spec criteria`.
 2. Read the persona file `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/personas/<persona>.md`.
-3. Create the transcript file path: `TRANSCRIPT=userdata/test-runs/$RUN_DATE/$persona-$journey.md`.
-4. Initialize the transcript with a header:
+3. **Read the SKILL.md of every skill the journey will invoke.** Parse the journey's `Opening message` (the first slash command) and the `Mid-journey instructions` section for `/pm-job-search:<name>` references. For each unique skill, Read `${CLAUDE_PLUGIN_ROOT}/skills/<name>/SKILL.md` into memory. These are inlined verbatim into the plugin-under-test prompt each turn — the 2026-05-27 smoke test showed sub-agents improvise the question order when given only a path reference.
+4. Create the transcript file path: `TRANSCRIPT=userdata/test-runs/$RUN_DATE/$persona-$journey.md`.
+5. Initialize the transcript with a header:
 
    ```bash
    cat > "$TRANSCRIPT" <<'EOF'
@@ -128,14 +129,22 @@ Loop until termination:
 
 ### Plugin-under-test prompt template
 
-The plugin agent is a fresh sub-agent each turn. It needs the full transcript-so-far + the latest user message to behave coherently. Send:
+The plugin agent is a fresh sub-agent each turn. It needs the relevant skill's SKILL.md inlined verbatim + the full transcript-so-far + the latest user message to behave coherently. Send:
 
 ```
-You are running the pm-job-search Claude Code plugin as a fresh Claude Code session. The plugin is loaded in your environment. The user is sending you messages in a real conversation.
+You are running the pm-job-search Claude Code plugin as a fresh Claude Code session. Plugin files at `/path/to/workspace/plugin/`. The user is sending you messages in a real conversation.
 
-This is turn N of a multi-turn conversation. The transcript so far is below. Read it to understand context. Then respond to the LATEST USER MESSAGE as you would in a real session — invoke skills if asked, follow plugin instructions, use the plugin's tools.
+This is turn N of a multi-turn conversation. Take ONE step per turn — typically asking the next question or making the next file write. Wait for the user's reply between steps; do not bundle multiple actions or questions into one message.
+
+**Faithfully execute the relevant skill's SKILL.md, inlined below.** Use prompt wording verbatim where the SKILL.md provides exact quotes — these are locked-in per `TONE.md`. Do not improvise the question order. If the slash command for this skill is loaded in your environment, you may also invoke it directly; if not, the SKILL.md content below IS the skill.
+
+**Anti-leak rule:** Never output internal labels in user-facing copy — no "Q1:", "Q5:", "Q7:" prefixes, no "Step 3 of N", no markdown headers labelling the step. The user sees plain chat prose. Internal numbering is for YOUR reasoning, not the user's screen.
 
 Do not break character as a Claude Code instance. Do not say "I am a sub-agent" or "this is a test". Just respond as the plugin would.
+
+--- RELEVANT SKILL.md (your operating manual) ---
+
+<paste full contents of the SKILL.md for the most-recently-invoked skill. Track which slash command was last sent by the simulator and inline that skill's SKILL.md here. When the journey hands off to a new skill mid-flow, swap the inlined SKILL.md to match.>
 
 --- TRANSCRIPT SO FAR ---
 
@@ -250,6 +259,14 @@ After the run summary, suggest the natural next action based on the findings:
 ## Cost note for maintainer
 
 A full run (4 journeys × ~15-25 turns × 2 sub-agent calls per turn + 4 judge calls) is roughly 130-200 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
+
+## Known limitations and verifications needed
+
+Gaps surfaced by the 2026-05-27 smoke test. They don't block use but should inform v0.3.x iteration:
+
+- **SendMessage continuity is not assumed.** Each plugin turn currently re-dispatches a fresh sub-agent with the SKILL.md + growing transcript inlined. If a stateful agent-continuation mechanism becomes available, switching to a continuous sub-agent session would cut cost ~5x and improve coherence. The fresh-per-turn design is the documented tradeoff but is the riskiest cost driver.
+- **Slash-command discoverability in sub-agents is unverified.** The plugin-under-test agent is told it can invoke `/pm-job-search:<skill>` directly if loaded; whether sub-agents inherit the parent's installed plugins is environment-dependent. The fallback (executing the inlined SKILL.md verbatim) is the safe path. Before relying on this harness as a release gate, verify the discoverability behavior in your target Claude Code version.
+- **Dashboard skill in sub-agent context.** `/pm-job-search:dashboard` launches a local Python server and browser. In sub-agent context it will likely error or hang. Cold-start and edge-recovery journeys invoke it; expect graceful-error behaviour to show up as a soft issue in judge findings rather than a transcript crash.
 
 ## Voice for this skill's own output
 
