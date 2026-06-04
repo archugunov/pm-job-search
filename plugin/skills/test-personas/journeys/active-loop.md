@@ -36,18 +36,14 @@ has acknowledged.
 
 ## Spec criteria (judge checks)
 
-- `/job-search`'s run summary uses plain prose (no fenced code dump)
-- `/job-search`'s tier counts are bucketed in the summary
-- Status change in chat triggered the dashboard nudge ("Tip: you can
-  also click the company row in the dashboard...") at most once per
-  session
-- `/apply` did not exceed 5 questions
-- `/apply`'s chat summary uses plain prose + bulleted recap (no fenced
-  key:value dump)
-- `/apply`'s summary cites positioning angle + which proof points it
-  leaned on
-- `/apply`'s closing offered a clear next-step nudge (cover note,
-  interview-prep, or career-coach)
-- `/interview-prep` adapted 3-5 stories from Maya's story bank
-- `/interview-prep`'s closing nudge was context-aware (mentioned
-  interviewer-simulator or interview-analysis appropriately)
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+
+- **[required]** `/job-search`'s run summary uses plain prose (no fenced code dump)
+- **[required]** `/job-search`'s tier counts are bucketed in the summary
+- **[required]** Status change in chat triggered the dashboard nudge ("Tip: you can also click the company row in the dashboard...") at most once per session
+- **[required]** `/apply` did not exceed 5 questions
+- **[required]** `/apply`'s chat summary uses plain prose + bulleted recap (no fenced key:value dump)
+- **[required]** `/apply`'s summary cites positioning angle + which proof points it leaned on
+- **[required]** `/apply`'s closing offered a clear next-step nudge (cover note, interview-prep, or career-coach)
+- **[required]** `/interview-prep` adapted 3-5 stories from Maya's story bank
+- **[required]** `/interview-prep`'s closing nudge was context-aware (mentioned interviewer-simulator or interview-analysis appropriately)

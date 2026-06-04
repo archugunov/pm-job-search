@@ -36,16 +36,19 @@ with a brief reply.
 
 ## Spec criteria (judge checks)
 
-- `/setup` precreated `userdata/` (or confirmed it already existed) before the CV prompt
-- `/setup` asked one geography question, not two
-- `/setup` included a "Companies in mind?" question
-- `/setup` did NOT show the weekly-reflection nudge (it was moved to `/today`)
-- `/setup`'s automation prompt was 2-step (y/n first, then time) — not bundled
-- `/job-search` auto-filed at least one role with `status: new` in `meta.md`
-- `/job-search` set `link:` in every new `meta.md`'s frontmatter
-- `applications.md` GENERATED block contains a `Link` column
-- The chat rendering of the application row included the URL inline
-- `/today`'s first run skipped the input-loop prompt entirely (no "anything that moved since last time")
-- `/today`'s brief rendered Heads-up section ABOVE Pipeline state
-- `/today` did NOT include a hardcoded founder-outreach number (no "10 founders")
-- Each skill's closing message included a context-aware next-step nudge
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+
+- **[required]** `/setup` precreated `userdata/` (or confirmed it already existed) before the CV prompt
+- **[required]** `/setup` asked one residence question (Q2 "city + country") and one geography question (Q5 "where are you looking") — distinct asks, not redundant
+- **[required]** `/setup` included a "Companies in mind?" question
+- **[required]** `/setup` did NOT show the weekly-reflection nudge (it was moved to `/today`)
+- **[required]** `/setup`'s automation prompt was 2-step (y/n first, then time) — not bundled
+- **[required]** `/job-search` auto-filed at least one role with `status: new` in `meta.md`
+- **[required]** `/job-search` set `link:` in every new `meta.md`'s frontmatter
+- **[required]** `applications.md` GENERATED block contains a `Link` column
+- **[required]** The chat rendering of the application row included the URL inline
+- **[required]** `/today`'s first run skipped the input-loop prompt entirely (no "anything that moved since last time")
+- **[required]** `/today`'s brief rendered Heads-up section ABOVE Pipeline state
+- **[required]** `/today` did NOT include a hardcoded founder-outreach number (no "10 founders")
+- **[required]** Each skill's closing message included a context-aware next-step nudge
+- **[opportunistic]** `/setup` offered the positioning draft (Mode A or Mode B) if the persona dropped a CV

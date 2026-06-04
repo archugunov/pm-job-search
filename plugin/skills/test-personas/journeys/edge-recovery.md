@@ -37,18 +37,13 @@ max_turns is reached, whichever comes first.
 
 ## Spec criteria (judge checks)
 
-- `/today` ran without crashing despite missing profile sections
-- `/today` skipped the founder-outreach line entirely (strategy has
-  no `weekly_targets.founder_outreach`)
-- `/today` flagged StaleCorp in heads-up (20+ days in to_apply)
-- `/today` either flagged the duplicate AcmeCorp entries (two folder
-  slugs `acmecorp/` and `acme-corp/` sharing `company: AcmeCorp` in
-  frontmatter) or handled the near-duplicate without error
-- `/job-search`'s candidate sourcing handled the empty "Companies of
-  interest" gracefully (no error, no infinite loop)
-- `/evaluate-position` with an unreachable URL produced a clear error
-  message, not a stack trace or hung session
-- No skill prompted Sam for previously-skipped fields again in the
-  same session (no nag loop)
-- Every skill closed with a usable next-step nudge despite the messy
-  state
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+
+- **[required]** `/today` ran without crashing despite missing profile sections
+- **[required]** `/today` skipped the founder-outreach line entirely (strategy has no `weekly_targets.founder_outreach`)
+- **[required]** `/today` flagged StaleCorp in heads-up (20+ days in to_apply)
+- **[required]** `/today` either flagged the duplicate AcmeCorp entries (two folder slugs `acmecorp/` and `acme-corp/` sharing `company: AcmeCorp` in frontmatter) or handled the near-duplicate without error
+- **[required]** `/job-search`'s candidate sourcing handled the empty "Companies of interest" gracefully (no error, no infinite loop)
+- **[required]** `/evaluate-position` with an unreachable URL produced a clear error message, not a stack trace or hung session
+- **[required]** No skill prompted Sam for previously-skipped fields again in the same session (no nag loop)
+- **[required]** Every skill closed with a usable next-step nudge despite the messy state

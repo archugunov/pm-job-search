@@ -36,17 +36,13 @@ replied with at least one substantive answer.
 
 ## Spec criteria (judge checks)
 
-- `/today` showed the binary update prompt (Share updates / Skip), not
-  a "press enter to skip" prompt
-- `/today` rendered Heads-up section above Pipeline
-- `/today`'s heads-up surfaced non-obvious risks (not just static
-  reminders)
-- The weekly-reflection nudge fired (Diego is on Monday with prior-
-  week entries)
-- Founder-outreach line either omitted (if not in strategy) or
-  matched the strategy's `weekly_targets.founder_outreach` value
-- The handoff to career-coach was a clear dispatch (not just a
-  suggestion the user has to invoke manually)
-- career-coach grounded its first message in Diego's profile + strategy
-- career-coach did NOT just echo a generic framework — referenced
-  Diego's specific situation
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+
+- **[required]** `/today` showed the binary update prompt (Share updates / Skip), not a "press enter to skip" prompt
+- **[required]** `/today` rendered Heads-up section above Pipeline
+- **[required]** `/today`'s heads-up surfaced non-obvious risks (not just static reminders)
+- **[required]** The weekly-reflection nudge fired (Diego is on Monday with prior-week entries)
+- **[required]** Founder-outreach line either omitted (if not in strategy) or matched the strategy's `weekly_targets.founder_outreach` value
+- **[required]** The handoff to career-coach was a clear dispatch (not just a suggestion the user has to invoke manually)
+- **[required]** career-coach grounded its first message in Diego's profile + strategy
+- **[required]** career-coach did NOT just echo a generic framework — referenced Diego's specific situation
