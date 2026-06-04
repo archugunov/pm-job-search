@@ -152,6 +152,8 @@ This lets the plugin ship strong defaults while users localise — they can swap
 
 Hard rule for skill / agent authors: never hardcode reference content into a SKILL.md or agent file. Reference content lives in `references/`; specs point at it via `${CLAUDE_PLUGIN_ROOT}/references/<name>.md` with the userdata-override resolution.
 
+For surfaced patterns and lessons that don't yet fit the lint checklist or voice rules — things caught by a test-personas run, a real-world bug, or a code review — log them in `${CLAUDE_PLUGIN_ROOT}/memory.md` (reverse-chronological maintainer log). The test-personas judge reads memory.md as context.
+
 ## When in doubt
 
 Read the line aloud. If a senior PM friend wouldn't say it to you over coffee, rewrite it.
