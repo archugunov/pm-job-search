@@ -42,8 +42,9 @@ If the user's message is ambiguous, ask one clarifying question (Rule A) and sto
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/tone.md`
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md`
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/open-critique.md`
-4. Read the simulator prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/simulator-prompt.md`.
-5. Read the judge prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/judge-prompt.md`.
+4. Read `${CLAUDE_PLUGIN_ROOT}/memory.md` — the reverse-chronological log of patterns surfaced in past runs. Passed to the judge as context (not as a checklist).
+5. Read the simulator prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/simulator-prompt.md`.
+6. Read the judge prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/judge-prompt.md`.
 
 ## Phase 1: Snapshot reset (per journey)
 
@@ -204,30 +205,39 @@ After the conversation loop terminates, run the judge.
 1. Build the judge input by concatenating:
    - The four rubric files (read once in Phase 0, available in memory).
    - The journey file's own `Spec criteria` section, appended to Rubric 3 (spec-criteria).
+   - `${CLAUDE_PLUGIN_ROOT}/memory.md` contents (read once in Phase 0) as the 5th block labelled `--- MEMORY (context, not checklist) ---`.
    - The full transcript file contents.
    - Metadata: `journey`, `persona`, `snapshot`, `date`.
-2. Dispatch a third sub-agent via the Agent tool:
+2. Dispatch a sub-agent via the Agent tool:
    - `subagent_type: general-purpose`
    - `description: "Judge for <persona>-<journey>"`
-   - `prompt:` is the `judge-prompt.md` contents + the input blocks (transcript, rubrics, metadata) in the labelled format the prompt specifies.
+   - `prompt:` is the `judge-prompt.md` contents + the input blocks (transcript, rubrics, memory, metadata) in the labelled format the prompt specifies.
 3. The judge returns markdown findings. Write the result to `userdata/test-runs/$RUN_DATE/$persona-$journey.judge.md`.
+4. **Parse the judge output for the verdict.** Look for the `## Verdict` header followed by `**Overall: PASS**` or `**Overall: FAIL**`. If neither is found, treat the run as malformed — note this for Phase 5 (the SUMMARY row will be marked `ERROR`).
+5. **Confirmation re-run on FAIL.** If the parsed overall verdict is FAIL, dispatch the judge sub-agent a SECOND time on the same transcript + same inputs (fresh general-purpose sub-agent, no shared context with the first call).
+   - If both runs return FAIL → rewrite the judge file's `## Verdict` line to `**Overall: FAIL (confirmed)**`.
+   - If the runs disagree (one PASS, one FAIL) → rewrite to `**Overall: FAIL (one-of-two)**` and append a `_Note: judge calls disagreed — re-run manually if FAIL is unexpected._` line.
+   - Never run the second judge call on a PASS verdict. The cost only buys insurance against false reds.
 
 ## Phase 5: Aggregate (once per run)
 
 After all journeys in the requested run have finished:
 
 1. Read each `.judge.md` file in `userdata/test-runs/$RUN_DATE/`.
-2. Extract the severity counts from each (parse the markdown table in the `## Summary` section).
+2. For each judge file: parse the `## Verdict` block.
+   - Extract the overall verdict from the `**Overall: <verdict>**` line.
+   - Extract per-rubric verdicts (Hard, Spec gaps) and soft/critique counts.
+   - If the `## Verdict` header is missing entirely → mark the row as `ERROR — see raw judge file` and continue to the next journey. Do not silently swallow malformed output.
 3. Write `userdata/test-runs/$RUN_DATE/SUMMARY.md`:
 
 ```markdown
 # Test run — <RUN_DATE>
 
-| Journey | Hard | Soft | Spec gaps | Critiques |
-|---|---|---|---|---|
-| <journey1> | <h1> | <s1> | <sg1> | <c1> |
-| <journey2> | <h2> | <s2> | <sg2> | <c2> |
-| ...
+| Journey | Verdict | Hard | Spec gaps | Soft | Critiques |
+|---|---|---|---|---|---|
+| <journey1> | PASS | PASS | <m/m req> | <count> | <count> |
+| <journey2> | FAIL (confirmed) | FAIL | <m/m req> | <count> | <count> |
+| <journey3> | ERROR — see raw judge file | — | — | — | — |
 
 See per-journey `.judge.md` files for details.
 
@@ -238,21 +248,37 @@ See per-journey `.judge.md` files for details.
 - ...
 ```
 
-4. Print a brief plain-prose summary to chat (Rule B — no fenced summary):
+Verdict column comes second so red rows are eye-grabbing at the left edge of the table.
+
+4. **Candidate-entry nudge for memory.md.** If any journey verdict is FAIL or FAIL (confirmed), append a `## Candidate memory entries` block at the bottom of `SUMMARY.md`:
+
+```markdown
+## Candidate memory entries
+
+Patterns worth promoting into `plugin/memory.md` if they reflect a real lesson rather than a one-off:
+
+- **<RUN_DATE>** — <one-line headline derived from the top hard violation or required-spec FAIL>
+  - Journey: <journey-name>
+  - Surfaced in: this test run
+  - Watch for: <one-line pattern description from the finding>
+```
+
+One bullet per failing journey. The maintainer reviews and manually promotes worthwhile candidates by editing `plugin/memory.md` directly. No auto-write to memory.md from this skill.
+
+5. Print a brief plain-prose summary to chat (Rule B — no fenced summary):
 
 > Test run complete — <N> journeys, results in `userdata/test-runs/<RUN_DATE>/`.
 >
-> Severity totals: H hard, S soft, G spec gaps, C critiques.
->
-> Open `SUMMARY.md` for the per-journey table, or read individual `.judge.md` files for findings.
+> Verdicts: <P passes, F fails, E errors>. Open `SUMMARY.md` for the per-journey table, or read individual `.judge.md` files for findings.
 
 ## End-of-run nudge
 
-After the run summary, suggest the natural next action based on the findings:
+After the run summary, suggest the natural next action based on the verdicts:
 
-- If any hard violations: "Open `SUMMARY.md` and the per-journey `.judge.md` files. Fix hard violations before tagging the next release."
-- If only soft issues + critiques: "Open `SUMMARY.md`. Soft issues are advisory; review and decide what to fix."
-- If everything clean: "Clean run — no findings. Safe to tag the next release."
+- If any FAIL or FAIL (confirmed): "Open `SUMMARY.md` and the per-journey `.judge.md` files. Resolve failing journeys before tagging the next release. Review the `## Candidate memory entries` block — promote any worth keeping into `plugin/memory.md`."
+- If any FAIL (one-of-two): "Open `SUMMARY.md`. Judge disagreed on at least one journey — re-run the harness manually to confirm the FAIL is real before treating it as a release blocker."
+- If any ERROR rows: "Open `SUMMARY.md`. A judge run was malformed — inspect the raw judge file and re-run the journey."
+- If all PASS (no failures, no errors): "Clean run — all verdicts PASS. Soft issues and open critiques are advisory; review when you have time. Safe to tag the next release."
 
 (This nudge follows the recommended-flow convention but is harness-specific since `/test-personas` is maintainer-only and not in the main user flow.)
 
