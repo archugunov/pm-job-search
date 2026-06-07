@@ -1,5 +1,16 @@
 # Journal
 
+## 2026-06-05
+- [Retool] Panel round prep finalised. Re-read the public Workflows changelog and refreshed the "apps-vs-platform" framing. Feeling ready. (source: user)
+- [Vercel] DX recruiter pinged — wants intro chat next Wed. Scheduled. (source: gmail, confirmed)
+
+## 2026-06-03
+- [Retool] Did a 45-min mock with a former colleague. Got pushed on the API-deprecation story; need to compress the setup. (source: user)
+- Energy: steady. Sleep is good, not stressed. (source: user)
+
+## 2026-06-01
+- Week kickoff. Top thread is Retool (panel Tue). Vercel DX in pipeline. Considering whether to widen the funnel — feels thin at two active threads. (source: user)
+
 ## 2026-05-16
 - [Retool] Panel round confirmed for Tue 2026-05-19 16:00 — CTO + eng manager + design lead. Prep: apps-vs-platform ownership framing + Workflows scope depth. (source: calendar, confirmed)
 - [Vercel] Edge Platform role — status to_apply, holding. Vercel DX app already in. (source: user)
