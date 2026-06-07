@@ -31,7 +31,7 @@ No topic-selection argument. The drill samples a broad mix across the MC-able ty
   - A Head-of-Product / Lead / Director / VP / CPO candidate gets more prioritisation and behavioural-altitude calls, and their "right" answers weight org/portfolio judgement higher (e.g. the strongest behavioural option is the one showing capital-allocation or hire/fire judgement, not feature craft).
   - An IC / Senior PM candidate gets more product-sense and metric calls, with "right" answers weighting craft and execution.
   - `## Tone of Voice` shapes all prose (question stems, feedback, the close).
-- **Optional `<Company>` argument:** if `userdata/companies/<Co>/` exists, read its `research-brief.md` and `meta.md` (the `position` field). Weight the mix toward that company's likely rounds using the "When each case type shows up" table in `case-types-reference.md` (e.g. an infra/payments company leans metric-tree + prioritisation; a FAANG consumer role leans product-sense + metric-movement). Theme the products in the questions to an **adjacent** public domain (not the company's own internals). Default (no company argument): assorted well-known public products, mix weighted by `target_titles` only.
+- **Optional `<Company>` argument:** if `userdata/companies/<Co>/` exists, read its `[<slug>/]research-brief.md` and `[<slug>/]meta.md` (the `position` field). If the company tracks multiple roles (subfolder layout), ask which role first — e.g. `Plaid tracks 2 roles — pick: 1) senior-pm-consumer-credit, 2) senior-pm-growth-loops` — then read that slug's files. Weight the mix toward that role's likely rounds using the "When each case type shows up" table in `case-types-reference.md` (e.g. an infra/payments company leans metric-tree + prioritisation; a FAANG consumer role leans product-sense + metric-movement). Theme the products in the questions to an **adjacent** public domain (not the company's own internals). Default (no company argument): assorted well-known public products, mix weighted by `target_titles` only.
 
 If `userdata/profile.md` is missing → tell the user to run `/setup` first, then stop.
 
@@ -93,8 +93,9 @@ Run `/case-practice` against `userdata/examples/maya/`:
 
 ### Company run
 
-Run `/case-practice Plaid` against `userdata/examples/maya/`:
+Run `/case-practice Mercury` against `userdata/examples/maya/` (a single-role company — files at the company root):
 
-- Reads `userdata/examples/maya/companies/Plaid/{research-brief,meta}.md`. Plaid is payments/fintech infra — weights the mix toward the rounds that type of company runs (metric-tree, prioritisation, product-judgement) per the "When each case type shows up" table.
-- Themes products to an adjacent public domain (e.g. a well-known consumer-fintech or payments product), NOT Plaid's internal product details — no fabricated Plaid internals.
+- Reads `userdata/examples/maya/companies/Mercury/{research-brief,meta}.md`. Mercury is fintech/business-banking — weights the mix toward the rounds that type of company runs (metric-tree, prioritisation, product-judgement) per the "When each case type shows up" table.
+- Themes products to an adjacent public domain (e.g. a well-known consumer-fintech or payments product), NOT Mercury's internal product details — no fabricated company internals.
 - Same flow and same log path (`userdata/examples/maya/case-practice/<date>-mc-drill.md`).
+- Multi-role check: `/case-practice Plaid` (Maya's Plaid tracks two roles in subfolders) must first ask which role — `Plaid tracks 2 roles — pick: 1) senior-pm-consumer-credit, 2) senior-pm-growth-loops` — then read that slug's files. It must NOT try to read `companies/Plaid/meta.md` at the top level (it doesn't exist there).

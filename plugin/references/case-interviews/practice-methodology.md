@@ -56,8 +56,11 @@ Calibrate your intuition before generation is required.
 
 **Format:**
 
-- Questions are mixed across three foundational concepts: **NSM** (north star metric),
-  **Segments**, and **Needs**.
+- Questions are mixed across three foundational product-sense concepts: **NSM** (north
+  star metric), **Segments**, and **Needs**. The `/pm-job-search:case-practice` skill
+  broadens this to five MC-able seams — product sense (those three concepts), metric
+  movement, metric tree, prioritisation, and behavioural-signal — since recognition
+  drills well beyond product sense alone.
 - Delivered in **batches of 4** questions.
 - Each question: 4 options, single-select.
 - One option is the strongest; **three distractors each demonstrate a specific failure
@@ -163,5 +166,5 @@ memory, it's not an anchor yet — re-drill it.
 ---
 
 **See also:** `case-types-reference.md` (same folder) for all eight case types — the
-FPSSL / Diagnose-Validate-Fix-Land / Clarify→NSM→Decompose→Validate frameworks, worked
+FPSSL / Diagnose-Validate-Fix-Land / Clarify → NSM → Decompose → Validate frameworks, worked
 examples, senior-vs-junior moves, traps, and tactical sentence libraries.
