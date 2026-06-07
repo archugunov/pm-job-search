@@ -90,3 +90,13 @@ Direct, short sentences. One idea per sentence. No filler phrases ("I wanted to 
 - Don't claim deep ML or LLM experience — I've shipped products that use bureau scoring models, but I haven't owned modelling work.
 - Don't use superlatives ("truly passionate", "highly strategic", "deeply collaborative") — they read as filler.
 - Don't lead with team size or budget owned — lead with the outcome.
+
+## Companies of interest
+
+- Plaid
+- Klarna
+- Lendable
+- Mercury
+- Monzo
+- Marshmallow
+- ClearScore
