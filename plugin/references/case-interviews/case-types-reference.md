@@ -5,6 +5,8 @@ types you will meet across FAANG, infra/payments, Amazon-style LP loops, and Ser
 founder-led pipelines. Each type gives: when it shows up, the framework, a worked
 example, the senior-vs-junior moves, common traps, and a tactical sentence library.
 
+> The three most-common types (1-3) include a full worked example; types 4-8 are summary-format (frameworks, senior moves, traps, tactical sentences) — consult them when prepping for a loop likely to test those types.
+
 > Spaced-practice / 4-day drill plans live in `practice-methodology.md`, not here.
 
 ## When each case type shows up
@@ -12,9 +14,9 @@ example, the senior-vs-junior moves, common traps, and a tactical sentence libra
 | Case type | FAANG (Meta/Google) | Stripe / Infra | Amazon | Series A-B founder-led |
 |---|---|---|---|---|
 | Product Sense (FPSSL) | Core round | Yes, "product judgement" | Yes | Yes, often unstructured |
-| Metric Movement / RCA | Meta "Execution"; Google "Analytical" | Yes | Light | Sometimes informal |
-| Metric Definition / Metric Tree | Meta Execution sub-step; Google standalone | Sometimes inside product sense | Inside LP rounds | Often standalone for HoP |
-| Prioritization / Trade-off | Inside product sense | Yes, explicit | OLP "Bias for Action" | Very common for HoP |
+| Metric Movement (Diagnose-Validate-Fix-Land) | Meta "Execution"; Google "Analytical" | Yes | Light | Sometimes informal |
+| Metric Tree (Clarify → NSM → Decompose → Validate) | Meta Execution sub-step; Google standalone | Sometimes inside product sense | Inside LP rounds | Often standalone for HoP |
+| Prioritisation / Trade-off | Inside product sense | Yes, explicit | OLP "Bias for Action" | Very common for HoP |
 | Strategy | Senior loop only (E6+ at Meta) | Yes, "strategy" round | "Think Big" round | **Core round** at HoP level |
 | Estimation / Market Sizing | Rare for PM (more BD/BizOps) | Rare | Rare | Almost never |
 | Technical / System Design PM | Google TPM, Meta infra PMs | **Core round** | APM/Sr PMT | Rare unless infra |
@@ -96,7 +98,7 @@ One pick. Three reasons. Named trade-off.
 >
 > Three pains, two opportunities. I'm solving primarily for **#1 and #3 — the 'start fast, last long' axis** — because they hit the highest-frequency moment and solving them turns this segment into a daily habit."
 
-**Coherence check (5 seconds, out loud):** "Does deal-confidence / start-fast / etc actually live in the segment I picked? Yes — WFH background listening is exactly when start-fast and last-long bite hardest. Proceed."
+**Coherence check (5 seconds, out loud):** "Does start-fast / last-long actually live in the segment I picked? Yes — WFH background listening is exactly when start-fast and last-long bite hardest. Proceed."
 
 #### Solve (~7 min)
 
