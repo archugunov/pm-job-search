@@ -198,14 +198,58 @@ Each journey defines its own termination — use the journey file as truth.
 - Empty plugin reply: if `LATEST_PLUGIN_OUTPUT` is empty or whitespace-only, exit with a note.
 - Empty simulator reply: if the simulator returns empty, exit with a note (simulator hit its termination cue).
 
+## Phase 3.5: Schema validation on userdata/ files written during the run
+
+After the conversation loop terminates and BEFORE dispatching the judge, validate that the files the plugin sub-agent wrote conform to documented schemas. Catches schema drift the conversation transcript hides — e.g. sub-agent inventing field names (`role:` vs `position:`) that propagate silently into downstream skills.
+
+Currently scoped to `meta.md` files only — the most schema-rigid file in the plugin. Other schemas (`profile.md`, `strategy.md`) can join in v0.3.x once meta.md proves out.
+
+### Inputs
+
+- `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md` — defines required keys, allowed status enum, forbidden keys (`role:`, `target_date:`).
+- All `userdata/companies/*/meta.md` AND `userdata/companies/*/*/meta.md` files written during this run.
+
+### Validation logic
+
+For each meta.md found, check the frontmatter (between the first two `---` lines):
+
+1. **Required keys present:** `company`, `position`, `status`, `link` — flag any missing.
+2. **Status enum:** value must be one of `new`, `to_apply`, `applied`, `interviewing`, `offer`, `rejected`, `not_interested`.
+3. **Link format:** non-empty `link` must start with `http://` or `https://`.
+4. **Forbidden keys absent:** `role:`, `target_date:` — flag any present (these are documented sub-agent drift patterns).
+
+Implementation can be Bash (`awk`/`grep` over frontmatter) or a focused Read+inline-check pattern. Either way, produce structured findings — one bullet per failure with file path + rule violated + offending value.
+
+### Output
+
+Compose a single markdown block:
+
+```
+--- SCHEMA VALIDATION ---
+
+Scope: meta.md files in userdata/companies/
+
+Findings:
+- userdata/companies/plaid/meta.md: forbidden key `role:` found (canonical key is `position:` per schemas/meta.md.schema.md)
+- userdata/companies/klarna/meta.md: required key `link:` missing or empty
+- ...
+
+[Or, if all schemas pass: "No schema drift found."]
+```
+
+If zero meta.md files exist (e.g. cold-start journey that didn't reach /job-search yet), the block reads "Scope: meta.md files in userdata/companies/ (none present — schema check not applicable)".
+
+Append this block to the judge input as the 6th labelled section (between MEMORY and METADATA in the judge prompt's input format).
+
 ## Phase 4: Judge (per journey, unless --skip-judge)
 
-After the conversation loop terminates, run the judge.
+After the conversation loop terminates AND the Phase 3.5 schema check has run, dispatch the judge.
 
 1. Build the judge input by concatenating:
    - The four rubric files (read once in Phase 0, available in memory).
    - The journey file's own `Spec criteria` section, appended to Rubric 3 (spec-criteria).
    - `${CLAUDE_PLUGIN_ROOT}/memory.md` contents (read once in Phase 0) as the 5th block labelled `--- MEMORY (context, not checklist) ---`.
+   - The Phase 3.5 schema validation block as the 6th labelled section `--- SCHEMA VALIDATION ---`. Schema findings flow through to the judge as authoritative — they're provable from file contents alone.
    - The full transcript file contents.
    - Metadata: `journey`, `persona`, `snapshot`, `date`.
 2. Dispatch a sub-agent via the Agent tool:

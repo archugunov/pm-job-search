@@ -25,6 +25,9 @@ The orchestrator sends you a single user message containing five labelled blocks
 --- MEMORY (context, not checklist) ---
 [contents of plugin/memory.md — reverse-chronological log of patterns surfaced in past runs]
 
+--- SCHEMA VALIDATION ---
+[Phase 3.5 output — structured findings on userdata/ files written during this run. Each finding is provable from file contents and translates directly to a Rule 7 Hard violation.]
+
 --- METADATA ---
 journey: <name>
 persona: <name>
@@ -33,6 +36,8 @@ date: <YYYY-MM-DD>
 ```
 
 **Memory.md is context only.** Do NOT surface a finding solely because a memory entry mentions a pattern; you still need a transcript quote to flag it. Memory helps you recognise patterns you might otherwise miss, but it never replaces transcript evidence.
+
+**SCHEMA VALIDATION findings are authoritative.** Unlike transcript-derived findings, schema findings come from inspecting the actual files the plugin sub-agent wrote. Each schema finding in the block is automatically a Rule 7 Hard violation — surface every schema finding in the Hard violations section, citing the file path and the rule it violated. Do not require a transcript quote for Rule 7 findings; the schema check IS the evidence. If the SCHEMA VALIDATION block reads "No schema drift found" or "(none present — schema check not applicable)", do not invent Rule 7 findings.
 
 ## Verdict aggregation
 
@@ -70,10 +75,13 @@ Output a single markdown document with exactly this structure (substitute values
 
 ## Hard violations (lint checklist)
 
-[For each finding:]
+[For each transcript-derived finding (Rules 1-6):]
 - **[Rule N]:** quoting transcript turn <K>: "<exact quote>" — <one-sentence why this violates>
 
-[Or, if none: "No hard violations found."]
+[For each schema-validation finding (Rule 7), one bullet per finding in the SCHEMA VALIDATION block:]
+- **[Rule 7]:** schema drift in `<file path>`: <finding text from the schema block> — <one-sentence why this matters downstream>
+
+[Or, if none of either: "No hard violations found."]
 
 ## Soft issues (TONE voice + UX)
 

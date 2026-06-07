@@ -8,7 +8,10 @@ These are unambiguous structural violations. If present in the transcript, flag 
 4. **Hardcoded numbers in instructions** (e.g. "DM 10 founders", "every 9am"). Cadences should come from `userdata/strategy.md` or `userdata/profile.md`.
 5. **Prior-state prompts on a skill's first run.** Rule C. The skill asks "anything that moved since last time?" when no prior state exists (e.g. empty `userdata/journal.md`).
 6. **Internal jargon leaking into user-facing copy** ("frontmatter", "tier_weights", "P0/P1/P2", "meta.md") without explanation, in a user-visible message.
+7. **Schema drift in files written by the plugin during the run.** Sourced from the Phase 3.5 schema validation block, NOT from the transcript. Each schema finding (missing required key, wrong field name like `role:` instead of `position:`, status outside the allowed enum, malformed link) is a Hard violation. Schema drift propagates silently into downstream skills, so it's flagged here rather than under Soft issues. See `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md` for the canonical schema definitions.
 
 ## How to report findings under this rubric
 
-For each violation: quote the exact line from the transcript (with turn number), name the violation number (1-6), and quote the rule text.
+For each violation: quote the exact line from the transcript (with turn number) OR cite the Phase 3.5 schema finding verbatim (for Rule 7), name the violation number (1-7), and quote the rule text.
+
+Rule 7 findings come from the `--- SCHEMA VALIDATION ---` block in the judge input, not from transcript quotes. Each schema finding in that block translates to one Rule 7 hard violation.
