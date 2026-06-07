@@ -19,6 +19,13 @@ When the file crosses ~6 months of entries or starts feeling unscannable in one 
 
 ---
 
+### 2026-06-07 — Verification runs must `ls` snapshot directories before asserting contents to the judge
+
+**Surfaced in:** v0.3.0-beta.4 verification run (`userdata/test-runs/2026-06-07-beta4-verify/SUMMARY.md`)
+**Skill(s):** test-personas (orchestration and verification process)
+**Action:** none code-level — this is a process discipline lesson for whoever runs the harness next. The 2026-06-07 baseline reflection FAIL verdict turned out to be a metadata error: the runner (me) told the judge the diego-reflection snapshot had 8 companies "Retool, Vercel, GitLab, Linear, Replit, Browserbase, Builder, Modal" without verifying. The actual snapshot had Fly.io, Linear, Railway, Render, Replit, Retool, Supabase, Vercel. The judge correctly flagged the discrepancy, but the discrepancy was the runner's mistake, not a plugin bug.
+**Watch for:** any verification run where the metadata sent to the judge asserts state ("the snapshot has X companies", "the journal has Y entries", "the strategy has Z fields") without an explicit `ls`, `cat`, or schema check confirming it. Before composing the judge prompt, list the actual snapshot directory contents and read the actual files. The state-guardrails rule protects against sub-agent fabrication; this rule protects against runner fabrication. The reflection re-run on v0.3.0-beta.4 demonstrated the parallel: the sub-agent caught my metadata error by reading files and refusing my plausible-but-wrong assertion. Trust files, not memory.
+
 ### 2026-06-07 — Explicit state guardrails in sub-agent prompts are necessary AND sufficient to prevent fidelity drift
 
 **Surfaced in:** 4-journey comparison this run (`userdata/test-runs/2026-06-07/SUMMARY.md`)
