@@ -15,7 +15,7 @@ Senior PM, lead PM, or head of product running an active search. A different rol
 | 1 | Setup | `/pm-job-search:setup` |
 | 2 | Discover & score | `/pm-job-search:job-search` · `/pm-job-search:evaluate-position <url>` |
 | 3 | Apply | `/pm-job-search:apply <Company>` |
-| 4 | Interview | `/pm-job-search:story-builder` · `/pm-job-search:interview-prep <Company>` · `pm-job-search:interviewer-simulator` · `/pm-job-search:interview-analysis` |
+| 4 | Interview | `/pm-job-search:story-builder` · `/pm-job-search:interview-prep <Company>` · `/pm-job-search:case-practice` · `pm-job-search:interviewer-simulator` · `/pm-job-search:interview-analysis` |
 | 5 | Decide | `/pm-job-search:evaluate-offer` |
 
 ## Running alongside
@@ -52,6 +52,7 @@ Interview cluster
 |---|---|---|
 | `/story-builder` | Maintains the universal STAR-story bank. | You remember a story worth capturing, or you want a `--gap-check` of missing senior-PM story types. |
 | `/interview-prep <Company>` | Adapts 3–5 stories for a specific round. `--stage` shapes the prep. | You have an interview coming up. |
+| `/case-practice [Company]` | MC rapid-recognition drill for product cases. Scores each pick by the failure mode it shows, tracks an 80% readiness gate, writes a session log. | You have a case / product-sense round coming up and want to drill recognition. |
 | `/interview-analysis` | Debriefs a transcript (pasted, file, or auto-Granola). Quotes the transcript, flags what landed, names deltas vs prep. | A round just finished. |
 
 Offer decision

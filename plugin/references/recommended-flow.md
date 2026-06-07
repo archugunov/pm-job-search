@@ -30,6 +30,7 @@ When a skill finishes, look at current filesystem and journal state, then pick t
 | `userdata/profile.md` just written, no companies in `userdata/companies/` | `/pm-job-search:job-search` | "Run /pm-job-search:job-search now to seed your applications list." |
 | Companies exist with `status: new` and no `userdata/outputs/applications.md` (or applications.md is stale) | `/pm-job-search:dashboard` | "Open the dashboard to triage your new roles — or say `mark <Co> to apply` here." |
 | At least one company `status: interview` and no `interview-prep-<date>.md` for it | `/pm-job-search:interview-prep <Co>` | "You have an interview coming up at <Co> with no prep doc yet." |
+| At least one company `status: interview`, a product-case/analytical round is likely (research-brief mentions a case round, or it's a product/growth role), and no `userdata/case-practice/` log exists in the last 7 days | `/pm-job-search:case-practice <Co>` | "Case-likely round at <Co> — drill product cases with /pm-job-search:case-practice." |
 | At least one company `status: to apply` for 14+ days with no movement | Nudge in chat, no command | "<Co> has been in 'to apply' for 2+ weeks. Time to move or drop it." |
 | A daily brief was just generated and journal entries exist from the prior ISO week, and this is the first /today of the new ISO week | Weekly reflection prompt | "It's the start of a new week. Want a 5-min reflection on last week?" |
 | Default | `/pm-job-search:today` | "Run /pm-job-search:today tomorrow morning (or right now) for your daily brief." |
