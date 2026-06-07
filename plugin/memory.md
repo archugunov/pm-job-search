@@ -19,6 +19,34 @@ When the file crosses ~6 months of entries or starts feeling unscannable in one 
 
 ---
 
+### 2026-06-07 — Explicit state guardrails in sub-agent prompts are necessary AND sufficient to prevent fidelity drift
+
+**Surfaced in:** 4-journey comparison this run (`userdata/test-runs/2026-06-07/SUMMARY.md`)
+**Skill(s):** test-personas, cross-cutting (every sub-agent dispatch)
+**Action:** `plugin/skills/test-personas/SKILL.md` Phase 3 plugin-prompt template gained an explicit "State guardrails" section directing sub-agents to actually Read userdata files and never invent companies, dates, people, or events.
+**Watch for:** any new sub-agent dispatch (in test-personas or future skills) where the prompt doesn't tell the sub-agent EXACTLY which files to read and which fields to populate. Without that, sub-agents fabricate. With it, they're reliable. Empirical evidence: 2 PASS (active-loop, edge-recovery) vs 2 FAIL (cold-start, reflection) sorted cleanly by whether the prompt had state guardrails for the critical sub-agent.
+
+### 2026-06-07 — /today brief-writer is the highest-leverage sub-agent for state guardrails
+
+**Surfaced in:** cold-start "(url not captured)" + reflection's 4 fabricated companies (Fly.io, Render, Railway, Supabase) + invented "Tom" interviewer and "Anna 2026-05-04" message
+**Skill(s):** today
+**Action:** new state-guardrails rule in orchestrator prompt covers this; if drift recurs after the rule lands, fix candidate is to extend `plugin/skills/today/SKILL.md` itself with "Enumerate every meta.md before composing; do not mention companies not in the enumeration."
+**Watch for:** /today's brief listing companies, statuses, URLs, or events not present in `userdata/companies/*/meta.md` or `userdata/journal.md`.
+
+### 2026-06-07 — Maya-active snapshot needed `## Companies of interest` backfill
+
+**Surfaced in:** active-loop journey Phase 2 schema check
+**Skill(s):** test-personas (Phase 2 snapshot validation), setup (the section was added 2026-05-25 in quick-fixes)
+**Action:** snapshot backfilled (commit 55a785e)
+**Watch for:** any future SKILL.md change that adds a required section to /setup's output — update committed snapshots in lockstep. Phase 2 catches it but slows the run by one cycle.
+
+### 2026-06-07 — Diego-reflection snapshot needed prior-week journal entries for the weekly-reflection nudge
+
+**Surfaced in:** reflection journey trigger condition (Diego's existing journal entries were from 2026-05-16, 3 weeks before the test date 2026-06-07)
+**Skill(s):** test-personas (Phase 2), today (weekly-reflection trigger)
+**Action:** snapshot backfilled with 2026-06-01/03/05 entries (commit ffd8cbf)
+**Watch for:** any time-sensitive trigger condition embedded in a snapshot. Phase 2 currently checks "≥3 dated entries" but doesn't check "entries within prior ISO week" — worth tightening Phase 2 specifically for the reflection journey if drift recurs.
+
 ### 2026-06-07 — Sub-agents do not inherit parent's plugin context (slash-command discoverability is NO)
 
 **Surfaced in:** cold-start full-run via slash-command path (`userdata/test-runs/2026-06-07/`)

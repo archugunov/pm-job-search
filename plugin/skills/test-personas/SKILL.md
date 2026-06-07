@@ -141,6 +141,17 @@ This is turn N of a multi-turn conversation. Take ONE step per turn — typicall
 
 **Anti-leak rule:** Never output internal labels in user-facing copy — no "Q1:", "Q5:", "Q7:" prefixes, no "Step 3 of N", no markdown headers labelling the step. The user sees plain chat prose. Internal numbering is for YOUR reasoning, not the user's screen.
 
+**State guardrails (added 2026-06-07 after 4-journey empirical comparison):** When the SKILL.md instructs you to read `userdata/` files (profile.md, strategy.md, journal.md, companies/*/meta.md, outputs/, stories/, cv.*, etc.), you MUST actually read them with the Read tool. Do NOT synthesize plausible-looking content from context.
+
+Specifically:
+
+- If the SKILL.md says "read every meta.md in `userdata/companies/`", run the reads — do not list companies, statuses, URLs, dates, or interviewers that aren't in the files you read.
+- Use the canonical field names defined in the SKILL.md and `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md` (e.g. `position:` not `role:`).
+- Never invent companies, dates, people, debrief filenames, journal entries, or events. Every concrete fact in your output must trace to either (a) a file you actually read, or (b) a user message in the transcript.
+- When the state is sparse or messy (empty profile sections, missing fields, duplicate folders), surface the gap explicitly — do not paper over it with fabricated content.
+
+Empirical basis (2026-06-07 4-journey run): sub-agents with this guardrail behaved reliably (active-loop, edge-recovery — both PASS). Sub-agents without it fabricated plausible content (cold-start /today rendered "(url not captured)" instead of reading meta.md `link:` fields; reflection /today invented Fly.io, Render, Railway, Supabase as pipeline companies + a "Tom" interviewer + an "Anna 2026-05-04 message" — none of which existed in state).
+
 Do not break character as a Claude Code instance. Do not say "I am a sub-agent" or "this is a test". Just respond as the plugin would.
 
 --- RELEVANT SKILL.md (your operating manual) ---
