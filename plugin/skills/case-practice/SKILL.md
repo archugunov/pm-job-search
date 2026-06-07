@@ -45,13 +45,13 @@ If `userdata/profile.md` is missing → tell the user to run `/setup` first, the
    - ✗ the specific failure mode each distractor shows (one line each).
    - the batch-level senior pattern being taught (one line).
    The distractors carry the lesson — teach every one, not just the right pick.
-5. **Track the running score** and report it after each batch (e.g. "6/8 so far").
+5. **Track the running score** and report it after each batch (e.g. "6/8 so far"). Score is cumulative over the whole session: `M` = questions asked, `N` = questions where the user picked the single strongest option (a skipped question doesn't count toward either). The ≥80% gate is evaluated on the full-session `N/M`, not per batch.
 6. **Continue** until the user stops or reaches ~30 questions / ~7-8 batches. Offer to stop at each batch boundary ("Another batch, or wrap up?").
 7. **Close.** Extract the 4-6 **anchors to lock** — short verbatim phrases (5-15 words each) the user should memorise. Report the final score against the **≥80% readiness gate** (met / not yet). Give the end-of-run nudge.
 
 ## Output — session log
 
-Always write `userdata/case-practice/<YYYY-MM-DD>-mc-drill.md`. Create the `userdata/case-practice/` directory on first run. If a log for the same date already exists, **prepend** a new section (don't overwrite — spaced-practice history matters). Use this exact template:
+Always write `userdata/case-practice/<YYYY-MM-DD>-mc-drill.md` (path relative to the active install root — e.g. `userdata/examples/maya/case-practice/...` when running against the Maya example). Create the `userdata/case-practice/` directory on first run. If a log for the same date already exists, **prepend** a new section (don't overwrite — spaced-practice history matters). Use this exact template:
 
 ```markdown
 # MC case drill — <YYYY-MM-DD>
