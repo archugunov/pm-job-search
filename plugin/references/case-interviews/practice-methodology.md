@@ -17,7 +17,7 @@ order, and how to lock what you learn.
 
 1. **MC rapid-recognition** — recognise senior vs junior answers, build vocabulary.
    *(Built: run `/pm-job-search:case-practice`.)*
-2. **Free-form generation** — same calls, no options; you write, you get scored. *(Roadmap.)*
+2. **Free-form generation** — the same judgement calls as the MC drill, but no options; you write the answer and get scored. *(Roadmap.)*
 3. **Recorded self-drill** — full case solo, voice-memo, review timing/delivery. *(Roadmap.)*
 4. **Live mock** — interviewer pushes back, injects data mid-case.
    *(Built: run the `interviewer-simulator` agent once you clear the MC gate.)*
@@ -123,8 +123,8 @@ what makes the move stick.
 
 ### Pattern 5 — Anchor extraction
 
-After every drill, extract 4-6 **anchors** to lock — short verbatim phrases you
-memorise. Everything else is improvised. (See "Anchors" below.)
+Every drill ends by extracting **anchors** to lock. See the "Anchors" section below for
+the full discipline.
 
 ## Spaced practice — the 4-day plan
 
