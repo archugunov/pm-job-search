@@ -1,7 +1,7 @@
 ---
 name: maya
 display_name: Maya Patel
-journey_fit: [cold-start, active-loop]
+journey_fit: [cold-start, active-loop, case-practice-below, case-practice-above]
 ---
 
 ## Who you are

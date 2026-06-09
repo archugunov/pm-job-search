@@ -21,8 +21,8 @@ For each `(persona × journey)` pairing requested, runs five phases:
 
 Parse the user's invocation message for these forms (no native flag support in skills — match free-text):
 
-- `/test-personas` (no args) → full sweep, all 4 journeys, all 3 personas as configured.
-- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `active-loop`, `reflection`, `edge-recovery`.
+- `/test-personas` (no args) → full sweep, all 6 journeys, all 3 personas as configured.
+- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`.
 - `--persona <name>` or `persona: <name>` → run only journeys whose `journey_fit` includes that persona. Valid names: `maya`, `diego`, `contrarian`.
 - `--skip-judge` or `skip judge` → run conversation loops but skip Phase 4 (transcripts only).
 
@@ -75,6 +75,7 @@ For each journey, the validation checks vary. Use this rule of thumb:
 - **active-loop** (snapshot: `maya-active`) — check `userdata/profile.md` exists and contains sections `## Companies of interest` and `## Proof Points` (note the capitalization — match what's actually in the snapshot). Check `userdata/strategy.md` has frontmatter keys `target_offer_date` and `weekly_targets`. Check `userdata/companies/` has at least one subdirectory.
 - **reflection** (snapshot: `diego-reflection`) — check `userdata/journal.md` has at least 3 dated `## YYYY-MM-DD` entries.
 - **edge-recovery** (snapshot: `contrarian-messy`) — check that at least 2 directories exist in `userdata/companies/` (proves the dedup test setup landed correctly).
+- **case-practice-below** and **case-practice-above** (snapshot: `maya-active`) — check `userdata/profile.md` frontmatter contains a non-empty `target_titles` field (the drill's right-answer weighting depends on it). All `active-loop` checks also apply since both journeys share the snapshot.
 
 If any check fails, write a clear error and stop the journey:
 
@@ -339,7 +340,7 @@ After the run summary, suggest the natural next action based on the verdicts:
 
 ## Cost note for maintainer
 
-A full run (4 journeys × ~15-25 turns × 2 sub-agent calls per turn + 4 judge calls) is roughly 130-200 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
+A full run (6 journeys × ~15-25 turns × 2 sub-agent calls per turn + 6 judge calls) is roughly 200-300 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
 
 ## Known limitations and verifications needed
 
@@ -350,6 +351,7 @@ Gaps surfaced by the 2026-05-27 smoke test and the 2026-06-04 verification run. 
 - **Full 30-turn cold-start completion — confirmed (2026-06-07).** Journey terminated naturally at turn 19 (Heads-up printed + simulator acked). All four skills exercised. Resolved.
 - **Dashboard skill in sub-agent context — confirmed graceful degradation (2026-06-07).** Sub-agent acknowledged the constraint in plain prose rather than crashing or hanging. Resolved.
 - **Three other journeys untested end-to-end.** Active-loop, reflection, edge-recovery have only been validated as journey files + spec criteria. Cold-start now passes mechanism-wise; running the other three would widen coverage.
+- **Two `case-practice` journeys untested end-to-end (added v0.3.0-beta.6).** `case-practice-below` and `case-practice-above` cover drill 1 (MC rapid-recognition) for the gate-not-met and gate-met nudge variants. Spec criteria + journey files written; conversation loop + judge runs pending. Both share the maya-active snapshot. Worth running before tagging stable.
 - **Sub-agent fidelity drift.** Even with the full SKILL.md inlined + anti-leak rule + step-at-a-time discipline, the 2026-06-07 cold-start run showed sub-agents inventing field names (`role:` vs `position:`), skipping documented tail steps (/setup automation prompt), and failing to read downstream files (/today not reading meta.md `link:`). The judge catches these via spec criteria, but a post-Phase-3 schema check on `userdata/` would catch them earlier and more reliably. Worth investigating in v0.3.x.
 - **SendMessage continuity is not assumed.** Each plugin turn currently re-dispatches a fresh sub-agent with the SKILL.md + growing transcript inlined. If a stateful agent-continuation mechanism becomes available, switching to a continuous sub-agent session would cut cost ~5x and improve coherence. The fresh-per-turn design is the documented tradeoff but is the riskiest cost driver. Not blocking; deferred to v0.4.
 
