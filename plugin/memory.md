@@ -19,6 +19,20 @@ When the file crosses ~6 months of entries or starts feeling unscannable in one 
 
 ---
 
+### 2026-06-11 — Sub-agent quote-fidelity drift: scoring sub-agents rewrite content from earlier turns instead of quoting verbatim
+
+**Surfaced in:** case-practice-below + case-practice-above end-to-end runs (`userdata/test-runs/2026-06-11/`)
+**Skill(s):** case-practice, cross-cutting (any skill where one sub-agent presents content and a later sub-agent comments on it)
+**Action:** verbatim-quote rule added to `plugin/skills/test-personas/SKILL.md` Phase 3 plugin-prompt template — sub-agents must paste prior-turn content verbatim when commenting on it rather than rewriting it. Same architectural family as the 2026-06-07 state-guardrails fix.
+**Watch for:** any multi-turn flow where Turn N comments on content presented in Turn M (scoring, debrief, summarise, recap). The drift is sometimes minor (a word swap) but sometimes substantial — case-practice-above Q7 option B was completely re-written ("permissions overhaul, RICE 180 ... three deals lost ... ~12% on paid Slack workspaces" → "enterprise admin features ... dollar-weighted accounts ... revenue-at-risk ... two enterprise deals"), and Q8's metric drifted from "8 points + platform velocity doubled" to "rose 18% the following quarter." Both judges independently flagged this. The explicit-reminder-in-prompt strategy is insufficient on its own; the rule needs to be structural.
+
+### 2026-06-11 — `case-practice-below` cannot reliably trigger gate-not-met with a Senior-PM persona
+
+**Surfaced in:** case-practice-below end-to-end run (`userdata/test-runs/2026-06-11/SUMMARY.md`)
+**Skill(s):** test-personas (journey design)
+**Action:** none yet — documented as a journey-refinement candidate. Journey's backstop note works (gate-not-met criterion drops to NOT EXERCISED per Applies-when, verdict still PASS), but the journey's whole purpose — testing the SKILL.md's gate-not-met branch — went unvalidated.
+**Watch for:** journey designs where "persona behaviour + drill difficulty" should produce a specific outcome but the persona is too competent to land it. Maya picked the strongest option on Q1/Q2/Q3 from "fast and on instinct" because Senior-PM reflexes catch obvious vanity metrics. Three candidate fixes: (a) different persona (junior PM who'd genuinely miss more); (b) more forced misses in journey instructions ("lean toward A on metric questions if the option mentions DAU"); (c) larger batch sizes so one miss isn't enough to land below 80%.
+
 ### 2026-06-07 — Verification runs must `ls` snapshot directories before asserting contents to the judge
 
 **Surfaced in:** v0.3.0-beta.4 verification run (`userdata/test-runs/2026-06-07-beta4-verify/SUMMARY.md`)

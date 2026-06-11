@@ -59,9 +59,9 @@ Before each journey, reset `userdata/` to the journey's declared snapshot.
 
 3. Run rsync via Bash, excluding the test-runs directory so prior journeys' outputs survive:
    ```bash
-   rsync -a --delete --exclude=test-runs/ tests/snapshots/<snapshot>/ userdata/
+   rsync -a --delete --exclude=test-runs/ --exclude=examples/ tests/snapshots/<snapshot>/ userdata/
    ```
-   (Note the trailing slash on the source — copies the contents, not the directory itself. The `--exclude=test-runs/` flag protects `userdata/test-runs/` from being removed between journeys in the same run.)
+   (Note the trailing slash on the source — copies the contents, not the directory itself. The `--exclude=test-runs/` flag protects `userdata/test-runs/` from being removed between journeys in the same run. The `--exclude=examples/` flag protects the committed `userdata/examples/` reference content in the source workspace — without it, the rsync `--delete` clobbers Maya and Diego example fixtures. End-user workspaces don't have `examples/` so this exclude is a no-op there.)
 
    Special case for the `empty` snapshot: the `--delete` flag plus a near-empty source effectively empties `userdata/`. The `.gitkeep` in `userdata/` should remain. Verify after rsync.
 
@@ -152,6 +152,16 @@ Specifically:
 - When the state is sparse or messy (empty profile sections, missing fields, duplicate folders), surface the gap explicitly — do not paper over it with fabricated content.
 
 Empirical basis (2026-06-07 4-journey run): sub-agents with this guardrail behaved reliably (active-loop, edge-recovery — both PASS). Sub-agents without it fabricated plausible content (cold-start /today rendered "(url not captured)" instead of reading meta.md `link:` fields; reflection /today invented Fly.io, Render, Railway, Supabase as pipeline companies + a "Tom" interviewer + an "Anna 2026-05-04 message" — none of which existed in state).
+
+**Verbatim-quote rule (added 2026-06-11 after both case-practice journeys flagged scoring-turn drift):** When your turn comments on, scores, or summarises content presented in an earlier transcript turn, you MUST paste the prior-turn content verbatim before commenting on it. Do not paraphrase, condense, or rewrite the content under any framing — even if the rewrite seems clearer or more concise.
+
+Specifically:
+
+- If you are scoring multiple-choice options the user picked, copy each option's exact text from the question turn (the transcript above) before writing the ✓/✗ commentary. Quote the option, then comment on it — never write a fresh version of the option in your own words.
+- If you are summarising a finding, decision, or fact the user (or an earlier assistant turn) provided, quote it verbatim with quotation marks before commenting on it.
+- Numbers, percentages, names, and product details from prior turns are especially prone to drift — never substitute them with similar-sounding values. "8 points" is not "18%". "three deals lost" is not "two enterprise deals". "permissions overhaul on paid Slack workspaces" is not "enterprise admin features".
+
+Empirical basis (2026-06-11 case-practice runs): both judge runs independently flagged Turn 8 scoring re-writing option texts from Turn 6. The most egregious example: case-practice-above Q7 option B was posed as "Ship the second-ranked item (a permissions overhaul, RICE 180) instead of the top-ranked Slack integration (RICE 240), because the enterprise sales team has lost three deals this quarter to permissions gaps and the integration's 'reach' estimate counted every Figma user rather than the ~12% on paid Slack workspaces" but was scored against an entirely different invented text ("Push back: the RICE 'reach' for enterprise admin features is wrongly scoped — it counts admins, not the dollar-weighted accounts they gate. Re-score with revenue-at-risk; the admin feature likely jumps. Also flag to the team that we just lost two enterprise deals citing this gap."). An in-prompt reminder alone ("quote the option text faithfully") was not sufficient — this rule needs to be structural.
 
 Do not break character as a Claude Code instance. Do not say "I am a sub-agent" or "this is a test". Just respond as the plugin would.
 
@@ -351,7 +361,7 @@ Gaps surfaced by the 2026-05-27 smoke test and the 2026-06-04 verification run. 
 - **Full 30-turn cold-start completion — confirmed (2026-06-07).** Journey terminated naturally at turn 19 (Heads-up printed + simulator acked). All four skills exercised. Resolved.
 - **Dashboard skill in sub-agent context — confirmed graceful degradation (2026-06-07).** Sub-agent acknowledged the constraint in plain prose rather than crashing or hanging. Resolved.
 - **Three other journeys untested end-to-end.** Active-loop, reflection, edge-recovery have only been validated as journey files + spec criteria. Cold-start now passes mechanism-wise; running the other three would widen coverage.
-- **Two `case-practice` journeys untested end-to-end (added v0.3.0-beta.6).** `case-practice-below` and `case-practice-above` cover drill 1 (MC rapid-recognition) for the gate-not-met and gate-met nudge variants. Spec criteria + journey files written; conversation loop + judge runs pending. Both share the maya-active snapshot. Worth running before tagging stable.
+- **Two `case-practice` journeys validated end-to-end (2026-06-11, v0.3.0-beta.6).** Both `case-practice-below` and `case-practice-above` PASS verdict-wise. Two findings surfaced and addressed: (a) verbatim-quote rule added above to fix recurring scoring-turn drift across both journeys; (b) `case-practice-below` could not reliably trigger the gate-not-met branch because Maya's Senior-PM reflexes catch obvious vanity metrics even when picking fast — journey-design refinement is open (see `plugin/memory.md` 2026-06-11 entries).
 - **Sub-agent fidelity drift.** Even with the full SKILL.md inlined + anti-leak rule + step-at-a-time discipline, the 2026-06-07 cold-start run showed sub-agents inventing field names (`role:` vs `position:`), skipping documented tail steps (/setup automation prompt), and failing to read downstream files (/today not reading meta.md `link:`). The judge catches these via spec criteria, but a post-Phase-3 schema check on `userdata/` would catch them earlier and more reliably. Worth investigating in v0.3.x.
 - **SendMessage continuity is not assumed.** Each plugin turn currently re-dispatches a fresh sub-agent with the SKILL.md + growing transcript inlined. If a stateful agent-continuation mechanism becomes available, switching to a continuous sub-agent session would cut cost ~5x and improve coherence. The fresh-per-turn design is the documented tradeoff but is the riskiest cost driver. Not blocking; deferred to v0.4.
 
