@@ -101,14 +101,14 @@ Walk the discovery in this order:
 
 1. **No `userdata/companies/<Company>/` directory exists** → fresh company. Use FLAT layout: create the directory and place `meta.md` + `research-brief.md` directly inside it.
 2. **Directory exists in FLAT layout** (i.e. `userdata/companies/<Company>/meta.md` is present at top level) → company already tracks 1 role.
-   - **Dedup check**: read the existing `meta.md`'s `position` field. If it exactly matches the new role's `position`, this is a re-evaluation — see "Re-evaluation" below; do NOT add a duplicate row.
+   - **Dedup check**: read the existing `meta.md`'s `position` field and compare `strict_key`s per `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md` (so "Senior PM" and "Senior Product Manager" match). On a `strict_key` match this is a re-evaluation — see "Re-evaluation" below; do NOT add a duplicate row.
    - **Different position** → 1→2 migration. Steps:
      a. Compute a slug for the EXISTING role from its `position` field (kebab-case, ASCII-safe, e.g. `Senior PM, Consumer Credit` → `senior-pm-consumer-credit`).
      b. Compute a slug for the NEW role similarly.
      c. Create `userdata/companies/<Company>/<existing-slug>/` and MOVE the existing `meta.md` + `research-brief.md` + any other skill-authored files (`interview-prep-*.md`, `interview-debrief-*.md`, `review-*.md`) into it. Leave user-authored top-level files (anything the skill did not create — e.g. `company-notes.md`) untouched at the top level.
      d. Create `userdata/companies/<Company>/<new-slug>/` and write the new `meta.md` + `research-brief.md` inside.
 3. **Directory exists in SUBFOLDER layout** (i.e. role-slug subfolders, no top-level `meta.md`) → company already multi-role.
-   - **Dedup check**: glob `userdata/companies/<Company>/*/meta.md`, compare each `position` against the new role's `position`. Match → re-evaluation, see below.
+   - **Dedup check**: glob `userdata/companies/<Company>/*/meta.md`, compare each `position`'s `strict_key` against the new role's (per `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`). Match → re-evaluation, see below.
    - **Different position** → compute slug, create `<new-slug>/` subfolder, write inside.
 4. **Mixed (rare)**: both a top-level `meta.md` AND subfolder `meta.md` files exist (likely from an interrupted migration). Print a warning and ask the user to clean up manually before proceeding. Do not write.
 
@@ -192,6 +192,10 @@ Hard rules:
 - Quote / paraphrase the JD or profile only — don't invent details about funding, headcount, or recent news that weren't in the inputs.
 - Use the user's `## Tone of Voice` from profile.md if it's set; otherwise default to direct, short sentences.
 - Bold lead-ins on every "Why this fits" bullet — keeps the brief scannable. Last bullet covers honest gap or final verdict so the risk acknowledgement is structured, not buried.
+
+## Read-back assertion (before chat output)
+
+After writing `meta.md`, re-read it and assert against `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md`: the frontmatter uses `position:` (never `role:`), `status:` is a value from the enum, `tier:` (if present) is one of `P0` / `P1` / `P2` / `unscored`, and non-empty `link:` starts with `http(s)`. If any check fails, fix the field in place before printing the chat output — never leave a drifted field or a placeholder link on disk.
 
 ## Output to chat
 

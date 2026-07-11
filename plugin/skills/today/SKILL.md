@@ -338,14 +338,16 @@ Rules:
 3. **File exists but has neither marker** → also write a fresh complete file (same as case 2). The user's previous freeform notes are preserved only if they happen to sit below the new GENERATED block — but since this case implies the file pre-dates the partition convention, an overwrite is acceptable. Print a one-line warning to chat: `applications.md had no markers — regenerated as fresh file.`
 4. **Exactly one of the two markers is present** → DO NOT WRITE. Print a clear error to chat: `applications.md has only the <BEGIN|END> marker. Refusing to regenerate to avoid destroying user content. Fix by either adding the missing marker or deleting both.` Continue with the rest of /today (save the daily brief, print to chat).
 
-Active table columns: `| Company | Role | Status | Tier | Link | Last activity |` — same sort as the pipeline_state table in the brief. Company cell links to the company folder: `[Plaid](../companies/Plaid/)` for flat layouts, `[Plaid](../companies/Plaid/<role-slug>/)` for multi-role. The `Link` column contains the JD URL from the company's `meta.md` `link:` field; leave blank if absent.
+Active table columns: `| Company | Role | Status | Tier | Link | Last activity |` — same sort as the pipeline_state table in the brief. Company cell links to the company folder: `[Plaid](../companies/Plaid/)` for flat layouts, `[Plaid](../companies/Plaid/<role-slug>/)` for multi-role. The `Link` column contains the JD URL from the company's `meta.md` `link:` field.
+
+Read the `link:` field with the Read tool before rendering it — never synthesize it. If the field is genuinely absent or blank, render a literal em-dash `—` in the cell; NEVER write a placeholder like `(url not captured)` or invent a URL. A blank link is real data (a role logged without a live posting), not a gap to paper over.
 
 Example row:
 
 ```markdown
 | Company | Role | Status | Tier | Link | Last activity |
 |---|---|---|---|---|---|
-| Plaid | Senior PM | to apply | 1 | https://jobs.lever.co/plaid/… | 2026-05-25 |
+| Plaid | Senior PM | to apply | P0 | https://jobs.lever.co/plaid/… | 2026-05-25 |
 ```
 
 Any chat output that prints application rows (pipeline section, status lists, brief output) must include the JD URL inline:

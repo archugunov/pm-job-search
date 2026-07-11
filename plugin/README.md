@@ -54,7 +54,13 @@ cd <your-workspace>
 # ask pm-job-search:career-coach anytime — stuck, got an offer, or want to sharpen your positioning / outreach.
 ```
 
-## The workflow — 11 skills
+## The workflow — 13 skills
+
+**Reference:**
+
+| Skill | What it does |
+|---|---|
+| `/pm-job-search:help` | One-page scannable map: 5-phase workflow, all skills with use-when triggers, all agents grouped by purpose, first-week flow. Prints to chat and writes a copy to `userdata/help.md` so you can open the same reference anytime without re-invoking. |
 
 **One-time setup (~10-15 min):**
 
@@ -78,6 +84,7 @@ cd <your-workspace>
 |---|---|
 | `/pm-job-search:story-builder` | Maintain your universal STAR-story bank. Each story carries 3-5 pre-loaded angles for different question types. |
 | `/pm-job-search:interview-prep <Company>` | Adapt 3-5 stories from the bank for a specific upcoming round. `--stage` shapes the prep (recruiter / hiring-manager / panel / cpo-round / final-loop / take-home). Late-stage rounds include three founder-vetting questions. Take-home variant produces a working-doc skeleton. |
+| `/pm-job-search:case-practice [Company]` | Rapid-recognition case drill. Multiple-choice scenarios across the MC-able case types (product sense, metric movement, metric tree, prioritisation, behavioural-signal); each pick scored with the specific failure mode it demonstrates, tracked against an 80% readiness gate. Optional `<Company>` themes the products and weights the mix toward that company's likely rounds. |
 | `/pm-job-search:interview-analysis` | Post-interview debrief from a pasted transcript or `--from-file`. Anchors findings to transcript quotes: what landed, what didn't, interviewer signals, deltas vs the prep, recommended updates. Auto-pulls from Granola when wired. |
 | `/pm-job-search:evaluate-offer` | Sense-check an offer (or compare two) against your profile + anti-goals + the senior-PM archetype/anti-pattern references. Verdict, comp shape, role-shape re-check, archetype fit, named-anti-pattern scan, weighted decision factors, downside scenario, 3-5 specific negotiation moves to ask for. Always pairs with a "what would I regret in 2 years?" handoff to the coach. |
 
@@ -110,7 +117,9 @@ Each agent has its own project-scoped memory at `.claude/agent-memory/<agent>/`.
 
 A browser view of your pipeline that reads the same markdown files as every other skill — useful when you want to scan, not act.
 
-https://github.com/user-attachments/assets/e1b39e00-d600-4ef4-bd16-ccda8025c8c4
+![pm-job-search dashboard — applications grouped by status, weekly stats, and the latest daily brief in one view (example data)](../docs/dashboard-preview.png)
+
+_Video walkthrough:_ https://github.com/user-attachments/assets/e1b39e00-d600-4ef4-bd16-ccda8025c8c4
 
 Three panels:
 

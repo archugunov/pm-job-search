@@ -1,6 +1,6 @@
 ---
 name: help
-description: This skill should be used when the user asks for "/help", "/pm-job-search:help", "what does this plugin do", "how do I navigate this", "list the skills", "show me all skills", "give me a tour", "what agents are available", "where do I start", or wants a scannable map of pm-job-search's skills, agents, and recommended order. Prints a one-page reference card to chat covering the 5-phase workflow, all 11 skills with use-when triggers, all 6 agents grouped by purpose, and a recommended first-week flow. Also writes the same card to `userdata/help.md` so it's available for quick reference later. No questions.
+description: This skill should be used when the user asks for "/help", "/pm-job-search:help", "what does this plugin do", "how do I navigate this", "list the skills", "show me all skills", "give me a tour", "what agents are available", "where do I start", or wants a scannable map of pm-job-search's skills, agents, and recommended order. Prints a one-page reference card to chat covering the 5-phase workflow, all 13 skills with use-when triggers, all 6 agents grouped by purpose, and a recommended first-week flow. Also writes the same card to `userdata/help.md` so it's available for quick reference later. No questions.
 ---
 
 # /help — print the reference card and save a copy

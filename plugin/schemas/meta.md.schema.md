@@ -24,7 +24,7 @@ Every meta.md MUST have these keys with non-empty values:
 
 These are commonly present and read by some skills; absence is allowed but flagged in opportunistic schema findings:
 
-- **`tier`** — tier rubric score result. One of `1`, `2`, `3`, or `unscored`.
+- **`tier`** — tier rubric score result. One of `P0`, `P1`, `P2`, or `unscored`. (`P0` = strongest fit.) This is the canonical notation the skills write and the dashboard renders; do not use bare `1`/`2`/`3`.
 - **`score`** — numeric score from the tier rubric. Integer.
 - **`first_seen`** — date the role was first surfaced. ISO 8601 `YYYY-MM-DD`.
 - **`last_seen`** — date the role was most recently confirmed live (e.g. by recheck). ISO 8601.

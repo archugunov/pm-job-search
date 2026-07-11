@@ -27,7 +27,13 @@ Senior PM, lead PM, or head of product running an active search. A different rol
 | `/pm-job-search:dashboard` | When you want a visual scan of the pipeline. |
 | `/pm-job-search:integrations` | At setup, or after installing a new MCP server. |
 
-## Skills (11)
+## Skills (13)
+
+Reference
+
+| Skill | What it does | Use when |
+|---|---|---|
+| `/help` | This card: every skill + agent, grouped, with use-when triggers. Prints to chat and saves to `userdata/help.md`. | Any time you want the map. |
 
 One-time setup
 

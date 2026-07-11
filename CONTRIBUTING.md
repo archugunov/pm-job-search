@@ -37,8 +37,8 @@ plugin/
 ├── .claude-plugin/
 │   ├── plugin.json         # plugin manifest
 │   └── marketplace.json    # marketplace manifest (lives at repo root, points at ./plugin)
-├── skills/<name>/SKILL.md  # 7 skills
-├── agents/<name>.md         # 5 agents
+├── skills/<name>/SKILL.md  # 13 user-facing skills (+ test-personas, maintainer-only)
+├── agents/<name>.md         # 6 agents
 ├── templates/               # profile / strategy / CLAUDE templates
 ├── TONE.md                  # voice + UX guidelines — read this before editing user-facing copy
 └── README.md
@@ -126,7 +126,7 @@ File issues for:
 
 Please don't file issues for:
 - Feature requests outside the senior-PM scope (fork it instead)
-- Requests for the plugin to support other tools (Notion / Gmail / Calendar integrations are deliberately out of scope for v1 — see "Why pure markdown" in the README)
+- Requests to make an external tool a hard dependency. Integrations are opt-in only: `/integrations` wires Granola / Calendar / Gmail via MCP when you have them, and `plugin/INTEGRATIONS.md` documents Notion / Playwright / Slack as manual setup — every one degrades silently to markdown-only when absent. The pure-markdown core (read md, write md) is never allowed to depend on a live external service — see "Why pure markdown" in the README.
 
 ## License
 

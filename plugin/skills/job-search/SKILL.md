@@ -27,22 +27,23 @@ Produce two artefacts on disk for the parallel agents to consume:
 
 ### A. `/tmp/pmjs-exclusion.json`
 
-Walk both glob patterns and collect every role's `(company, position)` pair plus every non-empty `link`. Normalise each:
+Build the exclusion set from two sources so a role stays suppressed even after its company folder is deleted:
 
-- **company**: lowercase, strip punctuation, collapse whitespace.
-- **position**: same plus the substitutions `pms` → `product managers`, `pm` → `product manager` (catches the "Senior PM" vs "Senior Product Manager" duplicate).
-- **link**: lowercase, strip `?...` and `#...`, remove trailing `/`.
+1. **Existing meta.md.** Walk both glob patterns and collect every role's `(company, position)` pair plus every non-empty `link`.
+2. **The seen-ledger** at `userdata/outputs/seen-roles.jsonl` (append-only, one JSON object per line). If it exists, read every line and fold its `strict_key` / `base_key` / `url_key` into the set. This is what remembers a role the user archived by deleting its folder rather than marking it `not_interested`. If the file is absent, skip — first run creates it in Phase 2.
+
+Derive the identity keys (`company_key`, `strict_key`, `base_key`, `url_key`) for every source role using `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md` — the single authority both this skill and `/evaluate-position` share. Do not re-implement the rules here.
 
 Output schema:
 
 ```json
 {
-  "exclusion_pairs": [{"company": "plaid", "position": "senior product manager consumer credit"}, ...],
+  "exclusion_pairs": [{"company_key": "plaid", "strict_key": "plaid senior product manager consumer credit", "base_key": "plaid senior product manager"}, ...],
   "exclusion_urls": ["https://example.com/plaid-jobs/spm-consumer-credit", ...]
 }
 ```
 
-URL match alone is enough to drop a candidate (different title parse, same role). Pair match alone is enough (same role, no link). Either match = dedup. Same company + different position is NOT a duplicate.
+Match rules (hard duplicate → drop silently; soft duplicate → surface as a likely repeat; new → file) are defined in `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md` and applied in Phase 2. Same company + a genuinely different position is never a hard duplicate.
 
 ### B. `/tmp/pmjs-recheck.json`
 
@@ -80,10 +81,15 @@ Wait for all three to finish (notifications) before moving to Phase 2. With `--n
 3. With `--with-playwright`, verify P0/P1 candidate URLs are live (`browser_navigate` + `browser_snapshot`; expired = redirect / "no longer available" / content < ~300 chars). Without Playwright, skip verification and tag each candidate `link_verified: false`.
 
 For each candidate from Phase 1 (Discovery) and the Recheck passes:
-1. Apply the dedup rule. If `(company, position)` already exists at `userdata/companies/<Co>/[<slug>/]meta.md`, touch its `last_seen:` timestamp and skip filing. Do not duplicate.
-2. Score the candidate using the tier rubric in `userdata/profile.md` (same logic as `/evaluate-position`). If scoring fails (JD fetch error, malformed page), file a stub with `tier: unscored` and continue — do not abort the run.
-3. Write `userdata/companies/<Co>/[<slug>/]meta.md` and `research-brief.md` with `status: new`.
-4. Frontmatter of `meta.md` must include `link:` set to the live JD URL. `research-brief.md` must include a `**Source:** <url>` line as the first content line after the H1.
+
+1. **Dedup** using `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md` against the exclusion set (existing meta.md + the seen-ledger):
+   - **Hard duplicate** (`url_key` OR `strict_key` matches): if a matching meta.md entry exists, touch its `last_seen:`. Skip filing. Do not duplicate.
+   - **Soft duplicate** (`base_key` matches at the same company, but not `url_key`/`strict_key`): do NOT file. Add it to a `skipped_repeats` list (title + link) for the run summary, so the user can ask to file it if it's a genuinely distinct role. Same company + different position still reaches `/evaluate-position`'s 1→2 migration when the user opts in.
+   - **New** (no match): proceed to score and file.
+2. **Record every candidate in the seen-ledger.** For each candidate evaluated in this step (filed, hard-dup, or soft-dup), if its `strict_key` is not already present in `userdata/outputs/seen-roles.jsonl`, append one line: `{"company_key": ..., "strict_key": ..., "base_key": ..., "url_key": ..., "raw_title": <original position>, "first_surfaced": <today ISO>}`. This is what stops the same role resurfacing after its folder is deleted. Append once per key — never rewrite existing lines.
+3. Score each new candidate using the tier rubric in `userdata/profile.md` (same logic as `/evaluate-position`). If scoring fails (JD fetch error, malformed page), file a stub with `tier: unscored` and continue — do not abort the run.
+4. Write `userdata/companies/<Co>/[<slug>/]meta.md` and `research-brief.md` with `status: new`. Frontmatter of `meta.md` must include `position:` (never `role:`), a `status:` from the enum, and `link:` set to the live JD URL. `research-brief.md` must include a `**Source:** <url>` line as the first content line after the H1.
+5. **Validation gate (mandatory, before the run summary).** Re-read every meta.md just written and assert against `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md`: required keys present (`company`, `position`, `status`, `link`); `status` in the enum; non-empty `link` starts with `http(s)`; no forbidden keys (`role:`, `target_date:`); `tier` (if present) is one of `P0` / `P1` / `P2` / `unscored`. On any failure, **rewrite the offending field from the candidate data** (e.g. rename a stray `role:` to `position:`, replace an invented `link:` with the real one or blank-with-comment) rather than trusting the sub-agent output. Never emit a placeholder like `(url not captured)` — if the link is genuinely unknown, leave `link:` blank with an explanatory comment per the schema.
 
 ## Recheck subagent prompt
 
@@ -101,8 +107,10 @@ For each company, extract the ATS slug from `link` (or guess from company name i
 For each matched role, emit one entry to the output:
 
 ```json
-{"company": "Plaid", "role": "Head of Product, Risk", "link": "https://jobs.lever.co/plaid/...", "source_tier": "P0"}
+{"company": "Plaid", "position": "Head of Product, Risk", "link": "https://jobs.lever.co/plaid/...", "source_tier": "P0"}
 ```
+
+**Output contract (do not deviate):** every entry has exactly these keys — `company` (canonical casing), `position` (the exact JD title — the key is `position`, NEVER `role`), `link` (a live `http(s)` URL), `source_tier` (one of `P0` / `P1` / `P2`). Do not invent companies, positions, or links — emit only roles the ATS API actually returned. If a field is unknown, omit the entry rather than guessing.
 
 Write all entries to `/tmp/pmjs-recheck-{BATCH_ID}.json`.
 
@@ -114,7 +122,7 @@ You are running the discovery phase of a weekly job sweep.
 
 **Seed Discovery with `## Companies of interest` from `userdata/profile.md`.** If that section exists and has entries, include those companies as additional discovery targets (e.g. `site:<company>.com/careers senior product manager`). Treat them as candidates like any other — they still go through scoring and dedup. After the first run, they remain in `profile.md` but discovery does not need to re-treat them as seeds — they'll be tracked under `userdata/companies/` going forward.
 
-You receive `exclusion_pairs` and `exclusion_urls` from `/tmp/pmjs-exclusion.json`. Drop any candidate whose normalised URL OR `(company, role)` pair matches.
+You receive `exclusion_pairs` and `exclusion_urls` from `/tmp/pmjs-exclusion.json`. Drop any candidate whose normalised `url_key` OR `(company, position)` `strict_key` matches (keys per `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`).
 
 You also receive the user's `target_titles`, `target_industries`, `geography.mode` + `mode_detail` from profile.md, and the location preference (city name or "remote").
 
@@ -126,13 +134,15 @@ Filter:
 1. Dedup by URL across queries (case-insensitive).
 2. Title must contain at least one PM keyword from the title-match set.
 3. Skip titles containing any negative-filter word.
-4. Apply the exclusion normalisation; drop if URL OR pair matches.
+4. Apply the exclusion normalisation (`${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`); drop if `url_key` OR `strict_key` matches.
 
 Write filtered results to `/tmp/pmjs-discovery.json`:
 
 ```json
-[{"title": "Head of Product", "url": "https://jobs.ashbyhq.com/acme/...", "company": "Acme"}]
+[{"company": "Acme", "position": "Head of Product", "url": "https://jobs.ashbyhq.com/acme/..."}]
 ```
+
+**Output contract (do not deviate):** every entry has exactly `company`, `position` (the JD title — the key is `position`, NEVER `role` or `title`), and `url` (the live `http(s)` link the search returned). Emit only roles that appeared in real search results — never invent a company, position, or URL. If the title regex fails to split a result cleanly, drop it rather than guessing a company or position.
 
 Return one line: `Discovery: found N candidates across M queries.`
 
@@ -140,12 +150,12 @@ Return one line: `Discovery: found N candidates across M queries.`
 
 After both phases complete:
 
-1. Read `/tmp/pmjs-recheck-a.json`, `/tmp/pmjs-recheck-b.json`, `/tmp/pmjs-discovery.json`.
-2. Merge discovery + recheck-a + recheck-b into one candidate list. Dedup by URL again.
+1. Read `/tmp/pmjs-recheck-a.json`, `/tmp/pmjs-recheck-b.json`, `/tmp/pmjs-discovery.json`. Every entry keys `position` (not `role`).
+2. Merge discovery + recheck-a + recheck-b into one candidate list. Dedup by `url_key` again (`${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`).
 3. For each candidate, run a light tier estimate: walk profile.md's `tier_weights` rubric mentally — score 1-3 per dimension based on the JD title + URL + (optionally) a lightweight WebFetch of the first 500 chars of the page. Sum, apply `tier_thresholds`, get a `P0?` / `P1?` / `P2?` / `skip?` tag.
 4. Discard `P2?` unless fewer than 3 P0/P1 total are surviving.
 5. If `--with-playwright` and Playwright MCP is available, navigate each P0?/P1? URL, check liveness (see "Playwright integration" below). Update or null the link.
-6. For each surviving candidate, apply the auto-file logic from Phase 2 above: dedup check → score → write `meta.md` + `research-brief.md` with `status: new`. The 1→2 folder migration for existing companies follows the same rules as `/evaluate-position`.
+6. For each surviving candidate, apply the full auto-file logic from Phase 2 above: dedup (hard/soft) → record in the seen-ledger → score → write `meta.md` + `research-brief.md` with `status: new` → validation gate. The 1→2 folder migration for existing companies follows the same rules as `/evaluate-position`.
 
 ## Playwright integration (optional)
 
@@ -170,9 +180,11 @@ Plain prose (TONE.md Rule B — no fenced code blocks, no key-value dumps). Temp
 >
 > <If stubs exist, list them as bullets with their links.>
 >
+> <If any soft-duplicates were skipped: "Skipped as likely repeats (<count>): <Company> — <Position> — <url>". These share a base title with a role you've already seen; say 'file <Company>' if it's genuinely a different role.>
+>
 > Open the dashboard to triage — or tell me here which to mark `to apply`, `not interested`, or archive."
 
-Each application row printed in chat (when the user asks to see roles, when stubs are listed, etc.) includes the JD URL inline. Format: `- <Company> — <Role> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
+Each application row printed in chat (when the user asks to see roles, when stubs are listed, etc.) includes the JD URL inline. Format: `- <Company> — <Position> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
 
 Close the chat output with a context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. For a fresh filing pass, the typical nudge is to open `/pm-job-search:dashboard`.
 
@@ -180,16 +192,19 @@ If nothing surfaces: "No new roles this week. Pipeline state unchanged."
 
 ## Dedup rule (recap)
 
-The `(company, position)` exact pair is never duplicated, regardless of either entry's status. A `rejected` Stripe Lead PM stays as history; a new Stripe Lead PM posting next quarter is flagged as dup. URL match is the safety net for when title/company parsing slips.
+Identity keys and match rules live in `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`; this is the recap. A candidate is matched against the union of existing meta.md entries and the seen-ledger (`userdata/outputs/seen-roles.jsonl`), so a role stays suppressed even after its company folder is deleted.
 
-Same company + different position = NOT a duplicate. Goes through `/evaluate-position`'s 1→2 migration logic.
+- **Hard duplicate** — `url_key` or `strict_key` matches. Never duplicated, regardless of the existing entry's status: a `rejected` Stripe Lead PM stays as history, and the same Lead PM posting resurfacing next quarter is dropped silently (touch `last_seen:`). The seen-ledger records every candidate ever surfaced so this holds across deletions.
+- **Soft duplicate** — same `base_key` at the same company but a different qualifier (e.g. "Lead PM, Payments" vs "Lead PM — Growth"). Not filed automatically, but surfaced under "Skipped as likely repeats" so a genuinely distinct second role is never silently buried.
+- Same company + a genuinely different position = NOT a duplicate. Goes through `/evaluate-position`'s 1→2 migration logic.
 
 ## What /job-search never does
 
 - Never flips `monitoring`, `status`, or any other field on existing entries — the only write to an existing meta.md is touching `last_seen:` when a dedup match is found.
+- Never rewrites the seen-ledger — it is append-only. New keys are added; existing lines are never edited or removed.
 - Never auto-applies or sends outreach.
 - Never requires Playwright. Optional only.
-- Never invents postings. If ATS APIs return nothing and WebSearch is thin, the run is a no-op.
+- Never invents postings, companies, positions, or links. If ATS APIs return nothing and WebSearch is thin, the run is a no-op. The Phase 2 validation gate rewrites any field a sub-agent drifted (e.g. `role:` → `position:`) rather than trusting it.
 
 ## Additional resources
 
@@ -198,7 +213,8 @@ Same company + different position = NOT a duplicate. Goes through `/evaluate-pos
 
 ## Smoke test against the Maya example
 
-- **Pre-flight**: scans Maya's 2 companies (Plaid, Stripe). Exclusion pairs: `(plaid, senior product manager consumer credit)`, `(stripe, lead product manager growth)`. URLs from each meta.md `link`. Recheck watchlist: Stripe (monitoring: true) + Plaid (status:interviewing — only included if it has another non-active role; in Maya's case it doesn't). Watchlist = `[Stripe]`. Tier P1.
+- **Pre-flight**: scans Maya's 2 companies (Plaid, Stripe). Exclusion set from meta.md — `strict_key`s `plaid senior product manager consumer credit`, `stripe lead product manager growth` (`base_key`s `plaid senior product manager`, `stripe lead product manager`), plus each meta.md `link` as a `url_key`. Then folds in `userdata/outputs/seen-roles.jsonl` if present (absent on a first run — created in Phase 2). Recheck watchlist: Stripe (monitoring: true) + Plaid (status:interviewing — only included if it has another non-active role; in Maya's case it doesn't). Watchlist = `[Stripe]`. Tier P1.
+- **Second run (no new postings)**: the Phase 1 candidates all match a `strict_key` in the seen-ledger from run 1 → all hard-duplicates → "No new roles this week." A reposted Stripe Lead PM with a reworded title ("Lead PM — Growth EMEA") shares the `stripe lead product manager` base_key → surfaced under "Skipped as likely repeats", not filed as new.
 - **Recheck on Stripe**: extract slug from Stripe meta link (`example.com/stripe-jobs/...` → can't infer ATS, guess `stripe`); try Greenhouse → 200, get jobs list. Filter to PM keywords. Any new Consumer Credit role → emit candidate.
 - **Discovery**: 8-10 site:-scoped queries built from Maya's profile (`"head of product" fintech London site:ashbyhq.com`, etc.). Returns direct ATS URLs, not aggregator pages. Filter and emit candidates.
 - **Phase 2**: merge, light tier-estimate, auto-file every surviving candidate (dedup → score → write meta.md + research-brief.md with status: new). Print plain-prose run summary to chat.
