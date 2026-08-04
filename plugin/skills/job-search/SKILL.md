@@ -126,7 +126,7 @@ You receive `exclusion_pairs` and `exclusion_urls` from `/tmp/pmjs-exclusion.jso
 
 You also receive the user's `target_titles`, `target_industries`, `geography.mode` + `mode_detail` from profile.md, and the location preference (city name or "remote").
 
-Build and run 8-10 WebSearch queries that combine titles, industries, and geography, ALL scoped via `site:` operators to public ATS job-board domains. Domain set: `ashbyhq.com`, `jobs.lever.co`, `jobs.eu.lever.co`, `job-boards.greenhouse.io`, `job-boards.eu.greenhouse.io`, `apply.workable.com`, `careers.ashbyhq.com`. Full query templates in `references/site-queries.md`.
+Build and run 8-10 WebSearch queries that combine titles, industries, and geography, ALL scoped via `site:` operators to public ATS job-board domains. Domain set: `ashbyhq.com`, `jobs.lever.co`, `jobs.eu.lever.co`, `job-boards.greenhouse.io`, `job-boards.eu.greenhouse.io`, `apply.workable.com`, `careers.ashbyhq.com`. Full query templates in `${CLAUDE_PLUGIN_ROOT}/references/site-queries.md`.
 
 Each query returns search results — extract `{title, url, company}` from each result. Title regex: `(.+?)(?:\s*[@|—–\-]\s*|\s+at\s+)(.+?)$`.
 
@@ -209,7 +209,7 @@ Identity keys and match rules live in `${CLAUDE_PLUGIN_ROOT}/references/dedup-no
 ## Additional resources
 
 - **`references/ats-apis.md`** — full API specs for Ashby (GraphQL), Greenhouse (REST), Lever (REST). Slug extraction rules. Read before processing any company in a Recheck batch.
-- **`references/site-queries.md`** — the query-bucket template, 8-10 standard queries derived from profile fields, how to mix titles × industries × geography.
+- **`${CLAUDE_PLUGIN_ROOT}/references/site-queries.md`** — the query-bucket template, 8-10 standard queries derived from profile fields, how to mix titles × industries × geography.
 
 ## Smoke test against the Maya example
 
