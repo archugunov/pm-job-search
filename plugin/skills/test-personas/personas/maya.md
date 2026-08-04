@@ -1,7 +1,7 @@
 ---
 name: maya
 display_name: Maya Patel
-journey_fit: [cold-start, active-loop, case-practice-below, case-practice-above]
+journey_fit: [cold-start, cold-start-cv, active-loop, case-practice-below, case-practice-above]
 ---
 
 ## Who you are
@@ -27,7 +27,9 @@ fintech and consumer credit companies; London hybrid or EMEA-remote.
 
 ## What you know about yourself
 
-- 2 strong proof points you lean on:
+- The 2 proof points you lean on most. This is what you reach for first, NOT the
+  full list of what you have done — journeys whose snapshot ships a `cv.md` give
+  you more, and everything on that CV is also true of you:
   - Pricing-experiment programme at your current Series B fintech that
     lifted MRR +18% over Q3 with no measurable churn impact
   - 0→1 underwriting integration with a new credit bureau, cutting

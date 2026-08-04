@@ -65,6 +65,8 @@ Before each journey, reset `userdata/` to the journey's declared snapshot.
 
    Special case for the `empty` snapshot: the `--delete` flag plus a near-empty source effectively empties `userdata/`. The `.gitkeep` in `userdata/` should remain. Verify after rsync.
 
+   Every snapshot must carry its own root `.gitkeep`, because `--delete` removes any file the source lacks — and `userdata/.gitkeep` is tracked, so a snapshot missing it silently deletes a tracked file on every run. All five snapshots carry one as of 2026-08-04. After the rsync, confirm `git status` reports no deletion under `userdata/`.
+
 ## Phase 2: Schema validation (per journey)
 
 Before invoking sub-agents, check the snapshot's contents match what the journey's first skill expects to read. This catches drift between plugin schema updates and snapshot staleness.
