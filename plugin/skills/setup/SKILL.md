@@ -42,8 +42,9 @@ Do not edit these template files. Always treat them as read-only inputs.
 Ask one at a time. Use AskUserQuestion where a step has a clear option set
 (Steps 2, 3, 4, 5, 7, 8); otherwise plain conversational ask. Skipping is allowed on
 LinkedIn (Step 1), salary (Step 6), timeline (Step 7), hard filters (Step 8), and
-positioning (Step 4 option B) — see the "skipped placeholders" rule under "File
-writes" for the exact YAML form to write.
+positioning (Step 4 option B) — see the "skipped placeholders" rule under File
+writes §1 for the exact YAML form to write, except timeline, whose skipped form
+(`target_offer_date: null` plus null cadence targets) is defined in File writes §2.
 
 Each step below shows the EXACT user-facing prompt in quotes. Use the wording
 verbatim — don't paraphrase. The voice is locked per `TONE.md`.
@@ -133,7 +134,7 @@ just types more. **There is one flow, not two.**
 
    The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If a readable one was found, go straight to **Mode B (CV draft)**.
 
-   If no CV file exists, ask via AskUserQuestion. Use this exact opener and two options:
+   If no readable CV exists, ask via AskUserQuestion. Use this exact opener and two options:
 
    > "Positioning next — who you are and what you're best at. Two ways to handle this:"
 
