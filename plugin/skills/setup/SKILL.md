@@ -273,12 +273,24 @@ If the user wants to tune the rubric, they edit `profile.md` directly. The re-ru
 ## Re-run mode question loop
 
 When `userdata/profile.md` exists, iterate fields in the same order as the fresh
-walk (Steps 1-8 + tier rubric). Step 0 does not apply — re-run never re-reads the
-CV, because the fields it would fill are already populated. For each field:
+walk (Steps 1-8). The tier rubric is NOT offered — same reason it is not asked on
+a fresh install (see the note above). Step 0 does not apply — re-run never
+re-reads the CV, because the fields it would fill are already populated.
 
-1. Show the current value (one line).
-2. Ask: `keep / update / skip` (skip means "leave as-is for now, ask again next /setup").
-3. If `update`: prompt for the new value using the same conversational pattern as fresh-install.
+Step 1 is ONE field here, not five. Show the whole facts line and take a single
+keep / update / skip on it, mirroring the fresh-install shape. On `update`, apply
+whichever value the user names and leave the others alone — never re-ask all five.
+
+For each field:
+
+1. Show the current value on one line, then ask:
+
+   > "Currently: `<value>`. Keep, update, or skip?"
+
+2. Read the answer as `keep`, `update`, or `skip` (skip means "leave as-is for now,
+   ask again next /setup").
+3. If `update`: prompt for the new value using the same conversational pattern —
+   and the same locked wording — as that step's fresh-install ask.
 
 Never overwrite a non-empty field with an empty answer in re-run mode. If the user updates a field but provides empty input, ask once more; if still empty, treat as `skip` and leave the current value.
 
