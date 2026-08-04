@@ -23,11 +23,9 @@ Run this BEFORE asking the first question:
 2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: ask all 12 questions in order.
 3. `--refresh` flag → re-run mode, but only re-resolve the workspace-root `CLAUDE.md` from the template using the current `profile.md` content. Skip all questions. Useful after manual edits to profile.md.
 
-Also detect CV presence (only relevant in fresh-install mode). This shapes how Q6 (Positioning) is offered — see Q6 below for the full flow:
-
-- `userdata/cv.md`, `userdata/cv.txt`, or `userdata/cv.pdf` exists → Q6 goes straight to Mode B (CV draft) without prompting.
-- `userdata/cv.docx` or any other non-md/txt/pdf file → print one line: `Found userdata/cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.` Then Q6 offers all three options (CV-drop, skip, paste).
-- No cv.* file → Q6 offers all three options with CV-drop as the recommended default.
+CV detection, file-format handling and the drop prompt are defined in
+`${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. Read that file before Step 0.
+Do not re-implement its rules here.
 
 ## Templates
 
@@ -67,15 +65,15 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
 
 6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
-   Auto-detect first: if `userdata/cv.md`, `userdata/cv.txt`, or `userdata/cv.pdf` already exists, go straight to **Mode B (CV draft)** below and skip the prompt.
+   The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If one was found, go straight to **Mode B (CV draft)**.
 
    If no CV file exists, ask via AskUserQuestion. Use this exact opener and three options:
 
    > "Positioning next — who you are and what you're best at. Three ways to handle this:"
 
-   - **A. Drop your CV (recommended)** — first, create the following directories and files if not already present: `userdata/`, `userdata/companies/.gitkeep`, `userdata/stories/.gitkeep`, `userdata/outputs/.gitkeep`. Then print: *"I've created `userdata/` for you — drop your CV there as `cv.md`, `cv.txt`, or `cv.pdf`. Say 'ready' when it's in."* When the user says ready, re-detect the CV file. If present → Mode B. If still absent → re-offer the three options.
+   - **A. Drop your CV (recommended)** — follow the drop flow in `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` (create `userdata/` + the three `.gitkeep` files, print the drop prompt, wait for the user, re-detect). If present → Mode B. If still absent → re-offer the three options.
    - **B. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
-   - **C. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
+   - **C. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV and re-run --refresh -->` comment. Onboarding finishes fast.
 
    ### Mode A (paste-now)
 
