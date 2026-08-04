@@ -23,7 +23,7 @@ so most steps are a confirmation rather than a blank box.
   would mean inventing market data the plugin has no source for. Everywhere
   else offers structured input — though with no CV, the name/city/email,
   target-title and industry steps still fall back to typing, and several
-  multi-selects keep a free-text "Other" escape.
+  steps keep a free-text escape alongside their options.
 - "Companies of interest" moved out of `/setup` and into the first `/job-search`
   run, where the context makes it answerable.
 
