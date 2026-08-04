@@ -84,8 +84,9 @@ dispatched:
    targets (e.g. `site:<company>.com/careers senior product manager`). Treat them
    as candidates like any other: they still go through scoring and dedup.
 
-3. **Heading present with the italic placeholder** — asked, none given. Seed
-   nothing, ask nothing.
+3. **Heading present with the italic placeholder, or present but genuinely
+   empty (no bullets, no placeholder — e.g. hand-edited)** — asked, none given.
+   Seed nothing, ask nothing.
 
 After the first run the entries remain in `profile.md` but Discovery does not
 need to re-treat them as seeds — they'll be tracked under `userdata/companies/`

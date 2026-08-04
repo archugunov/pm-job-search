@@ -78,5 +78,6 @@ First public release: the pure-markdown core (8 skills + 6 reviewer/coach agents
 the opt-in `/integrations` MCP layer (Granola / Calendar / Gmail), the browser
 dashboard, and the TONE.md voice guidelines with a lint checklist.
 
+[0.4.0]: https://github.com/archugunov/pm-job-search/releases/tag/v0.4.0
 [0.3.0]: https://github.com/archugunov/pm-job-search/releases/tag/v0.3.0
 [0.2.1]: https://github.com/archugunov/pm-job-search/releases/tag/v0.2.1

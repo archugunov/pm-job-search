@@ -109,7 +109,7 @@ When skills or agents DRAFT content for the user (positioning paragraphs, proof 
 - **No LinkedIn closers.** "equally at home in X, Y, Z", "passionate about", "obsessed with", "thrives in ambiguity" — banned.
 - **No filler phrases.** "I wanted to reach out", "As you may know", "I am writing to express" — banned.
 
-See `/setup` Q6's "Drafting tone rules" for the full version with examples.
+See `/setup` Step 4's "Drafting tone rules" for the full version with examples.
 
 ## Briefs, heads-up, and bullet content
 

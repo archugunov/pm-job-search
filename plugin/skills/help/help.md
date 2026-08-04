@@ -39,7 +39,7 @@ One-time setup
 
 | Skill | What it does | Use when |
 |---|---|---|
-| `/setup` | 11 questions, writes profile + strategy + workspace CLAUDE.md. | First install, or you want to update positioning / salary band / target date. |
+| `/setup` | Nine steps, writes profile + strategy + workspace CLAUDE.md. Drop a CV into `userdata/cv.md` first and it pre-fills facts, target titles, industries, and positioning. | First install, or you want to update positioning / salary band / target date. |
 
 Daily and weekly
 

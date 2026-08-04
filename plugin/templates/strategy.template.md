@@ -2,7 +2,7 @@
   pm-job-search — strategy template.
 
   /setup writes a populated copy of this file to userdata/strategy.md when you
-  install: target_offer_date from Q11, weekly_targets + pipeline_targets
+  install: target_offer_date from Step 7, weekly_targets + pipeline_targets
   auto-derived from your timeline (see /setup SKILL.md for the cadence table),
   and the headline goal auto-composed from your profile.md.
 

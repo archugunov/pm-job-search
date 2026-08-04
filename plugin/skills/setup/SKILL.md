@@ -1,6 +1,6 @@
 ---
 name: setup
-description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a nine-step conversational install that pre-fills answers from the user's CV where one is available that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
+description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a nine-step conversational install that pre-fills answers from the user's CV where one is available. Writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
 ---
 
 # /setup — first-run install and re-configure
@@ -9,9 +9,9 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Voice:** every prompt and message in this skill follows the plugin's tone-of-voice + low-effort-first guidelines in `${CLAUDE_PLUGIN_ROOT}/TONE.md`. The exact wording for each question below is locked-in — use it verbatim, not paraphrased.
 
-**Opening line** (after mode detection, before Step 1, fresh install only):
+**Opening line** (after Step 0, fresh install only):
 
-> "OK, let's get you set up. Nine quick steps — if you've got a CV handy I'll fill in what I can from it. None of it's locked in, you can rerun anytime. Ready?"
+> "OK, let's get you set up. Nine quick steps — none of it's locked in, you can rerun anytime. Ready?"
 
 Wait for a one-word confirmation, then start Step 1.
 
@@ -40,9 +40,10 @@ Do not edit these template files. Always treat them as read-only inputs.
 ## The nine steps
 
 Ask one at a time. Use AskUserQuestion where a step has a clear option set
-(Steps 2, 3, 5, 7, 8); otherwise plain conversational ask. Skipping is allowed on
-LinkedIn (Step 1), salary (Step 6) and hard filters (Step 8) — see the "skipped
-placeholders" rule under "File writes" for the exact YAML form to write.
+(Steps 2, 3, 4, 5, 7, 8); otherwise plain conversational ask. Skipping is allowed on
+LinkedIn (Step 1), salary (Step 6), timeline (Step 7), hard filters (Step 8), and
+positioning (Step 4 option B) — see the "skipped placeholders" rule under "File
+writes" for the exact YAML form to write.
 
 Each step below shows the EXACT user-facing prompt in quotes. Use the wording
 verbatim — don't paraphrase. The voice is locked per `TONE.md`.
@@ -73,6 +74,10 @@ just types more. **There is one flow, not two.**
    Omit any clause whose value is absent — never render an empty slot or a
    placeholder. A correction arrives as plain text ("email's the other one,
    x@y.com"); apply it and move on. Do not re-ask the whole line.
+
+   If the CV supplied none of the four facts, skip this confirmation line
+   entirely — don't render `"From your CV: . Timezone looks like …"` — and go
+   straight to the individual asks below plus the timezone confirmation.
 
    **Fields the CV did not supply are asked individually, here, before moving on:**
 
@@ -124,16 +129,16 @@ just types more. **There is one flow, not two.**
 
    Substitute as a YAML inline list, same form as Step 2.
 
-4. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — two paths. **The default order matters**: present them in the order below. A CV found at Step 0 bypasses this question entirely. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
+4. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — two paths. **The default order matters**: present them in the order below. A readable CV found at Step 0 bypasses this question entirely. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
-   The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If one was found, go straight to **Mode B (CV draft)**.
+   The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If a readable one was found, go straight to **Mode B (CV draft)**.
 
    If no CV file exists, ask via AskUserQuestion. Use this exact opener and two options:
 
    > "Positioning next — who you are and what you're best at. Two ways to handle this:"
 
    - **A. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
-   - **B. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV and re-run --refresh -->` comment. Onboarding finishes fast.
+   - **B. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
 
    ### Mode A (paste-now)
 
@@ -142,6 +147,8 @@ just types more. **There is one flow, not two.**
    ### Mode B (CV draft)
 
    Read the CV file. Draft a positioning paragraph (≤4 sentences) + 5-7 proof points (each ≤2 sentences) + a one-sentence moat candidate. Show to user. Ask them to edit / accept / discard. Never save without explicit user review.
+
+   If the user discards, write `userdata/profile.md` with the three positioning sections empty under the same `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment used by Step 4 option B — never leave the literal `{{POSITIONING}}` placeholder unresolved.
 
    ### Drafting tone rules (apply to BOTH Mode A and Mode B drafts)
 
@@ -193,7 +200,7 @@ just types more. **There is one flow, not two.**
 
    > "When do you want the offer signed? A rough window is fine — it sets how hard the weekly targets push."
 
-   Four options, in this order:
+   Five options, in this order:
 
    | Option label | Stored `target_offer_date` |
    |---|---|
@@ -201,6 +208,7 @@ just types more. **There is one flow, not two.**
    | `2-4 months` | today + 12 weeks |
    | `4+ months` | today + 24 weeks |
    | `I have an exact date` | parse the user's answer as `YYYY-MM-DD` |
+   | `Not sure yet` | `null` |
 
    Each of the first three lands unambiguously inside one cadence bucket in the
    derivation table below, so nothing is lost by not asking for an exact date.
@@ -247,7 +255,7 @@ After Step 7 (only if target date was set), silently derive cadence targets base
 
 Rationale (don't surface to user unless asked): shorter timeline → higher concurrent activity needed to hit ~2 offers in hand by deadline, assuming ~30% offer rate on active interview threads and ~15% interview rate on applications.
 
-Also silently auto-compose `## Headline goal` for strategy.md from profile.md frontmatter. Format:
+Regardless of whether Step 7 was answered, silently auto-compose `## Headline goal` for strategy.md from profile.md frontmatter. Format:
 
 > "Sign a `<target_titles joined by ' / '>` role at a `<target_industries joined by ', '>` company by `<target_offer_date>`. `<geography phrasing — 'Fully remote', 'London hybrid', etc.>`. Base `<salary_band>`."
 
@@ -289,6 +297,7 @@ For skipped placeholders: write an empty YAML value, never the literal `{{NAME}}
 - `{{HARD_FILTERS}}` skipped → `hard_filters: []`.
 - `{{TARGET_TITLES}}` cannot be skipped (required).
 - `{{GEOGRAPHY_DETAIL}}` skipped → `mode_detail:` (empty).
+- `{{POSITIONING}}`, `{{PROOF_POINTS}}`, `{{MOAT}}` skipped (Step 4 option B, or a Mode B draft the user discards) → all three sections written empty under the `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment — never the literal `{{POSITIONING}}` placeholder string.
 
 Do NOT write `# unset` comments — they look like noise in the final file. An empty value is self-explanatory.
 

@@ -19,14 +19,18 @@ the onboarding spine: `/setup` → `/job-search` → `/dashboard` → first `/to
 The simulator follows these scripted hand-offs when the plugin reaches
 each checkpoint, otherwise stays in persona.
 
-1. After `/setup` wraps (look for "Saved as profile.md", "Let's wrap",
+1. When `/setup` Step 0 prompts to drop a CV and says "say 'ready' when
+   it's in", decline — reply that you don't have one handy — and let
+   `/setup` continue without a CV. This journey's `snapshot: empty` has
+   no CV file to drop; don't stall on this blocking ask.
+2. After `/setup` wraps (look for "Saved as profile.md", "Let's wrap",
    or a clear closing nudge), send: `/pm-job-search:job-search`
-2. After `/job-search` finishes its run summary (look for "Filed N new
+3. After `/job-search` finishes its run summary (look for "Filed N new
    roles" or similar), pick the top-listed role from the run summary
    and say: `mark <Company> to apply` (substitute the actual company
    name from the summary).
-3. After the status-change confirmation, send: `/pm-job-search:dashboard`
-4. After the dashboard launch message, send: `/pm-job-search:today`
+4. After the status-change confirmation, send: `/pm-job-search:dashboard`
+5. After the dashboard launch message, send: `/pm-job-search:today`
 
 ## Termination
 
@@ -52,7 +56,6 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** `/today`'s brief rendered Heads-up section ABOVE Pipeline state
 - **[required]** `/today` did NOT include a hardcoded founder-outreach number (no "10 founders")
 - **[required]** Each skill's closing message included a context-aware next-step nudge
-- **[opportunistic]** `/setup` offered the positioning draft (Mode A or Mode B) if the persona dropped a CV
 - **[required]** With no CV present, `/setup` still walked all nine steps and never claimed to have read a CV
 - **[required]** `/setup` offered timeline as a bucket choice, not a free-text date, and the resulting `strategy.md` holds a concrete `YYYY-MM-DD`
 - **[required]** `/setup` offered hard filters as a multi-select, not a free-text list
