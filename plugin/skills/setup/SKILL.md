@@ -275,7 +275,7 @@ Skip clauses where the source field is unset (e.g. if salary skipped, drop the b
 
 Leave `## Anti-goals` empty and `checkpoints: []` — those need deeper reflection and belong to the user's later editing or to a `career-coach` conversation.
 
-After Step 7: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
+Once all steps above are answered: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
 The senior-PM-default `tier_weights` + `tier_thresholds` get written into `profile.md` from the template automatically. Tier rubric terms (P0/P1/P2, role_fit, etc.) are too technical to introduce here without context — the user encounters them organically the first time `/evaluate-position` runs and shows a scoring breakdown. That's the right teach-moment.
 
