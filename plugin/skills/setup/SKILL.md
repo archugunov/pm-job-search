@@ -9,11 +9,11 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Voice:** every prompt and message in this skill follows the plugin's tone-of-voice + low-effort-first guidelines in `${CLAUDE_PLUGIN_ROOT}/TONE.md`. The exact wording for each question below is locked-in — use it verbatim, not paraphrased.
 
-**Opening line** (after mode detection, before Q1, fresh install only):
+**Opening line** (after mode detection, before Step 1, fresh install only):
 
 > "OK, let's get you set up. Nine quick steps — if you've got a CV handy I'll fill in what I can from it. None of it's locked in, you can rerun anytime. Ready?"
 
-Wait for a one-word confirmation, then start Q1.
+Wait for a one-word confirmation, then start Step 1.
 
 ## Mode detection
 
@@ -179,18 +179,63 @@ just types more. **There is one flow, not two.**
 5. **Geography** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion. Ask:
    > "Where are you looking?"
 
-   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
+   Options (in this order): `On-site in <city-from-Step1>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Step 1. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
 
-9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
+6. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
    > "What salary band are you aiming for? Whatever shape works — '£90-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet."
 
-   No validation — accept whatever currency / phrasing the user gives.
+   This is the one step that stays a free-text box. Generating bands from title
+   and city would mean inventing market data the plugin has no source for, and
+   anchoring a user's expectations wrongly is a worse failure than one text box.
+   No validation — accept whatever currency and phrasing the user gives.
 
-10. **Hard filters** (`{{HARD_FILTERS}}`) — ONE question, skippable. Ask:
+7. **Timeline** — single-select via AskUserQuestion. Ask:
 
-    > "Any red flags? Roles you'd skip immediately regardless of other fit. E.g. 'no companies under 50 people', 'no GM or business-owner roles', 'no five-day in-office', 'no relocation'. List a few, or skip."
+   > "When do you want the offer signed? A rough window is fine — it sets how hard the weekly targets push."
 
-    Parse the user's response into a YAML inline list of quoted strings: `["no companies under 50 people", "no five-day in-office"]`. If skipped or empty, write `[]`. (Inline form keeps the trailing template comment intact, same reasoning as Q7.)
+   Four options, in this order:
+
+   | Option label | Stored `target_offer_date` |
+   |---|---|
+   | `Under 2 months` | today + 6 weeks |
+   | `2-4 months` | today + 12 weeks |
+   | `4+ months` | today + 24 weeks |
+   | `I have an exact date` | parse the user's answer as `YYYY-MM-DD` |
+
+   Each of the first three lands unambiguously inside one cadence bucket in the
+   derivation table below, so nothing is lost by not asking for an exact date.
+
+   Picking "I have an exact date" prompts once:
+
+   > "What date? YYYY-MM-DD, or just say it however."
+
+   Always store a concrete `YYYY-MM-DD` in `strategy.md` — never a bucket label.
+   `/today`'s countdown reads that field directly.
+
+   Skipping is allowed: set `target_offer_date: null`, skip the cadence
+   derivation below, and `/today` degrades gracefully (no countdown, no progress
+   section).
+
+8. **Hard filters** (`{{HARD_FILTERS}}`) — multi-select via AskUserQuestion, skippable. Ask:
+
+   > "Last one. Any red flags — roles you'd skip on sight, whatever else is right about them?"
+
+   Six fixed options, plus the automatic "Other" escape:
+
+   - `no companies under 50 people`
+   - `no five-day in-office`
+   - `no relocation`
+   - `no contract or interim roles`
+   - `no agency or consultancy`
+   - `no roles without a product team already in place`
+
+   These are generic red flags, not inferences about this user, so offering them
+   invents nothing. "Other" takes free text and appends to the list.
+
+   Write the selections as a YAML inline list of quoted strings:
+   `["no companies under 50 people", "no five-day in-office"]`. If skipped or
+   nothing selected, write `[]`. (Inline form keeps the trailing template comment
+   intact, same reasoning as Step 2.)
 
 11. **Companies of interest** — skippable. Ask:
     > "Any companies you have in mind already? List a few, or skip."
@@ -212,12 +257,7 @@ just types more. **There is one flow, not two.**
     _None yet — fill in as you discover them._
     ```
 
-12. **Target offer date** — skippable. Ask:
-    > "When do you want the offer signed by? Concrete date — even a best guess. Vague dates make `/today`'s countdown noisy."
-
-    Parse as `YYYY-MM-DD`. If skipped, set `target_offer_date: null` in strategy.md and skip the cadence derivation below — strategy.md will only have the auto-headline-goal populated; `/today` degrades gracefully (no countdown, no progress section).
-
-After Q12 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
+After Step 7 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
 
 | W | weekly_targets.applications | weekly_targets.warm_outreach | pipeline_targets.active_interview_threads | pipeline_targets.p0_pipeline_size |
 |---|---|---|---|---|
@@ -235,7 +275,7 @@ Skip clauses where the source field is unset (e.g. if salary skipped, drop the b
 
 Leave `## Anti-goals` empty and `checkpoints: []` — those need deeper reflection and belong to the user's later editing or to a `career-coach` conversation.
 
-After Q12: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
+After Step 7: proceed straight to file writes. Do NOT prompt the user about the tier rubric.
 
 The senior-PM-default `tier_weights` + `tier_thresholds` get written into `profile.md` from the template automatically. Tier rubric terms (P0/P1/P2, role_fit, etc.) are too technical to introduce here without context — the user encounters them organically the first time `/evaluate-position` runs and shows a scoring breakdown. That's the right teach-moment.
 
@@ -243,7 +283,9 @@ If the user wants to tune the rubric, they edit `profile.md` directly. The re-ru
 
 ## Re-run mode question loop
 
-When `userdata/profile.md` exists, iterate fields in the same order (Q1-Q12 + tier rubric). For each:
+When `userdata/profile.md` exists, iterate fields in the same order as the fresh
+walk (Steps 1-8 + tier rubric). Step 0 does not apply — re-run never re-reads the
+CV, because the fields it would fill are already populated. For each field:
 
 1. Show the current value (one line).
 2. Ask: `keep / update / skip` (skip means "leave as-is for now, ask again next /setup").
@@ -280,10 +322,10 @@ Do NOT write `# unset` comments — they look like noise in the final file. An e
 ### 2. `userdata/strategy.md` (only if file does not already exist)
 
 Read the strategy template. Populate:
-- `target_offer_date`: from Q12. If Q12 was skipped, leave as `null`.
-- `weekly_targets.*` + `pipeline_targets.*`: from the cadence-derivation table above. If Q12 was skipped, leave all as `null` (`/today` skips them gracefully).
+- `target_offer_date`: from Step 7. If Step 7 was skipped, leave as `null`.
+- `weekly_targets.*` + `pipeline_targets.*`: from the cadence-derivation table above. If Step 7 was skipped, leave all as `null` (`/today` skips them gracefully).
 - `checkpoints: []` (empty list — user adds later via `career-coach` or by hand).
-- `## Headline goal`: the auto-composed paragraph (from profile.md fields + target date). If Q12 was skipped, omit the date clause and drop the countdown wording.
+- `## Headline goal`: the auto-composed paragraph (from profile.md fields + target date). If Step 7 was skipped, omit the date clause and drop the countdown wording.
 - `## Anti-goals`: leave the section empty (the template's HTML comment prompts the user to fill in later).
 
 Write to `userdata/strategy.md`.
@@ -334,21 +376,23 @@ Write the result to `CLAUDE.md` at the workspace root (one level above `userdata
 
 ## Closing offers
 
-First, print a brief summary of what was written — one line per file. If Q12 set a target date, include the derived cadence summary so the user can spot-check the numbers. Example with target date set:
+First, print a brief summary of what was written — one line per file. If Step 7 set a target date, include the derived cadence summary so the user can spot-check the numbers. Example with target date set:
 
 > "You're set up. Wrote:
 > - `userdata/profile.md` — identity, target role, salary, hard filters
-> - `userdata/strategy.md` — headline goal + derived weekly targets (8 apps/wk, 8 outreach/wk, 4 active interview threads floor) based on your 18-week timeline. Edit these in `userdata/strategy.md` if they feel off — or ask `pm-job-search:career-coach` to help you set anti-goals and checkpoints.
+> - `userdata/strategy.md` — headline goal + target offer date `<YYYY-MM-DD>` (from your "<bucket label>" answer) + derived weekly targets (8 apps/wk, 8 outreach/wk, 4 active interview threads floor). Edit these in `userdata/strategy.md` if they feel off — or ask `pm-job-search:career-coach` to help you set anti-goals and checkpoints.
 > - `userdata/journal.md` — empty (append daily notes here)
 > - `CLAUDE.md` — workspace root, loads your profile into every Claude Code session"
 
-If Q12 was skipped, omit the cadence summary line — just say `userdata/strategy.md — headline goal drafted; targets unset (skipped target date)`.
+When the user gave an exact date, drop the `(from your "…" answer)` clause.
 
-Then offer ONE follow-up (only if Q6 produced a draft via Mode A or Mode B):
+If Step 7 was skipped, omit the cadence summary line — just say `userdata/strategy.md — headline goal drafted; targets unset (skipped target date)`.
+
+Then offer ONE follow-up (only if Step 4 produced a draft via Mode A or Mode B):
 
 > "Want to sharpen your positioning before we wrap? I can pull in the `pm-job-search:career-coach` agent — quick 5-min back-and-forth, it'll suggest a tighter version. Or skip and edit `profile.md` whenever."
 
-If yes, invoke the `career-coach` agent. If no or Q6 was skipped, continue to the automation offer below.
+If yes, invoke the `career-coach` agent. If no or Step 4 was skipped, continue to the automation offer below.
 
 **Automation offer (split per TONE.md Rule A — one ask per message):**
 
