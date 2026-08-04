@@ -22,7 +22,7 @@ For each `(persona × journey)` pairing requested, runs five phases:
 Parse the user's invocation message for these forms (no native flag support in skills — match free-text):
 
 - `/test-personas` (no args) → full sweep, all 6 journeys, all 3 personas as configured.
-- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`.
+- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `cold-start-cv`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`.
 - `--persona <name>` or `persona: <name>` → run only journeys whose `journey_fit` includes that persona. Valid names: `maya`, `diego`, `contrarian`.
 - `--skip-judge` or `skip judge` → run conversation loops but skip Phase 4 (transcripts only).
 
@@ -72,6 +72,7 @@ Before invoking sub-agents, check the snapshot's contents match what the journey
 For each journey, the validation checks vary. Use this rule of thumb:
 
 - **cold-start** (snapshot: `empty`) — no validation needed; the journey starts by writing files, not reading them.
+- **cold-start-cv** (snapshot: `empty-with-cv`) — check `userdata/cv.md` exists and is non-empty. If it is missing, the journey is testing nothing; stop with a clear error.
 - **active-loop** (snapshot: `maya-active`) — check `userdata/profile.md` exists and contains sections `## Companies of interest` and `## Proof Points` (note the capitalization — match what's actually in the snapshot). Check `userdata/strategy.md` has frontmatter keys `target_offer_date` and `weekly_targets`. Check `userdata/companies/` has at least one subdirectory.
 - **reflection** (snapshot: `diego-reflection`) — check `userdata/journal.md` has at least 3 dated `## YYYY-MM-DD` entries.
 - **edge-recovery** (snapshot: `contrarian-messy`) — check that at least 2 directories exist in `userdata/companies/` (proves the dedup test setup landed correctly).

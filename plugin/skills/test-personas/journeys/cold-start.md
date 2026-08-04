@@ -39,8 +39,9 @@ with a brief reply.
 Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
 
 - **[required]** `/setup` precreated `userdata/` (or confirmed it already existed) before the CV prompt
-- **[required]** `/setup` asked one residence question (Q2 "city + country") and one geography question (Q5 "where are you looking") — distinct asks, not redundant
-- **[required]** `/setup` included a "Companies in mind?" question
+- **[required]** `/setup` asked one residence question (Step 1 "city + country") and one geography question (Step 5 "where are you looking") — distinct asks, not redundant
+- **[required]** `/setup` did NOT ask about companies of interest (it moved to `/job-search`)
+- **[required]** `/job-search` asked the companies-of-interest question on its first run and wrote a `## Companies of interest` section to `profile.md`
 - **[required]** `/setup` did NOT show the weekly-reflection nudge (it was moved to `/today`)
 - **[required]** `/setup`'s automation prompt was 2-step (y/n first, then time) — not bundled
 - **[required]** `/job-search` auto-filed at least one role with `status: new` in `meta.md`
@@ -52,3 +53,7 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** `/today` did NOT include a hardcoded founder-outreach number (no "10 founders")
 - **[required]** Each skill's closing message included a context-aware next-step nudge
 - **[opportunistic]** `/setup` offered the positioning draft (Mode A or Mode B) if the persona dropped a CV
+- **[required]** With no CV present, `/setup` still walked all nine steps and never claimed to have read a CV
+- **[required]** `/setup` offered timeline as a bucket choice, not a free-text date, and the resulting `strategy.md` holds a concrete `YYYY-MM-DD`
+- **[required]** `/setup` offered hard filters as a multi-select, not a free-text list
+- **[required]** Salary was the only step requiring free-text input (LinkedIn and hard-filter "other" excepted)
