@@ -45,5 +45,5 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** No value in `profile.md` is absent from the CV and unconfirmed by the user — nothing was invented to fill a field
 - **[required]** `/setup` did NOT ask about companies of interest
 - **[required]** `profile.md` frontmatter contains every documented key, with the same names and shapes as `userdata/examples/maya/profile.md`
-- **[required]** Salary was the only step requiring free-text input
+- **[required]** Salary was the only step requiring free-text input (the "Other" escapes at Steps 2 and 8, and the LinkedIn correction, excepted)
 - **[opportunistic]** The positioning draft (Mode B) ran without re-prompting for a CV

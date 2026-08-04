@@ -21,7 +21,7 @@ For each `(persona × journey)` pairing requested, runs five phases:
 
 Parse the user's invocation message for these forms (no native flag support in skills — match free-text):
 
-- `/test-personas` (no args) → full sweep, all 6 journeys, all 3 personas as configured.
+- `/test-personas` (no args) → full sweep, all 7 journeys, all 3 personas as configured.
 - `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `cold-start-cv`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`.
 - `--persona <name>` or `persona: <name>` → run only journeys whose `journey_fit` includes that persona. Valid names: `maya`, `diego`, `contrarian`.
 - `--skip-judge` or `skip judge` → run conversation loops but skip Phase 4 (transcripts only).
@@ -351,7 +351,7 @@ After the run summary, suggest the natural next action based on the verdicts:
 
 ## Cost note for maintainer
 
-A full run (6 journeys × ~15-25 turns × 2 sub-agent calls per turn + 6 judge calls) is roughly 200-300 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
+A full run (7 journeys × ~15-25 turns × 2 sub-agent calls per turn + 7 judge calls) is roughly 200-300 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
 
 ## Known limitations and verifications needed
 

@@ -56,4 +56,4 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** With no CV present, `/setup` still walked all nine steps and never claimed to have read a CV
 - **[required]** `/setup` offered timeline as a bucket choice, not a free-text date, and the resulting `strategy.md` holds a concrete `YYYY-MM-DD`
 - **[required]** `/setup` offered hard filters as a multi-select, not a free-text list
-- **[required]** Salary was the only step requiring free-text input (LinkedIn and hard-filter "other" excepted)
+- **[required]** With no CV, Steps 5 (geography), 7 (timeline) and 8 (hard filters) were still offered as option-based selects, not free-text asks — the pick-not-write shape survives the absence of a CV
