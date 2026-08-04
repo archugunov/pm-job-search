@@ -120,7 +120,30 @@ Return one line: `Recheck-{BATCH_ID}: checked N companies, found K new PM roles.
 
 You are running the discovery phase of a weekly job sweep.
 
-**Seed Discovery with `## Companies of interest` from `userdata/profile.md`.** If that section exists and has entries, include those companies as additional discovery targets (e.g. `site:<company>.com/careers senior product manager`). Treat them as candidates like any other — they still go through scoring and dedup. After the first run, they remain in `profile.md` but discovery does not need to re-treat them as seeds — they'll be tracked under `userdata/companies/` going forward.
+**Seed Discovery with `## Companies of interest` from `userdata/profile.md`.**
+
+Three cases, checked in the main conversation during Phase 0 — before the
+subagents are dispatched:
+
+1. **Heading absent** — never asked. Ask once, now:
+
+   > "Before I sweep — any companies you already have in mind? I'll seed the search with them. Or skip."
+
+   Write the answer to `profile.md` as a `## Companies of interest` section: one
+   `- <Company>` bullet per entry, or, if the user skips, the single italic line
+   `_None yet — fill in as you discover them._`. Either way the heading now
+   exists, so this never asks twice.
+
+2. **Heading present with entries** — pass them to Discovery as additional
+   targets (e.g. `site:<company>.com/careers senior product manager`). Treat them
+   as candidates like any other: they still go through scoring and dedup.
+
+3. **Heading present with the italic placeholder** — asked, none given. Seed
+   nothing, ask nothing.
+
+After the first run the entries remain in `profile.md` but Discovery does not
+need to re-treat them as seeds — they'll be tracked under `userdata/companies/`
+going forward.
 
 You receive `exclusion_pairs` and `exclusion_urls` from `/tmp/pmjs-exclusion.json`. Drop any candidate whose normalised `url_key` OR `(company, position)` `strict_key` matches (keys per `${CLAUDE_PLUGIN_ROOT}/references/dedup-normalization.md`).
 

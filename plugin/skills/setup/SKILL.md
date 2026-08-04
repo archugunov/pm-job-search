@@ -237,26 +237,6 @@ just types more. **There is one flow, not two.**
    nothing selected, write `[]`. (Inline form keeps the trailing template comment
    intact, same reasoning as Step 2.)
 
-11. **Companies of interest** — skippable. Ask:
-    > "Any companies you have in mind already? List a few, or skip."
-
-    Persist the answer to `userdata/profile.md` under a new section heading:
-
-    ```markdown
-    ## Companies of interest
-
-    - <Co 1>
-    - <Co 2>
-    ```
-
-    If the user skips, write the heading with an italic placeholder (so `/job-search` can distinguish "asked, none given" from "never asked"):
-
-    ```markdown
-    ## Companies of interest
-
-    _None yet — fill in as you discover them._
-    ```
-
 After Step 7 (only if target date was set), silently derive cadence targets based on weeks-to-target. Compute `W = (target_offer_date − today) / 7`, then:
 
 | W | weekly_targets.applications | weekly_targets.warm_outreach | pipeline_targets.active_interview_threads | pipeline_targets.p0_pipeline_size |
@@ -309,13 +289,6 @@ For skipped placeholders: write an empty YAML value, never the literal `{{NAME}}
 - `{{HARD_FILTERS}}` skipped → `hard_filters: []`.
 - `{{TARGET_TITLES}}` cannot be skipped (required).
 - `{{GEOGRAPHY_DETAIL}}` skipped → `mode_detail:` (empty).
-- Q11 (Companies of interest) skipped → write the `## Companies of interest` heading with a single italic placeholder line:
-  ```markdown
-  ## Companies of interest
-
-  _None yet — fill in as you discover them._
-  ```
-  This prevents the heading from rendering as an empty section and signals to `/job-search` that the question was asked.
 
 Do NOT write `# unset` comments — they look like noise in the final file. An empty value is self-explanatory.
 
