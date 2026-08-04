@@ -124,11 +124,11 @@ just types more. **There is one flow, not two.**
 
    Substitute as a YAML inline list, same form as Step 2.
 
-4. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
+4. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — two paths. **The default order matters**: present them in the order below. A CV found at Step 0 bypasses this question entirely. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
    The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If one was found, go straight to **Mode B (CV draft)**.
 
-   If no CV file exists, ask via AskUserQuestion. Use this exact opener and three options:
+   If no CV file exists, ask via AskUserQuestion. Use this exact opener and two options:
 
    > "Positioning next — who you are and what you're best at. Two ways to handle this:"
 
