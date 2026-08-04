@@ -11,16 +11,19 @@ so most steps are a confirmation rather than a blank box.
 
 ### Changed
 
-- `/setup` is nine steps instead of twelve questions. Name, city, email and
-  LinkedIn arrive as a single confirmation line. Target titles and industries are
-  offered as multi-selects derived from the CV, each shown with the roles the
-  inference came from.
+- `/setup` is nine steps instead of twelve questions. When a CV is found, name,
+  city, email and LinkedIn arrive as a single confirmation line, and target
+  titles and industries are offered as multi-selects derived from the CV, each
+  shown with the roles the inference came from.
 - Timeline is a bucket choice (under 2 months / 2-4 / 4+ / exact date) rather than
   a typed date. A concrete `target_offer_date` is still what gets stored, so
   `/today`'s countdown is unaffected.
 - Hard filters are a multi-select over common red flags, with a free-text escape.
-- Salary band is the only remaining free-text step. Generating bands would mean
-  inventing market data the plugin has no source for.
+- Salary band is the one step deliberately left as free text. Generating bands
+  would mean inventing market data the plugin has no source for. Everywhere
+  else offers structured input — though with no CV, the name/city/email,
+  target-title and industry steps still fall back to typing, and several
+  multi-selects keep a free-text "Other" escape.
 - "Companies of interest" moved out of `/setup` and into the first `/job-search`
   run, where the context makes it answerable.
 
