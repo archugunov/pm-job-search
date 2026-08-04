@@ -1,6 +1,6 @@
 ---
 name: setup
-description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a 12-question conversational install that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
+description: This skill should be used when the user asks for "start", "/setup", "set up the plugin", "first-time setup", "install pm-job-search", "configure my profile", "create my profile", or wants to onboard onto pm-job-search for the first time (or re-run onboarding to update a field). Conducts a nine-step conversational install that pre-fills answers from the user's CV where one is available that writes userdata/profile.md, a placeholder userdata/strategy.md, an empty userdata/journal.md, three .gitkeep files, and a CLAUDE.md at the workspace root resolved from the plugin template.
 ---
 
 # /setup — first-run install and re-configure
@@ -11,7 +11,7 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Opening line** (after mode detection, before Q1, fresh install only):
 
-> "OK, let's get you set up. Twelve quick questions — none of it locked in, you can rerun anytime. Ready?"
+> "OK, let's get you set up. Nine quick steps — if you've got a CV handy I'll fill in what I can from it. None of it's locked in, you can rerun anytime. Ready?"
 
 Wait for a one-word confirmation, then start Q1.
 
@@ -20,7 +20,7 @@ Wait for a one-word confirmation, then start Q1.
 Run this BEFORE asking the first question:
 
 1. If `userdata/profile.md` exists → enter **re-run mode**: read the file, ask "keep current / update / skip" per field, never wipe existing answers.
-2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: ask all 12 questions in order.
+2. If `userdata/profile.md` does NOT exist → enter **fresh-install mode**: walk all nine steps in order.
 3. `--refresh` flag → re-run mode, but only re-resolve the workspace-root `CLAUDE.md` from the template using the current `profile.md` content. Skip all questions. Useful after manual edits to profile.md.
 
 CV detection, file-format handling and the drop prompt are defined in
@@ -37,43 +37,103 @@ Read these from the plugin install dir (use `${CLAUDE_PLUGIN_ROOT}` if available
 
 Do not edit these template files. Always treat them as read-only inputs.
 
-## The 12 questions
+## The nine steps
 
-Ask one at a time. Use AskUserQuestion only when a question has a clear set of options (Q5, Q6); otherwise plain conversational ask. Skipping is allowed on Q4 (LinkedIn), Q9 (salary band), Q10 (hard filters), Q11 (companies of interest) — see the "skipped placeholders" rule under "File writes" for the exact YAML form to write.
+Ask one at a time. Use AskUserQuestion where a step has a clear option set
+(Steps 2, 3, 5, 7, 8); otherwise plain conversational ask. Skipping is allowed on
+LinkedIn (Step 1), salary (Step 6) and hard filters (Step 8) — see the "skipped
+placeholders" rule under "File writes" for the exact YAML form to write.
 
-Each question below shows the EXACT user-facing prompt in quotes. Use the wording verbatim — don't paraphrase. The voice is locked per `TONE.md`.
+Each step below shows the EXACT user-facing prompt in quotes. Use the wording
+verbatim — don't paraphrase. The voice is locked per `TONE.md`.
 
-1. **Name** (`{{NAME}}`) — required.
+Where a CV was found at Step 0, Steps 1-4 arrive pre-filled per
+`${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. Where none was found, the
+same steps run with nothing pre-filled — the questions are identical, the user
+just types more. **There is one flow, not two.**
+
+0. **CV intake** — runs before the opening line, straight after mode detection.
+
+   Follow `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` § "Finding the CV".
+   If a readable CV is found, say one line and move on:
+
+   > "Got your CV — I'll fill in what I can and you just correct me."
+
+   If none is found and the user declines the drop, say:
+
+   > "No CV — we'll do it the long way then. Same questions, you just type more."
+
+1. **Facts** (`{{NAME}}`, `{{CITY}}`, `{{TIMEZONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`) — one confirmation.
+
+   Extract per `cv-extraction.md` § "Tier 1 — facts". Detect timezone from the
+   system, never from the CV. Present everything found as one line and ask once:
+
+   > "From your CV: <Name> · <City> · <email> · <linkedin-url>. Timezone looks like `<IANA>`. All right?"
+
+   Omit any clause whose value is absent — never render an empty slot or a
+   placeholder. A correction arrives as plain text ("email's the other one,
+   x@y.com"); apply it and move on. Do not re-ask the whole line.
+
+   **Fields the CV did not supply are asked individually, here, before moving on:**
+
    > "What's your name?"
 
-2. **City** (`{{CITY}}`) + auto-detect timezone — required.
    > "Where are you based? City + country works (e.g. London, UK)."
 
-   After the user answers, auto-detect IANA timezone via `realpath /etc/localtime | sed 's|.*/zoneinfo/||'` (returns e.g. `Europe/London`). Do NOT use `date +%Z` — that returns abbreviations like `BST` / `CEST`, not IANA strings. Fill `{{TIMEZONE}}` automatically and confirm in one line:
-   > "I'm seeing your timezone as `<detected>` — that right? Override if not."
-
-3. **Email** (`{{EMAIL}}`) — required.
    > "What's the best email for you?"
 
-4. **LinkedIn URL** (`{{LINKEDIN_URL}}`) — skippable.
    > "LinkedIn URL? Or skip."
 
-5. **Geography** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion. Ask:
-   > "Where are you looking?"
+   With no CV at all, this step is simply those four questions in that order,
+   followed by the timezone confirmation:
 
-   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
+   > "I'm seeing your timezone as `<detected>` — that right? Override if not."
 
-6. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
+2. **Target titles** (`{{TARGET_TITLES}}`) — multi-select.
+
+   Derive 3-5 candidates per `cv-extraction.md` § "Tier 2 — inferences". Ask via
+   AskUserQuestion with `multiSelect: true`, one option per derived title, plus
+   the automatic "Other" escape for anything the user wants to add:
+
+   > "Roles you'd take. I've pulled these from your CV — <evidence line>. Pick all that apply."
+
+   The evidence line is the roles the inference came from, e.g. `from Lead PM at
+   Monzo, Senior PM at Wise`. Show it — the user cannot judge a wrong inference
+   without it.
+
+   With no CV, ask plainly instead:
+
+   > "What roles are you targeting? Typical senior-PM examples: Director of Product, Principal PM, Group PM, Staff PM. List as many as you'd take, comma-separated."
+
+   Either way, substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]`.
+
+   Never auto-accept this step, even when every option came from the CV. A wrong
+   target title propagates into every `/job-search` sweep and every
+   `/evaluate-position` score.
+
+3. **Target industries** (`{{TARGET_INDUSTRIES}}`) — multi-select.
+
+   Derive 3-5 candidates per `cv-extraction.md` § "Tier 2 — inferences". Ask via
+   AskUserQuestion with `multiSelect: true`:
+
+   > "Industries. From your CV I'd guess these — <evidence line>. Pick all that apply."
+
+   With no CV:
+
+   > "What industries are you looking at? E.g. healthcare, climate tech, education, enterprise SaaS. Comma-separated."
+
+   Substitute as a YAML inline list, same form as Step 2.
+
+4. **Positioning** (`{{POSITIONING}}` + `{{PROOF_POINTS}}` + `{{MOAT}}`) — three paths. **The default order matters**: present them in the order below, with CV as the recommended first option. Writing positioning by hand is 5-10 minutes of real reflection — don't force it during onboarding when the user has a faster path.
 
    The CV has already been located at Step 0 per `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md`. If one was found, go straight to **Mode B (CV draft)**.
 
    If no CV file exists, ask via AskUserQuestion. Use this exact opener and three options:
 
-   > "Positioning next — who you are and what you're best at. Three ways to handle this:"
+   > "Positioning next — who you are and what you're best at. Two ways to handle this:"
 
-   - **A. Drop your CV (recommended)** — follow the drop flow in `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` (create `userdata/` + the three `.gitkeep` files, print the drop prompt, wait for the user, re-detect). If present → Mode B. If still absent → re-offer the three options.
-   - **B. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
-   - **C. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV and re-run --refresh -->` comment. Onboarding finishes fast.
+   - **A. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
+   - **B. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV and re-run --refresh -->` comment. Onboarding finishes fast.
 
    ### Mode A (paste-now)
 
@@ -115,15 +175,11 @@ Each question below shows the EXACT user-facing prompt in quotes. Use the wordin
    **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
 
    When showing the draft to the user, append: *"Edit anything that doesn't sound like you — drafts are starting points, not finished copy."* Always let the user rewrite before save.
-7. **Target titles** (`{{TARGET_TITLES}}`) — comma-separated list from the user. Ask:
-   > "What roles are you targeting? Typical senior-PM examples: Director of Product, Principal PM, Group PM, Staff PM. List as many as you'd take, comma-separated."
 
-   Substitute as a YAML inline list: `[Director of Product, Principal PM, Group PM]` (keeps the template's trailing inline comment intact; the user can reformat to block form later if they prefer).
+5. **Geography** (`{{GEOGRAPHY_MODE}}` + `{{GEOGRAPHY_DETAIL}}`) — single-select via AskUserQuestion. Ask:
+   > "Where are you looking?"
 
-8. **Target industries** (`{{TARGET_INDUSTRIES}}`) — comma-separated. Ask:
-   > "What industries are you looking at? E.g. healthcare, climate tech, education, enterprise SaaS. Comma-separated."
-
-   Substitute as YAML inline list (same form as Q7).
+   Options (in this order): `On-site in <city-from-Q2>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Q2. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
 
 9. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
    > "What salary band are you aiming for? Whatever shape works — '£90-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet."
