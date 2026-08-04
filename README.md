@@ -16,7 +16,7 @@ If you're a senior PM, lead PM, or head of product — you're in the right place
 
 Maps to the five phases of a senior-PM search.
 
-1. **Set up once.** `/pm-job-search:setup` — 11 questions, ~10-15 min. Writes your profile, strategy, and the rubric the rest of the plugin scores against. Drop a CV at `userdata/cv.md` first and setup pre-fills positioning.
+1. **Set up once.** `/pm-job-search:setup` — nine steps, ~5-10 min. Writes your profile, strategy, and the rubric the rest of the plugin scores against. Drop a CV at `userdata/cv.md` first — now the recommended path, since setup pre-fills most answers instead of just positioning.
 
 2. **Discover & score.** `/pm-job-search:job-search` does a weekly sweep — parallel subagents recheck your P0/P1 companies via ATS APIs and discover new roles via scoped search. Score one-off postings ad-hoc with `/pm-job-search:evaluate-position <url>`. Both write the same artefacts: a company folder, a tier score, and a 200-word research brief.
 
@@ -60,7 +60,7 @@ cd <your-workspace>
 
 | Skill | What it does |
 |---|---|
-| `/pm-job-search:setup` | 11 questions including target offer date. Writes profile + strategy + workspace `CLAUDE.md`. Re-runnable. Pre-fills positioning from a CV if you drop one into `userdata/cv.md`. |
+| `/pm-job-search:setup` | Nine steps. Writes profile + strategy + workspace `CLAUDE.md`. Re-runnable. Drop a CV into `userdata/cv.md` first and it pre-fills facts, target titles, industries, and positioning. Timeline is asked as a rough window, not an exact date. |
 
 **Daily / weekly:**
 

@@ -4,6 +4,34 @@ All notable changes to pm-job-search are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims for
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] — 2026-08-04
+
+CV-first onboarding. `/setup` now reads a CV up front and pre-fills what it can,
+so most steps are a confirmation rather than a blank box.
+
+### Changed
+
+- `/setup` is nine steps instead of twelve questions. Name, city, email and
+  LinkedIn arrive as a single confirmation line. Target titles and industries are
+  offered as multi-selects derived from the CV, each shown with the roles the
+  inference came from.
+- Timeline is a bucket choice (under 2 months / 2-4 / 4+ / exact date) rather than
+  a typed date. A concrete `target_offer_date` is still what gets stored, so
+  `/today`'s countdown is unaffected.
+- Hard filters are a multi-select over common red flags, with a free-text escape.
+- Salary band is the only remaining free-text step. Generating bands would mean
+  inventing market data the plugin has no source for.
+- "Companies of interest" moved out of `/setup` and into the first `/job-search`
+  run, where the context makes it answerable.
+
+### Added
+
+- `plugin/references/cv-extraction.md` — shared CV-reading rules, split by
+  confidence: facts read off the page, inferences derived from the CV's shape.
+  Carries the governing rule that a field the CV lacks is asked, never guessed.
+- `cold-start-cv` test journey and its `empty-with-cv` snapshot, covering the
+  CV-present path. `cold-start` now covers the no-CV path.
+
 ## [0.3.0] — 2026-07-11
 
 First stable cut of the 0.3 line (developed across `v0.3.0-beta.1`…`beta.6`).
