@@ -31,6 +31,31 @@ fresh candidate):
 - **`url_key`** — `link`, lowercased, `?…` query and `#…` fragment stripped,
   trailing `/` removed, leading `www.` removed. Empty links produce no `url_key`.
 
+## Folder name
+
+`company_key` is for matching only — never write it to disk. The directory under
+`userdata/companies/` uses the company's own name, as the company writes it:
+`Atom Bank`, `Fly.io`, `iwoca`, `Plaid`. Spaces and dots are fine and are the
+existing convention; case is preserved as the company styles it.
+
+Strip anything that is annotation rather than name:
+
+- **Parenthetical disambiguators** — `Lead (Lead Bank)` → `Lead Bank`,
+  `Remote (remote.com)` → `Remote`. If you needed a parenthetical to tell two
+  companies apart, the name inside it is usually the real one; pick that and drop
+  the rest. Never ship the parenthesis to disk.
+- **Legal suffixes** — `, Inc.`, `Ltd`, `GmbH`, `LLC`, `S.A.` → drop.
+  `ezCater, Inc` → `ezCater`.
+- **Domains used as an identifier** — `remote.com` → `Remote`, unless the domain
+  *is* the styled name (`Fly.io` stays).
+- **Path-hostile characters** — `/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`, and
+  leading dots. Replace with a space and collapse.
+
+The full display name still goes in `meta.md`'s `company:` field, so nothing is
+lost — readers show `company:`, the folder just has to be a sane path. When in
+doubt prefer the shorter, more recognisable form: a user scanning
+`userdata/companies/` should see the company they'd name in conversation.
+
 ## Match rules
 
 Compare a fresh candidate against the union of (existing meta.md entries + the

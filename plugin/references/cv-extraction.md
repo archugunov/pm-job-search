@@ -66,6 +66,10 @@ the most recent. Propose 3-5, never more.
 from, e.g. `from Lead PM at Monzo, Senior PM at Wise`. The user needs to see what
 the inference rests on to judge whether it is wrong.
 
+List the roles most recent first, and use the same order every time. Two evidence
+lines in the same run that disagree on ordering — titles oldest-first, industries
+newest-first — read as carelessness to a user skimming them back-to-back.
+
 ## What is NOT extractable
 
 Nothing in a CV states any of these. Never infer them:

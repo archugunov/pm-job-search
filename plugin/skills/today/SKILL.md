@@ -197,6 +197,11 @@ At most three bullets. Each bullet is concrete and anchored to a company name or
 4. **Active interview thread** — any meta.md with `status: interviewing` AND `last_inbound` within the last 7 days → `Prep for <Company> — pull stories with /interview-prep <Company>` (one bullet per qualifying company, most recent inbound first; cap at two).
 5. **Stale `applied`** — any meta.md with `status: applied` AND `date_applied` more than 14 days ago AND no `last_inbound` (or last_inbound also >14d) → `Chase or close <Company> — applied <N>d ago, no response` (cap at one).
 6. **Weekly-target gap >50%** (warm_outreach OR applications, whichever is further behind) → `Send <N> more <warm outreach|applications> this week (<count>/<target>)`. Skip if no target set. "This week" = current ISO week, Monday → today inclusive; same window as the applications.md warm-outreach summary line.
+
+   Two gates on this one:
+
+   - **Skip entirely when `userdata/companies/` holds no roles at all.** "Send 12 more applications this week (0/12)" is noise on a workspace with nothing to apply to — the user needs `/job-search` first, and the end-of-run nudge already says so. Once even one role is filed, the trigger behaves normally.
+   - **Tie-break when both are equally behind** (both at 0, or the same percentage gap): pick `applications`. Applications are the harder, more schedulable unit of work, and outreach tends to follow from having a pipeline rather than the reverse. Report only one — never both.
 7. **Founder outreach line (conditional on `strategy.md`)** — Read `userdata/strategy.md`. If `weekly_targets.founder_outreach` exists with a numeric target N, and today is Monday AND the warm-outreach count for Saturday + Sunday is 0, render: `Founder outreach — N this week (M done so far).` Where M is counted from journal entries tagged or describing founder DMs in the current ISO week. If `weekly_targets.founder_outreach` is absent, missing, or zero, do not render any founder line at all. Do not invent a target. (Rationale: founder outreach is a discovery channel for early-stage roles where the founder is the hiring decision-maker — see `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`.)
 
 If fewer than three triggers fire, output fewer bullets. Do not invent filler. If zero triggers fire, replace the body with: `Nothing forcing action today — pick from the pipeline below.`
@@ -237,6 +242,17 @@ Two clauses max per bullet (per TONE.md "Briefs, heads-up, and bullet content").
 **If nothing flags:** render the literal line `Nothing flagged today.` Do not pad with low-value items.
 
 ### 3. `## Pipeline state`
+
+**When no roles exist at all** (`userdata/companies/` has no `meta.md` anywhere — a
+fresh install before the first `/job-search`), keep the section heading and render a
+single line in place of the table:
+
+> `No companies tracked yet — run /pm-job-search:job-search to start your pipeline.`
+
+Keep the heading rather than dropping the section: an empty pipeline is a material
+fact about where the user stands, and a missing section reads as a rendering bug.
+Skip the decided-history line too. Everything below applies once at least one role
+is filed.
 
 A markdown table sorted by status group then tier then most recent activity within each group:
 
