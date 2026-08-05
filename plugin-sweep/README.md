@@ -8,9 +8,9 @@ rubric to tune.
 
 ## Install
 
-```
-/plugin marketplace add archugunov/pm-job-search
-/plugin install job-sweep
+```sh
+/plugin marketplace add https://github.com/archugunov/pm-job-search.git
+/plugin install job-sweep@pm-job-search
 ```
 
 ## Use
