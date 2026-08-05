@@ -78,4 +78,4 @@ Even with `site:` operators, some companies aren't reachable:
 - Brand-new postings (< 24-48 hrs old) — search indexing has lag.
 - Companies whose ATS hides postings from search engines via `robots.txt`.
 
-For these, the user's only path is direct knowledge or the `monitoring: true` recheck cycle (which uses the ATS APIs in `ats-apis.md`).
+For these, the only path is direct knowledge of the company. The full `pm-job-search` plugin can also recheck a tracked company's ATS directly on a schedule; a standalone sweep cannot.
