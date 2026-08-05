@@ -1,0 +1,9 @@
+{
+  "name": "job-sweep",
+  "version": "0.1.0",
+  "description": "A weekly sweep for open product roles that match you — and remembers what it already showed you. Standalone: no pipeline, no tracker, no setup beyond a CV or three questions.",
+  "author": {
+    "name": "pm-job-search contributors"
+  },
+  "license": "MIT"
+}

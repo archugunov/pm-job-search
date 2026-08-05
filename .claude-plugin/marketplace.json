@@ -8,6 +8,11 @@
       "name": "pm-job-search",
       "source": "./plugin",
       "description": "For senior product leaders running a job search. Finds open roles, scores fit, tracks your pipeline, runs live interview practice, and gives you an honest career coach. Markdown by default — optional browser dashboard and MCP integrations on top."
+    },
+    {
+      "name": "job-sweep",
+      "source": "./plugin-sweep",
+      "description": "A weekly sweep for open product roles that match you, and remembers what it already showed you. Standalone — no pipeline tracking, no scoring rubric, no company folders. Upgrade to pm-job-search when you want the rest."
     }
   ]
 }
