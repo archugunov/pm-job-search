@@ -65,8 +65,8 @@ The ATS URL gives the canonical slug; use it for dedup-by-URL.
 After running all 8-10 queries and merging results:
 
 1. Dedup by URL (lowercase, strip `?...` and `#...`, remove trailing `/`).
-2. Title must match at least one PM keyword (see `ats-apis.md` for the title-match set).
-3. Drop titles containing negative-filter words (also in `ats-apis.md`).
+2. Title must match at least one entry in the title-match set — see `${CLAUDE_PLUGIN_ROOT}/references/role-filters.md`.
+3. Drop titles containing any negative-filter word — same file.
 4. Drop candidates whose normalised `(company, role)` pair OR `url` matches the exclusion set from `/tmp/pmjs-exclusion.json`.
 
 The expected post-filter count is 10-30 candidates per Discovery run. If you have fewer than 5, the user's queries are too narrow — widen geography or industry on the next run.
