@@ -166,6 +166,15 @@ just types more. **There is one flow, not two.**
 
    **Proof point format.** Each bullet follows the shape: `**<Anchor>:** <specific work> → <specific outcome>. (<role>)`. The anchor is usually the company or product. The work is past-tense and concrete. The outcome carries the number when one exists. The role is in parentheses at the end. If a metric isn't in the CV, the bullet stays qualitative — don't invent the figure to make it land.
 
+   **Never invent the anchor.** The anchor is a fact, not a formatting slot. Use only
+   the employer or product the source actually attaches to that win — the CV in Mode
+   B, the user's own words in Mode A. If the source names a company for one win and
+   none for another, do NOT carry the first one across; a nearby anchor is not
+   evidence. Where no anchor is stated, either drop the `**<Anchor>:**` prefix and
+   lead with the work, or ask the user where it happened. Silently attributing a win
+   to the wrong employer is the kind of error a candidate gets caught on in an
+   interview.
+
    **Phrases to BAN outright:**
 
    - **Superlatives:** "rare", "deep", "elite", "world-class", "exceptional", "uniquely positioned", "best-in-class"
