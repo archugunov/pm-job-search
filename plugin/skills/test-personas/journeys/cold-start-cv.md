@@ -45,5 +45,5 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** No value in `profile.md` is absent from the CV and unconfirmed by the user — nothing was invented to fill a field
 - **[required]** `/setup` did NOT ask about companies of interest
 - **[required]** `profile.md` frontmatter contains every documented key, with the same names as `userdata/examples/maya/profile.md` and values of the same YAML type per key (e.g. a list stays a list) — formatting (inline vs. block) may legitimately differ, since Steps 2, 3 and 8 mandate inline lists while Maya's example uses block lists
-- **[required]** Salary was the only step requiring free-text input (every "Other"/free-text escape — Steps 2, 3 and 8 — the exact-date branch of Step 7, the email correction at Step 1, and edits to a Mode B positioning draft, excepted)
+- **[required]** Salary (Step 6) was the only step that offered no option set at all. Taking a free-text escape does NOT fail this — judge it on whether the step presented options, not on what the user typed. Excepted: every "Other"/free-text escape (Steps 2, 3, 5 and 8), the exact-date branch of Step 7, the email correction at Step 1, and edits to a Mode B positioning draft
 - **[opportunistic]** The positioning draft (Mode B) ran without re-prompting for a CV

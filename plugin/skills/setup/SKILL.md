@@ -166,6 +166,15 @@ just types more. **There is one flow, not two.**
 
    **Proof point format.** Each bullet follows the shape: `**<Anchor>:** <specific work> → <specific outcome>. (<role>)`. The anchor is usually the company or product. The work is past-tense and concrete. The outcome carries the number when one exists. The role is in parentheses at the end. If a metric isn't in the CV, the bullet stays qualitative — don't invent the figure to make it land.
 
+   **Never invent the anchor.** The anchor is a fact, not a formatting slot. Use only
+   the employer or product the source actually attaches to that win — the CV in Mode
+   B, the user's own words in Mode A. If the source names a company for one win and
+   none for another, do NOT carry the first one across; a nearby anchor is not
+   evidence. Where no anchor is stated, either drop the `**<Anchor>:**` prefix and
+   lead with the work, or ask the user where it happened. Silently attributing a win
+   to the wrong employer is the kind of error a candidate gets caught on in an
+   interview.
+
    **Phrases to BAN outright:**
 
    - **Superlatives:** "rare", "deep", "elite", "world-class", "exceptional", "uniquely positioned", "best-in-class"
@@ -273,12 +282,24 @@ If the user wants to tune the rubric, they edit `profile.md` directly. The re-ru
 ## Re-run mode question loop
 
 When `userdata/profile.md` exists, iterate fields in the same order as the fresh
-walk (Steps 1-8 + tier rubric). Step 0 does not apply — re-run never re-reads the
-CV, because the fields it would fill are already populated. For each field:
+walk (Steps 1-8). The tier rubric is NOT offered — same reason it is not asked on
+a fresh install (see the note above). Step 0 does not apply — re-run never
+re-reads the CV, because the fields it would fill are already populated.
 
-1. Show the current value (one line).
-2. Ask: `keep / update / skip` (skip means "leave as-is for now, ask again next /setup").
-3. If `update`: prompt for the new value using the same conversational pattern as fresh-install.
+Step 1 is ONE field here, not five. Show the whole facts line and take a single
+keep / update / skip on it, mirroring the fresh-install shape. On `update`, apply
+whichever value the user names and leave the others alone — never re-ask all five.
+
+For each field:
+
+1. Show the current value on one line, then ask:
+
+   > "Currently: `<value>`. Keep, update, or skip?"
+
+2. Read the answer as `keep`, `update`, or `skip` (skip means "leave as-is for now,
+   ask again next /setup").
+3. If `update`: prompt for the new value using the same conversational pattern —
+   and the same locked wording — as that step's fresh-install ask.
 
 Never overwrite a non-empty field with an empty answer in re-run mode. If the user updates a field but provides empty input, ask once more; if still empty, treat as `skip` and leave the current value.
 
