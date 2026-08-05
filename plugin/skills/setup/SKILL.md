@@ -187,6 +187,16 @@ just types more. **There is one flow, not two.**
 
    **Past tense for outcomes.** "Shipped X, lifted Y by Z%" beats "drives growth through experimentation".
 
+   **Write it as the user would say it, and never assign them a gender.** This is
+   the user's own positioning — it goes in their profile and feeds their outreach.
+   Keep the implied subject first-person: "Shipped the price-test framework",
+   "Own growth pricing at a Series B fintech". Do NOT slip into third person about
+   them ("Currently owns growth pricing", "a PM who reads her own data") — it reads
+   like a recruiter's write-up rather than the user's own words, and it invents a
+   pronoun. A CV states a name, never a gender. If a sentence seems to need a
+   pronoun for the user, rewrite it so it doesn't: drop the subject, or use "I".
+   Never use "he", "she", or a guessed honorific for the user anywhere in a draft.
+
    **Don't invent numbers.** If a metric isn't in the CV, don't add one. Don't round up. Don't aggregate without checking the math.
 
    **Don't overclaim involvement.** If the CV describes the writer's role on a project narrowly ("defined success criteria with a team", "supported the migration"), don't promote it to leadership framing ("led", "shipped end-to-end"). Use the writer's own scoping verbs.
