@@ -152,7 +152,7 @@ This lets the plugin ship strong defaults while users localise — they can swap
 
 Hard rule for skill / agent authors: never hardcode reference content into a SKILL.md or agent file. Reference content lives in `references/`; specs point at it via `${CLAUDE_PLUGIN_ROOT}/references/<name>.md` with the userdata-override resolution.
 
-For surfaced patterns and lessons that don't yet fit the lint checklist or voice rules — things caught by a test-personas run, a real-world bug, or a code review — log them in `${CLAUDE_PLUGIN_ROOT}/memory.md` (reverse-chronological maintainer log). The test-personas judge reads memory.md as context.
+For surfaced patterns and lessons that don't yet fit the lint checklist or voice rules — things caught by a test-personas run, a real-world bug, or a code review — log them in the plugin's `memory.md` (reverse-chronological maintainer log), where the plugin ships one — in pm-job-search it sits at the plugin root, and the test-personas judge reads it as context. A plugin without a maintainer log simply has nowhere to log; that is not a defect.
 
 ## When in doubt
 
@@ -173,8 +173,8 @@ Before committing a SKILL.md edit (or asking Claude to commit one), check agains
 
 ### Soft checks (worth flagging, not always blockers)
 
-- **End-of-run nudge missing.** Skill closes without citing `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md` for the next-step nudge. Add one unless there's a deliberate reason not to.
-- **Smoke test section missing.** Every skill should end with `## Smoke test against the Maya example`.
+- **End-of-run nudge missing.** Skill closes without a context-aware next-step nudge. Where the plugin ships `references/recommended-flow.md`, derive the nudge from it. A single-skill plugin has no flow to order — its closing line points outward instead. Add one either way, unless there's a deliberate reason not to.
+- **Smoke test section missing.** Every skill in a plugin that ships worked examples should end with a smoke-test section against one — in pm-job-search, `## Smoke test against the Maya example`.
 - **SKILL.md > 500 lines.** Not a bug, but a signal — does the skill do too much? Could a reference file or sibling skill split it cleanly?
 - **Frontmatter `description:` is generic.** It should contain the trigger phrases a user would actually type ("/foo", "do X for me").
 
