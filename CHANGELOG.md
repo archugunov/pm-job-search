@@ -4,6 +4,32 @@ All notable changes to pm-job-search are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project aims for
 [Semantic Versioning](https://semver.org/).
 
+## job-sweep
+
+`job-sweep` is a second plugin in this repo and versions independently of
+pm-job-search. Its releases are listed here under their own heading.
+
+### job-sweep [0.1.0] — 2026-08-05
+
+First release. A standalone weekly sweep for open product roles, installable
+without adopting the pipeline tracker.
+
+- Single skill, `/job-sweep:sweep`. Discovery only — no tracking, no scoring, no
+  company folders.
+- First run takes a CV or three questions; geography is always asked, never
+  inferred, because a CV says where you have lived rather than where you want to
+  work.
+- Keeps `job-sweep/seen-roles.jsonl` so the second week does not re-surface the
+  first week's roles. Schema is identical to the full plugin's ledger, so moving
+  up loses nothing.
+- Roles bucket into strong / possible / edge. No weighted rubric — there is no
+  rubric in this profile.
+- `/setup` in the full plugin now pre-fills from `job-sweep/profile.md`.
+- Five reference files are shared with pm-job-search from a single source under
+  `plugin/`; `make sync-sweep` copies them and CI fails the build on drift.
+
+---
+
 ## [0.4.0] — 2026-08-04
 
 CV-first onboarding. `/setup` now reads a CV up front and pre-fills what it can,

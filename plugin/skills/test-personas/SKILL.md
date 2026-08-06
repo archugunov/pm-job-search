@@ -22,7 +22,7 @@ For each `(persona × journey)` pairing requested, runs five phases:
 Parse the user's invocation message for these forms (no native flag support in skills — match free-text):
 
 - `/test-personas` (no args) → full sweep, all 7 journeys, all 3 personas as configured.
-- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `cold-start-cv`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`.
+- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `cold-start-cv`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`, `sweep-smoke`.
 - `--persona <name>` or `persona: <name>` → run only journeys whose `journey_fit` includes that persona. Valid names: `maya`, `diego`, `contrarian`.
 - `--skip-judge` or `skip judge` → run conversation loops but skip Phase 4 (transcripts only).
 

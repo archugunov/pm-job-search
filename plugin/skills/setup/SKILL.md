@@ -65,6 +65,22 @@ just types more. **There is one flow, not two.**
 
    > "No CV — we'll do it the long way then. Same questions, you just type more."
 
+   **If `job-sweep/profile.md` exists**, read it first. It means the user already
+   ran the standalone `job-sweep` plugin, and it holds `target_titles`,
+   `target_industries` and `geography` — three of the answers below. Say one line:
+
+   > "Found your job-sweep profile — I'll carry those answers over so you don't repeat them."
+
+   Carry the values into Steps 2, 3 and 5 as the pre-filled defaults, and confirm
+   them there exactly as you would confirm CV-derived values — shown, never
+   auto-accepted. A sweep profile is a stronger source than a CV inference,
+   because the user already confirmed it once; it is still not a reason to skip
+   the confirmation.
+
+   Both a CV and a sweep profile may exist. The sweep profile wins for
+   `target_titles`, `target_industries` and `geography` — the user confirmed those
+   answers; the CV only implies them. The CV still supplies everything else.
+
 1. **Facts** (`{{NAME}}`, `{{CITY}}`, `{{TIMEZONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`) — one confirmation.
 
    Extract per `cv-extraction.md` § "Tier 1 — facts". Detect timezone from the
@@ -106,6 +122,9 @@ just types more. **There is one flow, not two.**
    The evidence line is the roles the inference came from, e.g. `from Lead PM at
    Monzo, Senior PM at Wise`. Show it — the user cannot judge a wrong inference
    without it.
+
+   When the values came from `job-sweep/profile.md` rather than the CV, the
+   evidence line reads `from your job-sweep profile` instead of naming CV roles.
 
    With no CV, ask plainly instead:
 
@@ -207,6 +226,9 @@ just types more. **There is one flow, not two.**
    > "Where are you looking?"
 
    Options (in this order): `On-site in <city-from-Step1>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Step 1. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
+
+   When `job-sweep/profile.md` supplied `geography`, pre-select the matching
+   option rather than asking cold — the user already answered this.
 
 6. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
    > "What salary band are you aiming for? Whatever shape works — '£90-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet."

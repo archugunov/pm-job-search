@@ -131,3 +131,26 @@ Please don't file issues for:
 ## License
 
 MIT. Contributing code means you license your contribution under MIT. Author block stays generic ("pm-job-search contributors") rather than tracking individual contributors — fork attribution lives in git history.
+
+### Shared files between the two plugins
+
+Five files are used by both `pm-job-search` and `job-sweep`:
+`references/cv-extraction.md`, `references/site-queries.md`,
+`references/dedup-normalization.md`, `references/role-filters.md`, and `TONE.md`.
+
+The single source of truth is under `plugin/`. `plugin-sweep/references/` holds
+copies. **Never edit a file under `plugin-sweep/references/`** — edit the source
+under `plugin/` and run:
+
+```sh
+make sync-sweep
+```
+
+CI runs `make check-sweep-sync` on every push and pull request and fails the build
+if a copy has drifted. If that job fails, you edited a copy — move your change to
+the source and re-sync.
+
+One consequence worth knowing: because these files are shared, guidance in them
+must hold for both plugins. A line that assumes a pipeline tracker, a maintainer
+log, or a multi-skill flow will be wrong for `job-sweep`, which has none of those.
+Write shared guidance conditionally, or keep it in a skill-private reference.
