@@ -6,12 +6,20 @@ are NOT here; they belong to the skill that drafts.
 
 ## Finding the CV
 
-Check, in order: `userdata/cv.md`, `userdata/cv.txt`, `userdata/cv.pdf`. First hit wins.
+The calling skill states its state directory — `/setup` states `userdata/`,
+`job-sweep` states `job-sweep/`. Everything below is relative to it, written here
+as `<state directory>`.
+
+Check, in order: `<state directory>cv.md`, `<state directory>cv.txt`,
+`<state directory>cv.pdf`. First hit wins.
 
 If a `cv.*` file exists in an unreadable format (`.docx`, `.pages`, `.rtf`, or
 anything else), print exactly one line and continue without it:
 
-> `Found userdata/cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.`
+> `Found <state directory>cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.`
+
+Substitute `<state directory>` here too — the same path the calling skill states
+below. Naming the wrong folder sends the user to convert a file that isn't there.
 
 If no `cv.*` file exists, offer the drop. The calling skill states its own state
 directory and any scaffold files that go with it (`/setup` states `userdata/`
