@@ -47,7 +47,9 @@ Use `AskUserQuestion` with two options: **I'll drop a CV** / **Ask me the three 
 
 Follow `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` § "Finding the CV",
 checking `job-sweep/cv.md`, `job-sweep/cv.txt`, `job-sweep/cv.pdf` in that order.
-Its § "The governing rule" applies in full: **never fill a field the CV does not
+State directory: `job-sweep/` — already created above in "First run", so there
+are no scaffold files left to create here. Its § "The governing rule" applies in
+full: **never fill a field the CV does not
 contain.** A CV with no clear location means you ask where they'll work — it does
 not mean guessing from the most recent employer's address.
 
@@ -105,6 +107,10 @@ geography:
 <!--
   job-sweep's whole profile. Edit any line and the next sweep picks it up.
   Delete this file to start over.
+
+  Add companies_of_interest: [Company A, Company B] yourself to get one extra
+  site: query per named company on every sweep. Not asked during onboarding —
+  add the line by hand whenever you have specific companies in mind.
 
   The full pm-job-search plugin reads this file too — if you ever install it,
   /setup pre-fills from here rather than asking again.
@@ -232,6 +238,17 @@ Same base title as something you've seen, different qualifier — might be a rep
 | Company | Role | Link |
 |---|---|---|
 ```
+
+First run — `job-sweep/seen-roles.jsonl` did not exist before this run started, so
+there is no "last sweep" to compare against and `<M>` is always 0. Use this line
+in place of the one above, per TONE.md Rule C:
+
+```markdown
+<N> roles found.
+```
+
+Every later run, once the ledger already existed coming in, uses the two-count
+line instead.
 
 Drop any bucket that is empty rather than rendering an empty table. If every
 bucket is empty, write the heading and one line saying nothing new came back this

@@ -68,8 +68,12 @@ seen-ledger):
    `url_key` nor `strict_key` matches. Same base title, different qualifier — it
    *might* be the same role reworded, or a genuinely distinct second team's role.
    Do NOT silently drop: skip filing by default but surface it in the run summary
-   under "Skipped as likely repeats" with its title + link, so the user can say
-   "no, file that one" (which routes through `/evaluate-position`'s 1→2 migration).
+   as a likely repeat, with its title + link, so the user can say "no, file that
+   one" (which routes through `/evaluate-position`'s 1→2 migration, where the
+   caller has one). This file does not mandate a heading for that section — each
+   caller names and shapes it to fit its own output (the full plugin's
+   `/job-search` uses "Skipped as likely repeats"; `job-sweep` uses "Possible
+   repeats").
 3. **New** — no key matches. File it.
 
 Guarantee preserved: same company + a genuinely different position is never a

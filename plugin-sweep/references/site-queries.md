@@ -67,7 +67,11 @@ After running all 8-10 queries and merging results:
 1. Dedup by URL (lowercase, strip `?...` and `#...`, remove trailing `/`).
 2. Title must match at least one entry in the title-match set — see `${CLAUDE_PLUGIN_ROOT}/references/role-filters.md`.
 3. Drop titles containing any negative-filter word — same file.
-4. Drop candidates whose normalised `(company, role)` pair OR `url` matches the exclusion set from `/tmp/pmjs-exclusion.json`.
+4. In the full plugin's Discovery phase, drop candidates whose normalised
+   `(company, position)` pair OR `url` matches the exclusion set from
+   `/tmp/pmjs-exclusion.json`. A standalone sweep never builds that file — it has
+   no application pipeline to exclude against — and suppresses previously-seen
+   candidates from its own ledger instead, later, at its own dedup step.
 
 The expected post-filter count is 10-30 candidates per Discovery run. If you have fewer than 5, the user's queries are too narrow — widen geography or industry on the next run.
 

@@ -109,7 +109,10 @@ When skills or agents DRAFT content for the user (positioning paragraphs, proof 
 - **No LinkedIn closers.** "equally at home in X, Y, Z", "passionate about", "obsessed with", "thrives in ambiguity" — banned.
 - **No filler phrases.** "I wanted to reach out", "As you may know", "I am writing to express" — banned.
 
-See `/setup` Step 4's "Drafting tone rules" for the full version with examples.
+Where the plugin ships a `/setup`-style skill with a positioning-drafting step,
+see its "Drafting tone rules" (Step 4 in pm-job-search) for the full version with
+examples. A single-skill plugin with no such step has no fuller version to point
+to — the rules above are the whole of it.
 
 ## Briefs, heads-up, and bullet content
 
@@ -143,10 +146,13 @@ Bad shape (over-explained):
 
 ## Reference layer — plugin defaults, user-localisable
 
-Some agents and skills read **reference docs** that carry domain knowledge — senior-PM archetypes, career anti-patterns, story taxonomy, and similar (live in `plugin/references/`). The convention for resolving these is:
+Some agents and skills read **reference docs** that carry domain knowledge — senior-PM archetypes, career anti-patterns, story taxonomy, and similar (live in `plugin/references/`). Where the plugin has a user-data directory for this kind of override (`userdata/` in pm-job-search), the convention for resolving these is:
 
 1. Skill or agent looks for `userdata/references/<name>.md` first. If present, use it.
 2. Otherwise falls back to `plugin/references/<name>.md` (the plugin-shipped default).
+
+A single-skill plugin with no user-data directory has nothing to check first — it
+reads straight from its own `references/<name>.md`.
 
 This lets the plugin ship strong defaults while users localise — they can swap in their own region-specific compensation framing, add domain-specific anti-patterns, or rewrite story taxonomy for a different role family — without forking the plugin. The override file replaces the default entirely; partial-overrides via diff/merge are not supported (keep it simple).
 

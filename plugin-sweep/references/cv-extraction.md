@@ -13,11 +13,15 @@ anything else), print exactly one line and continue without it:
 
 > `Found userdata/cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.`
 
-If no `cv.*` file exists, offer the drop. Create `userdata/` and the three
-`.gitkeep` files (`userdata/companies/.gitkeep`, `userdata/stories/.gitkeep`,
-`userdata/outputs/.gitkeep`) FIRST, so the user has somewhere to put it, then say:
+If no `cv.*` file exists, offer the drop. The calling skill states its own state
+directory and any scaffold files that go with it (`/setup` states `userdata/`
+plus the three `.gitkeep` files; `job-sweep` states `job-sweep/` with no scaffold
+files). Create that directory and those scaffold files, if any, FIRST, so the
+user has somewhere to put it, then say:
 
-> `I've created userdata/ for you — drop your CV there as cv.md, cv.txt, or cv.pdf. Say 'ready' when it's in.`
+> `I've created <state directory> for you — drop your CV there as cv.md, cv.txt, or cv.pdf. Say 'ready' when it's in.`
+
+Substitute `<state directory>` with the path the calling skill stated.
 
 When the user says ready, re-detect. Still absent → continue without a CV; every
 step below simply has no pre-filled value.

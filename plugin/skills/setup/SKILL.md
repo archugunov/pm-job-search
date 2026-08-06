@@ -57,7 +57,11 @@ just types more. **There is one flow, not two.**
 0. **CV intake** — runs before the opening line, straight after mode detection.
 
    Follow `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` § "Finding the CV".
-   If a readable CV is found, say one line and move on:
+   State directory: `userdata/`. Scaffold files: `userdata/companies/.gitkeep`,
+   `userdata/stories/.gitkeep`, `userdata/outputs/.gitkeep` (the same three
+   written in File writes §4 below — creating them here just means they already
+   exist by the time §4 runs). If a readable CV is found, say one line and move
+   on:
 
    > "Got your CV — I'll fill in what I can and you just correct me."
 
@@ -80,6 +84,19 @@ just types more. **There is one flow, not two.**
    Both a CV and a sweep profile may exist. The sweep profile wins for
    `target_titles`, `target_industries` and `geography` — the user confirmed those
    answers; the CV only implies them. The CV still supplies everything else.
+
+   **If `job-sweep/seen-roles.jsonl` also exists**, carry it over so the roles
+   the user already saw in `job-sweep` don't come back as `status: new` once
+   `/job-search` starts reading the full ledger. Create `userdata/outputs/` if it
+   doesn't exist yet, then:
+   - `userdata/outputs/seen-roles.jsonl` does not exist → copy the sweep ledger
+     to it verbatim.
+   - `userdata/outputs/seen-roles.jsonl` already exists → append only the lines
+     from the sweep ledger whose `strict_key` is not already present in it. Never
+     overwrite an existing line, never duplicate one.
+
+   Say one line: `"Also carried over your job-sweep history — already-seen roles
+   won't resurface as new."`
 
 1. **Facts** (`{{NAME}}`, `{{CITY}}`, `{{TIMEZONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`) — one confirmation.
 
@@ -142,6 +159,9 @@ just types more. **There is one flow, not two.**
    AskUserQuestion with `multiSelect: true`:
 
    > "Industries. From your CV I'd guess these — <evidence line>. Pick all that apply."
+
+   When the values came from `job-sweep/profile.md` rather than the CV, the
+   evidence line reads `from your job-sweep profile` instead of naming CV roles.
 
    With no CV:
 
