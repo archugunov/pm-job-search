@@ -129,20 +129,7 @@ function fetch_ats_jobs(company, link):
 
 After fetching, run this filter on each job title:
 
-**Title-match set** (case-insensitive substring — at least ONE must match):
-- `head of product`
-- `lead product manager`, `lead pm`
-- `group product manager`, `group pm`
-- `senior product manager`, `senior pm`
-- `principal product manager`, `principal pm`
-- `director of product`
-- `staff product manager`
-
-**Negative filter** (drop title if it contains ANY of these):
-- `junior`, `intern`, `associate`
-- `.net`, `java`, `blockchain`, `data engineer`, `software engineer`, `qa`, `sales`
-
-Customise the title-match set based on the user's `target_titles` in profile.md — those are the canonical role levels the user is hunting. The defaults above suit a senior-PM / Head-of-Product hunt; adapt for other levels by editing the rubric.
+**Title and negative filters:** see `${CLAUDE_PLUGIN_ROOT}/references/role-filters.md`. That file is the single definition, shared with `job-sweep` — do not restate the sets here, or the two copies will drift.
 
 ## Rate limiting
 

@@ -57,13 +57,46 @@ just types more. **There is one flow, not two.**
 0. **CV intake** — runs before the opening line, straight after mode detection.
 
    Follow `${CLAUDE_PLUGIN_ROOT}/references/cv-extraction.md` § "Finding the CV".
-   If a readable CV is found, say one line and move on:
+   State directory: `userdata/`. Scaffold files: `userdata/companies/.gitkeep`,
+   `userdata/stories/.gitkeep`, `userdata/outputs/.gitkeep` (the same three
+   written in File writes §4 below — creating them here just means they already
+   exist by the time §4 runs). If a readable CV is found, say one line and move
+   on:
 
    > "Got your CV — I'll fill in what I can and you just correct me."
 
    If none is found and the user declines the drop, say:
 
    > "No CV — we'll do it the long way then. Same questions, you just type more."
+
+   **If `job-sweep/profile.md` exists**, read it first. It means the user already
+   ran the standalone `job-sweep` plugin, and it holds `target_titles`,
+   `target_industries` and `geography` — three of the answers below. Say one line:
+
+   > "Found your job-sweep profile — I'll carry those answers over so you don't repeat them."
+
+   Carry the values into Steps 2, 3 and 5 as the pre-filled defaults, and confirm
+   them there exactly as you would confirm CV-derived values — shown, never
+   auto-accepted. A sweep profile is a stronger source than a CV inference,
+   because the user already confirmed it once; it is still not a reason to skip
+   the confirmation.
+
+   Both a CV and a sweep profile may exist. The sweep profile wins for
+   `target_titles`, `target_industries` and `geography` — the user confirmed those
+   answers; the CV only implies them. The CV still supplies everything else.
+
+   **If `job-sweep/seen-roles.jsonl` also exists**, carry it over so the roles
+   the user already saw in `job-sweep` don't come back as `status: new` once
+   `/job-search` starts reading the full ledger. Create `userdata/outputs/` if it
+   doesn't exist yet, then:
+   - `userdata/outputs/seen-roles.jsonl` does not exist → copy the sweep ledger
+     to it verbatim.
+   - `userdata/outputs/seen-roles.jsonl` already exists → append only the lines
+     from the sweep ledger whose `strict_key` is not already present in it. Never
+     overwrite an existing line, never duplicate one.
+
+   Say one line: `"Also carried over your job-sweep history — already-seen roles
+   won't resurface as new."`
 
 1. **Facts** (`{{NAME}}`, `{{CITY}}`, `{{TIMEZONE}}`, `{{EMAIL}}`, `{{LINKEDIN_URL}}`) — one confirmation.
 
@@ -107,6 +140,9 @@ just types more. **There is one flow, not two.**
    Monzo, Senior PM at Wise`. Show it — the user cannot judge a wrong inference
    without it.
 
+   When the values came from `job-sweep/profile.md` rather than the CV, the
+   evidence line reads `from your job-sweep profile` instead of naming CV roles.
+
    With no CV, ask plainly instead:
 
    > "What roles are you targeting? Typical senior-PM examples: Director of Product, Principal PM, Group PM, Staff PM. List as many as you'd take, comma-separated."
@@ -123,6 +159,9 @@ just types more. **There is one flow, not two.**
    AskUserQuestion with `multiSelect: true`:
 
    > "Industries. From your CV I'd guess these — <evidence line>. Pick all that apply."
+
+   When the values came from `job-sweep/profile.md` rather than the CV, the
+   evidence line reads `from your job-sweep profile` instead of naming CV roles.
 
    With no CV:
 
@@ -207,6 +246,9 @@ just types more. **There is one flow, not two.**
    > "Where are you looking?"
 
    Options (in this order): `On-site in <city-from-Step1>` / `Remote` / `Both` / `Other (free text)`. The first option dynamically uses the city captured in Step 1. If the user picks "Other", capture free-text into `mode_detail` and set `mode: other`.
+
+   When `job-sweep/profile.md` supplied `geography`, pre-select the matching
+   option rather than asking cold — the user already answered this.
 
 6. **Salary band** (`{{SALARY_BAND}}`) — single open string. Skippable. Ask:
    > "What salary band are you aiming for? Whatever shape works — '£90-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet."

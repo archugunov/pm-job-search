@@ -1,0 +1,18 @@
+name: sweep-sync-check
+
+# Fails if plugin-sweep/references/ has drifted from its sources under plugin/.
+# Deliberately unfiltered by path: drift is introduced by editing EITHER the
+# source or the copy, so filtering on one of them would miss half the cases.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  check-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify shared files are in sync
+        run: make check-sweep-sync

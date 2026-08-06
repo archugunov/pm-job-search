@@ -48,6 +48,22 @@ cd <your-workspace>
 # run /pm-job-search:help anytime for a one-page scannable map of every skill and agent (also saved to userdata/help.md).
 ```
 
+## Just want the job search part?
+
+`job-sweep` is a second, standalone plugin in this repo. One command, one output:
+a weekly list of open product roles that match you, minus everything it already
+showed you. No pipeline to maintain, no tier rubric, no company folders.
+
+```sh
+/plugin marketplace add https://github.com/archugunov/pm-job-search.git
+/plugin install job-sweep@pm-job-search
+/job-sweep:sweep
+```
+
+If you later want the tracking, scoring and interview prep, install the full
+plugin — `/setup` reads your `job-sweep/profile.md`, so you won't answer the same
+questions twice. See [`plugin-sweep/README.md`](plugin-sweep/README.md).
+
 ## The workflow — 13 skills
 
 **Reference:**
