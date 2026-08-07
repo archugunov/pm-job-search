@@ -2,6 +2,8 @@
 
 The canonical state file per `(company, position)` pair. Read by `/today`, `/apply`, `/interview-prep`, `/job-search`, and the dashboard. Schema drift here propagates silently into downstream skills.
 
+Checked by `scripts/validate_userdata.py` (rules `meta.required`, `meta.status-enum`, `meta.link-format`, `meta.forbidden-key`), which the test-personas harness runs in Phase 3.5 and CI runs over `tests/snapshots/`.
+
 Used by the test-personas Phase 3.5 schema check. If you change the schema, update every reader's SKILL.md and re-run cold-start verification.
 
 ## Required frontmatter keys
@@ -42,12 +44,12 @@ If any of these appear, treat as schema drift:
 
 ## Phase 3.5 validation rules
 
-The orchestrator (`plugin/skills/test-personas/SKILL.md` Phase 3.5) checks each meta.md in `userdata/companies/*/meta.md` and `userdata/companies/*/*/meta.md` after the conversation loop terminates. For each file:
+`scripts/validate_userdata.py` checks each meta.md in `userdata/companies/*/meta.md` and `userdata/companies/*/*/meta.md`; the test-personas orchestrator (`plugin/skills/test-personas/SKILL.md` Phase 3.5) runs it after the conversation loop terminates and pastes its output into the judge input. For each file:
 
-1. **Required keys present:** missing any of `company`, `position`, `status`, `link` → schema drift finding.
-2. **Status enum:** `status` value not in the allowed list → schema drift finding.
-3. **Link format:** non-empty `link` that doesn't start with `http://` or `https://` → schema drift finding.
-4. **Forbidden keys absent:** any of `role:`, `target_date:` present → schema drift finding.
+1. **`meta.required`:** missing any of `company`, `position`, `status`, `link` → schema drift finding.
+2. **`meta.status-enum`:** `status` value not in the allowed list → schema drift finding.
+3. **`meta.link-format`:** non-empty `link` that doesn't start with `http://` or `https://` → schema drift finding.
+4. **`meta.forbidden-key`:** any of `role:`, `target_date:` present → schema drift finding.
 
 Schema findings are surfaced to the judge as a 6th input block. The judge treats each finding as a Hard violation under Rule 7 (schema drift), independent of conversation transcript evidence — schema drift is provable from file contents alone.
 

@@ -51,10 +51,11 @@ without adopting the pipeline tracker.
 - Frozen judge-calibration corpus: 31 files across 11 judged runs in 7
   dated directories, scrubbed and committed under
   `tests/judge-calibration/runs/`.
-- `plugin/skills/test-personas/manual-checklist.md` — the three manual
+- `plugin/skills/test-personas/manual-checklist.md` — the four manual
   release checks, out of chat lore and into the repo.
 - Schema docs: `plugin/schemas/profile.md.schema.md`,
-  `plugin/schemas/strategy.md.schema.md`.
+  `plugin/schemas/strategy.md.schema.md`,
+  `plugin/schemas/research-brief.md.schema.md`.
 
 ### Fixed
 - Privacy blocklist gained one more city-name term surfaced during

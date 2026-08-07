@@ -1,6 +1,6 @@
 # Manual release checks — no journey covers these
 
-Run all three before tagging a release, after the 3 release-gate journeys
+Run all four before tagging a release, after the 3 release-gate journeys
 and the golden-set grade pass. Back up `userdata/` first (it is
 gitignored): `cp -R userdata ~/pm-job-search-userdata-backup-$(date +%F)`.
 
@@ -31,3 +31,19 @@ Place a CV at `job-sweep/cv.md`, run `/job-sweep:sweep`. Confirm
 extraction lands under `job-sweep/` and nothing is written to
 `userdata/`. (The `cv-extraction.md` call site with zero journey
 coverage — sweep-smoke deliberately takes the no-CV path.)
+
+## 4. /setup CV-first path (~5 min)
+
+The `cold-start-cv` journey that used to cover this was retired; the
+`profile.md` schema check replaces only one of its twelve criteria, and
+only partly. Cheap to run by hand — the `empty-with-cv` snapshot still
+exists for it: copy its `cv.md` into a scratch `userdata/`, run
+`/pm-job-search:setup` against it. Confirm:
+
+- the CV is auto-detected without asking the user to drop one
+- name, city, email and LinkedIn are confirmed in a SINGLE message, not
+  four separate questions
+- target titles and industries are each offered as a multi-select with
+  an evidence line naming source material from the CV
+- nothing in the written `profile.md` is absent from the CV and
+  unconfirmed by the user — nothing was invented to fill a field

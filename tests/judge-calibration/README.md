@@ -1,9 +1,16 @@
 # Judge calibration
 
-Frozen corpus of every judged harness run (`runs/`, scrubbed) + human
-labels (`labels/`) + `stats.py`. Purpose: know the judge's error rate so
-a FAIL means something, and replay rubric edits in minutes instead of a
-full journey sweep.
+Frozen corpus of harness runs (`runs/`, scrubbed) + human labels
+(`labels/`) + `stats.py`. Purpose: know the judge's error rate so a FAIL
+means something, and replay rubric edits in minutes instead of a full
+journey sweep.
+
+Not every transcript in `runs/` was judged — three are transcript-only,
+with no `.judge.md` sibling to diff against:
+`2026-06-07-beta4-verify/diego-reflection.md`,
+`2026-08-04/maya-cold-start.md`, `2026-08-07/maya-cold-start.md`. Don't
+pick these for a blind pass; there's nothing to diff your findings
+against.
 
 ## Adjudication (precision) — do for every judged run
 
