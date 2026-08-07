@@ -51,7 +51,7 @@ The TONE.md file is the most important thing to read before submitting any chang
 This repo must contain **zero personal data**. Before any PR, run:
 
 ```bash
-rg -i 'arkadii|arcady|samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140' \
+rg -i 'arkadii|arcady|samokat|manychat|impress|delivery club|bookmate|skyeng|yandex|barcelona|madrid|reforge|MSU|kolmogorov|/Users/arkadii|673625|9452fc52|€80|€100|€110|€140' \
    --glob='!.github/' \
    --glob='!CONTRIBUTING.md' \
    .

@@ -79,7 +79,7 @@ linkedin.com/in/mayapatel-pm
 
 ## Turn 7 — ASSISTANT
 
-I'm seeing your timezone as `Europe/Madrid` — that right? Override if not.
+I'm seeing your timezone as `<host-timezone>` — that right? Override if not.
 
 ## Turn 8 — USER
 

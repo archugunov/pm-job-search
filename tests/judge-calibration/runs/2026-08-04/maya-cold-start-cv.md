@@ -33,13 +33,13 @@ Ready — let's go.
 
 ## Turn 2 — ASSISTANT
 
-From your CV: Maya Patel · London, UK · maya@example.com · linkedin.com/in/maya-patel-example. Timezone looks like `Europe/Madrid`. All right?
+From your CV: Maya Patel · London, UK · maya@example.com · linkedin.com/in/maya-patel-example. Timezone looks like `<host-timezone>`. All right?
 
-> **Orchestrator note for the judge:** `Europe/Madrid` is correct behaviour, not a
+> **Orchestrator note for the judge:** `<host-timezone>` is correct behaviour, not a
 > defect. `cv-extraction.md` mandates detecting timezone from the system clock and
 > never from the CV; the host machine running this test is genuinely on
-> `Europe/Madrid` (verified: `realpath /etc/localtime` → `Europe/Madrid`). The
-> London/Madrid mismatch is an artifact of the test environment, not of the code.
+> `<host-timezone>` (verified: `realpath /etc/localtime` → `<host-timezone>`). The
+> London/host mismatch is an artifact of the test environment, not of the code.
 > Do not raise it as a hard violation.
 
 ## Turn 3 — USER

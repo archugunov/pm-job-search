@@ -36,7 +36,7 @@ London, UK
 
 ## Turn 4 — ASSISTANT
 
-I'm seeing your timezone as `Europe/Madrid` — that right? Override if not.
+I'm seeing your timezone as `<host-timezone>` — that right? Override if not.
 
 ## Turn 5 — USER
 

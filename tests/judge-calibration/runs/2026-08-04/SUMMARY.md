@@ -45,7 +45,7 @@ Confirmed working in `cold-start` that nothing had tested before:
   shape. This is the migration that moved the question out of `/setup`.
 - `/setup` never asked about companies of interest.
 - Steps 5, 7 and 8 stayed option-based selects with no CV present.
-- Timezone override applied (`Europe/London` over the detected `Europe/Madrid`).
+- Timezone override applied (`Europe/London` over the detected `<host-timezone>`).
 - Two proof points requested as 3-5 did NOT get padded with an invented third.
 - A banned superlative in the user's own words ("Depth") was stripped from the draft.
 - The snapshot `.gitkeep` fix works — reset left `git status` clean.
@@ -86,8 +86,9 @@ rather than a one-off:
   - Journey: cold-start-cv
   - Surfaced in: this test run
   - Watch for: `simulator-prompt.md` forbids inventing facts but not importing real ones.
-    The simulator used the maintainer's actual email address until corrected. Any run can
-    silently write real PII into `userdata/test-runs/`.
+    In one run, the simulator pulled a real email address out of the host environment
+    into the transcript before it was caught and corrected. Any run can silently write
+    real PII into `userdata/test-runs/`.
 
 - **2026-08-04** — Persona proof-point list narrower than the CV fixture causes false FAILs
   - Journey: cold-start-cv
