@@ -1,0 +1,23 @@
+name: harness-checks
+
+# Deterministic layer of the test harness: schema validator unit tests,
+# snapshot conformance, golden-set label arithmetic, calibration stats.
+# Stdlib + pytest only — no API keys, no LLM calls, $0.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pytest
+        run: pip install pytest
+      - name: Run root test suite
+        run: python3 -m pytest tests/ -v
