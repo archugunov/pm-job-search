@@ -1,0 +1,12 @@
+{
+  "run": "YYYY-MM-DD/persona-journey",
+  "verdict_judge": "PASS | FAIL (confirmed) | FAIL (one-of-two)",
+  "verdict_human": null,
+  "findings": [
+    {"tier": "hard | soft | spec | critique",
+     "summary": "one-line copy of the judge's finding",
+     "human": null,
+     "note": null}
+  ],
+  "blind": null
+}
