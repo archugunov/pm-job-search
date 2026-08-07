@@ -1,0 +1,20 @@
+{
+  "id": "p2-10",
+  "synthetic": true,
+  "jd": "Senior PM — Onboarding & Activation, EMEA remote.\n\nCargoflow is a logistics-SaaS platform for freight forwarders to track shipments and manage customs paperwork. We're profitable and have been for two years, though growth has plateaued around the same revenue band each quarter while we figure out our next wedge. We're hiring a Senior PM to own onboarding and activation — the free-trial-to-paid conversion funnel, in-product checklists, and first-shipment time-to-value. You'll report to the Director of Product with no direct reports of your own. Based in Berlin or fully remote anywhere in Europe. We'd love someone who has run an activation funnel before, even if not in logistics.",
+  "label": {
+    "dimensions": {
+      "role_fit": 2,
+      "domain_fit": 2,
+      "business_health": 2,
+      "location_fit": 2,
+      "competitive_edge": 2
+    },
+    "shape_adjustment": 0,
+    "score": 10,
+    "tier": "P2",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

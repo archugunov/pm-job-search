@@ -1,0 +1,20 @@
+{
+  "id": "p1-floor-11",
+  "synthetic": true,
+  "jd": "Senior PM — Performance & Reviews, London hybrid.\n\nTalently is an HR-tech platform for performance reviews and career-development planning, used by 400+ mid-market companies; we closed our Series C last quarter and revenue is growing more than 3x year-on-year. We're hiring a Senior PM to own the performance-review module — calibration workflows, manager dashboards, and goal-cascading features. You'll work independently with a pod of two engineers and one designer, with no direct reports. Hybrid: two days a week in our London office. We're looking for someone who has shipped B2B SaaS workflow tools for HR or People teams — deep familiarity with HR processes like calibration cycles and 9-box grids is what makes someone successful here.",
+  "label": {
+    "dimensions": {
+      "role_fit": 2,
+      "domain_fit": 2,
+      "business_health": 3,
+      "location_fit": 3,
+      "competitive_edge": 1
+    },
+    "shape_adjustment": 0,
+    "score": 11,
+    "tier": "P1",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "filter-crypto",
+  "synthetic": true,
+  "jd": "Head of Product — Trading & Wallet, Remote.\n\nChainVault is a crypto-native exchange and on-chain wallet provider. We're hiring a Head of Product to own our token-incentive programme end to end: staking rewards, liquidity-mining campaigns, and on-chain governance voting for our native token. You'll lead a team of four PMs covering the trading engine, the self-custody wallet, and the DeFi integrations layer, reporting directly to the co-founder/CEO. Deep familiarity with on-chain mechanics — smart contracts, gas optimisation, wallet key management — is essential; you'll be in daily conversations with our protocol engineers about tokenomics design. Fully remote, work from anywhere. We raised a large round from crypto-focused funds last year and are scaling the token ecosystem aggressively.",
+  "label": {
+    "dimensions": null,
+    "shape_adjustment": null,
+    "score": null,
+    "tier": "filtered",
+    "hard_filter": "Crypto-native companies (out of scope by preference)",
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

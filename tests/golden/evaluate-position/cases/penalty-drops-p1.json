@@ -1,0 +1,20 @@
+{
+  "id": "penalty-drops-p1",
+  "synthetic": true,
+  "jd": "Head of Product — Manager Enablement, London hybrid.\n\nPeoplewise (300 people) builds HR-tech software for people-ops leaders — manager-enablement tools, 1:1 templates, and skip-level survey workflows, sold mostly through a hybrid outbound-and-inbound sales-assisted motion to mid-market and enterprise HR teams. We closed a large funding round this year and headcount has nearly doubled as we push into new segments. We're hiring a Head of Product to lead our four-person PM team, reporting to the CPO. Your remit also covers activating newly onboarded manager accounts — turning trial sign-ups into active weekly users — which pulls on the same activation-funnel muscle as more consumer-facing PLG products, even though our buyer is HR, not the end consumer. We do not offer equity as part of compensation, and we're not a household name yet. Hybrid: two days a week in our London office.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 2,
+      "business_health": 3,
+      "location_fit": 3,
+      "competitive_edge": 2
+    },
+    "shape_adjustment": -1,
+    "score": 12,
+    "tier": "P1",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

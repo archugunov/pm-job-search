@@ -1,0 +1,20 @@
+{
+  "id": "p0-boundary-13",
+  "synthetic": true,
+  "jd": "Lead PM — Payments, London hybrid.\n\nRidgeline Pay is a payments fintech that recently closed a seed-extension round; runway beyond the next 18 months isn't yet locked in, so we're being disciplined about scope. We're hiring a Lead PM to own SMB lending operations end to end: underwriting queues, repayment scheduling, and portfolio risk tooling for small-business borrowers. Pricing sits inside your remit too — you'll partner with the pricing squad on rate-card experiments for the lending product, though SMB ops is the centre of the job. Hybrid: two days a week in our London office. We want someone who can run a lending-ops roadmap and isn't afraid of ambiguous, still-early-stage economics.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 3,
+      "business_health": 2,
+      "location_fit": 3,
+      "competitive_edge": 2
+    },
+    "shape_adjustment": 0,
+    "score": 13,
+    "tier": "P0",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

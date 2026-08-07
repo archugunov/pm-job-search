@@ -1,0 +1,20 @@
+{
+  "id": "p0-clean",
+  "synthetic": true,
+  "jd": "Head of Product — Series B consumer-credit fintech, London.\n\nFlexa Money (London, ~60 people, Series B led by Accel, 4x YoY revenue growth) builds a BNPL card for near-prime UK customers. We're hiring our first Head of Product to own the product org: 3 PMs, reporting to the CEO (ex-founder, still close to product). You'll own the credit-card surface end to end — pricing experiments, underwriting flows, activation. Hybrid: 2 days/week in our London Bridge office. We want someone who has shipped consumer-credit product at growth stage and can be the most technical product person in the room.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 3,
+      "business_health": 3,
+      "location_fit": 3,
+      "competitive_edge": 3
+    },
+    "shape_adjustment": 0,
+    "score": 15,
+    "tier": "P0",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": "bonus criteria match but role_fit already 3; cap makes it a no-op"
+  }
+}

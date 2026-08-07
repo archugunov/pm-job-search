@@ -1,0 +1,14 @@
+{
+  "id": "filter-relocation",
+  "synthetic": true,
+  "jd": "Lead PM — Card Products, New York (relocation required).\n\nSummit Credit is a US consumer-credit fintech building a rewards credit card for young professionals. We're hiring a Lead PM to own the card-products roadmap: rewards engine, credit-limit increases, and the mobile card-management experience. This role is based at our New York headquarters and requires full relocation — we do not support remote work or hybrid arrangements for this position, and visa sponsorship is available for the right candidate. You'll lead two PMs and report to the VP of Product. We closed a Series C round last year and are growing quickly across the US card portfolio. Ideal candidates have shipped consumer-credit products before and are ready to relocate to New York within the next two to three months.",
+  "label": {
+    "dimensions": null,
+    "shape_adjustment": null,
+    "score": null,
+    "tier": "filtered",
+    "hard_filter": "Requires relocation outside EMEA",
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

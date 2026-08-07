@@ -1,0 +1,20 @@
+{
+  "id": "p2-principal-devtools",
+  "synthetic": true,
+  "jd": "Principal PM — Developer Platform, EMEA remote.\n\nBuildstack is a developer-infrastructure company providing CI/CD pipelines and container-orchestration tooling for engineering teams at mid-size tech companies. We've tripled ARR in the last twelve months and just closed a well-oversubscribed round to fund international expansion. We're hiring a Principal PM to set the technical roadmap for our build-pipeline product — caching strategy, distributed job scheduling, and Kubernetes-native deployment primitives. You'll be the most senior IC product voice in the company, setting direction across three pods without formal reports. Fully remote across Europe, no office requirement. We're looking for someone with deep infrastructure or platform-engineering product experience; familiarity with distributed systems and container-orchestration internals is core to succeeding in this role, not a nice-to-have.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 1,
+      "business_health": 3,
+      "location_fit": 2,
+      "competitive_edge": 1
+    },
+    "shape_adjustment": 0,
+    "score": 10,
+    "tier": "P2",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

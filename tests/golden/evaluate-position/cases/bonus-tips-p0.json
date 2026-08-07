@@ -1,0 +1,20 @@
+{
+  "id": "bonus-tips-p0",
+  "synthetic": true,
+  "jd": "Senior PM — Consumer Credit, London hybrid.\n\nNettle (London, 40 people, Series A) is building a self-serve credit-builder card for underbanked UK consumers — sign up in the app, no branch, no salesperson, product-led from day one. We're a founder-led company: our CEO and CTO still review every roadmap personally. We closed our Series A eight months ago and are still proving out our core growth loop, so it's too early to call the trajectory either way. We're hiring a Senior PM to own dispute resolution and chargeback handling on the card product — in-app dispute flows, fraud-hold communications, and the chargeback-to-issuer pipeline. No direct reports; you'll work with two engineers and a designer. Hybrid: two days a week in our London office. General consumer-credit background helps, though this dispute-and-chargeback surface is new ground for most candidates we talk to.",
+  "label": {
+    "dimensions": {
+      "role_fit": 2,
+      "domain_fit": 3,
+      "business_health": 2,
+      "location_fit": 3,
+      "competitive_edge": 2
+    },
+    "shape_adjustment": 1,
+    "score": 13,
+    "tier": "P0",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

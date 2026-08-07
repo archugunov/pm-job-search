@@ -1,0 +1,20 @@
+{
+  "id": "p1-ambiguous-infra",
+  "synthetic": true,
+  "jd": "Product Lead — Payments Infrastructure, EMEA remote.\n\nLedgerline builds payments infrastructure — APIs and orchestration rails that let other fintech companies route card transactions, manage settlement, and handle currency conversion behind the scenes. We're funded through a recent round and still validating which vertical (marketplaces, PSPs, or embedded finance) becomes our primary wedge, so trajectory is genuinely open right now. We're hiring a Product Lead to own our transaction-pricing and interchange-optimisation product — designing the rate cards our fintech customers see and the routing logic that minimises their processing costs. You'll set direction for two PMs. Fully remote across Europe, no office requirement. We want someone who has worked on pricing or rate design in a payments or fintech context before, even if not specifically on infrastructure-layer products.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 3,
+      "business_health": 2,
+      "location_fit": 2,
+      "competitive_edge": 2
+    },
+    "shape_adjustment": 0,
+    "score": 12,
+    "tier": "P1",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": "domain_fit frozen at 3: payments infra IS fintech per the rubric string 'B2C, consumer credit, fintech, PLG SaaS' — the deliberate judgement call this case exists to test"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "filter-enterprise",
+  "synthetic": true,
+  "jd": "Senior PM — Enterprise Analytics, London (on-site).\n\nDataForge Enterprise (800 employees) sells a business-intelligence platform to Fortune 500 finance and operations teams. Every deal is closed by our field-sales organisation after a multi-month enterprise procurement cycle involving RFPs, security reviews, and custom contract negotiation — there is no self-serve signup or free trial anywhere in our funnel; access is fully gated behind a sales conversation and a signed MSA. We're hiring a Senior PM to own the reporting-and-dashboards module, working closely with our enterprise account executives to scope custom integrations for named accounts. You'll report to a Director of Product with no direct reports of your own. On-site five days a week at our London headquarters. Experience selling into large enterprise buying committees is essential.",
+  "label": {
+    "dimensions": null,
+    "shape_adjustment": null,
+    "score": null,
+    "tier": "filtered",
+    "hard_filter": "More than 500 employees AND enterprise/sales-led AND no PLG signal",
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}

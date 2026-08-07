@@ -1,0 +1,20 @@
+{
+  "id": "p1-boundary-12",
+  "synthetic": true,
+  "jd": "Lead PM — Embedded Insurance, London hybrid.\n\nHarrow Cover is a fintech building embedded insurance products for SME marketplaces; we're funded through a recent round, though we're still working out which distribution channel wins, so trajectory is genuinely unclear right now. We're hiring a Lead PM to own actuarial pricing model design — you'll work daily with our actuaries to build risk-adjusted premium curves, reserve modelling, and regulatory capital calculations. This is a deeply technical insurance-pricing role: prior experience with actuarial methods, loss ratios, and insurance underwriting mathematics is essential, not just useful. Hybrid, two days a week from our London office.",
+  "label": {
+    "dimensions": {
+      "role_fit": 3,
+      "domain_fit": 3,
+      "business_health": 2,
+      "location_fit": 3,
+      "competitive_edge": 1
+    },
+    "shape_adjustment": 0,
+    "score": 12,
+    "tier": "P1",
+    "hard_filter": null,
+    "provenance": "author-derived-v1",
+    "edge_note": null
+  }
+}
