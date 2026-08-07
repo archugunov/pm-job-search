@@ -14,6 +14,8 @@ from collections import defaultdict
 from pathlib import Path
 
 MIN_N, P_BAR, R_BAR = 5, 0.9, 0.8
+VALID_TIERS = ("hard", "soft", "spec", "critique")
+VALID_HUMAN = ("agree", "disagree", "borderline", None)
 
 
 def main(argv: list[str]) -> int:
@@ -22,8 +24,25 @@ def main(argv: list[str]) -> int:
     if len(args) != 1:
         print("usage: stats.py <labels-dir> [--gate]", file=sys.stderr)
         return 2
-    labels = [json.loads(p.read_text()) for p in sorted(Path(args[0]).glob("*.json"))
-              if p.name != "TEMPLATE.json"]
+    paths = [p for p in sorted(Path(args[0]).glob("*.json")) if p.name != "TEMPLATE.json"]
+    labels = [json.loads(p.read_text()) for p in paths]
+
+    # Label files are hand-edited by a human mid-labelling-session (per the
+    # protocol README). A typo in `tier` or `human` must stop the run loudly
+    # rather than silently vanish a finding or coerce it into a bucket that
+    # quietly shifts a precision number.
+    for p, run in zip(paths, labels):
+        for finding in run.get("findings", []):
+            tier = finding.get("tier")
+            if tier not in VALID_TIERS:
+                print(f"error: {p.name}: unrecognised tier {tier!r}"
+                      f" (valid: {', '.join(VALID_TIERS)})", file=sys.stderr)
+                return 2
+            human = finding.get("human")
+            if human not in VALID_HUMAN:
+                print(f"error: {p.name}: unrecognised human value {human!r}"
+                      f" (valid: agree, disagree, borderline, null)", file=sys.stderr)
+                return 2
 
     tally = defaultdict(lambda: {"agree": 0, "disagree": 0, "borderline": 0, None: 0})
     for run in labels:

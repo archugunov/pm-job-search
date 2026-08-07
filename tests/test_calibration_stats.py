@@ -72,3 +72,25 @@ def test_gate_passes_when_thin_tiers_skipped(tmp_path):
     findings = [f("hard", "agree"), f("hard", "disagree")]
     code, _ = run_stats(tmp_path, [label(findings=findings)], gate=True)
     assert code == 0
+
+
+def test_off_spec_human_value_fails_loudly(tmp_path):
+    d = tmp_path / "labels"
+    d.mkdir()
+    (d / "run0.json").write_text(json.dumps(label(findings=[f("hard", "maybe")])))
+    proc = subprocess.run([sys.executable, str(STATS), str(d)],
+                           capture_output=True, text=True)
+    assert proc.returncode == 2
+    assert "run0.json" in proc.stderr
+    assert "maybe" in proc.stderr
+
+
+def test_off_spec_tier_value_fails_loudly(tmp_path):
+    d = tmp_path / "labels"
+    d.mkdir()
+    (d / "run0.json").write_text(json.dumps(label(findings=[f("typo", "agree")])))
+    proc = subprocess.run([sys.executable, str(STATS), str(d)],
+                           capture_output=True, text=True)
+    assert proc.returncode == 2
+    assert "run0.json" in proc.stderr
+    assert "typo" in proc.stderr

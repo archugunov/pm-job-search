@@ -30,6 +30,11 @@ Bars: precision >= 0.9 per tier (tiers with >= 5 adjudicated findings),
 recall >= 0.8. Below the bars, a lone journey FAIL is "go look", not a
 release blocker.
 
+`grade-judge.html` computes the same maths live in the browser while you
+label; the one cosmetic difference is that if blind data exists but every
+run's `human_found` is 0, the browser prints "Recall: n/a" while `stats.py`
+omits the recall line entirely — both agree the gate never fails on it.
+
 ## Acting on a disagreement
 
 - Ambiguous criterion → rewrite the criterion (spec bug, not judge bug).
