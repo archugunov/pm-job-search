@@ -21,8 +21,8 @@ For each `(persona × journey)` pairing requested, runs five phases:
 
 Parse the user's invocation message for these forms (no native flag support in skills — match free-text):
 
-- `/test-personas` (no args) → full sweep, all 7 journeys, all 3 personas as configured.
-- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `cold-start-cv`, `active-loop`, `reflection`, `edge-recovery`, `case-practice-below`, `case-practice-above`, `sweep-smoke`.
+- `/test-personas` (no args) → the release-gate sweep: `cold-start`, `active-loop`, `edge-recovery`. (`sweep-smoke` is excluded from the default sweep — run it by name.)
+- `--journey <name>` or `journey: <name>` → run only the named journey. Valid names: `cold-start`, `active-loop`, `edge-recovery`, `sweep-smoke`.
 - `--persona <name>` or `persona: <name>` → run only journeys whose `journey_fit` includes that persona. Valid names: `maya`, `diego`, `contrarian`.
 - `--skip-judge` or `skip judge` → run conversation loops but skip Phase 4 (transcripts only).
 
@@ -74,11 +74,9 @@ Before invoking sub-agents, check the snapshot's contents match what the journey
 For each journey, the validation checks vary. Use this rule of thumb:
 
 - **cold-start** (snapshot: `empty`) — no validation needed; the journey starts by writing files, not reading them.
-- **cold-start-cv** (snapshot: `empty-with-cv`) — check `userdata/cv.md` exists and is non-empty. If it is missing, the journey is testing nothing; stop with a clear error.
 - **active-loop** (snapshot: `maya-active`) — check `userdata/profile.md` exists and contains sections `## Companies of interest` and `## Proof Points` (note the capitalization — match what's actually in the snapshot). Check `userdata/strategy.md` has frontmatter keys `target_offer_date` and `weekly_targets`. Check `userdata/companies/` has at least one subdirectory.
-- **reflection** (snapshot: `diego-reflection`) — check `userdata/journal.md` has at least 3 dated `## YYYY-MM-DD` entries.
 - **edge-recovery** (snapshot: `contrarian-messy`) — check that at least 2 directories exist in `userdata/companies/` (proves the dedup test setup landed correctly).
-- **case-practice-below** and **case-practice-above** (snapshot: `maya-active`) — check `userdata/profile.md` frontmatter contains a non-empty `target_titles` field (the drill's right-answer weighting depends on it). All `active-loop` checks also apply since both journeys share the snapshot.
+- **sweep-smoke** (snapshot: `empty`) — no validation needed; same reasoning as cold-start.
 
 If any check fails, write a clear error and stop the journey:
 
@@ -154,9 +152,9 @@ Specifically:
 - Never invent companies, dates, people, debrief filenames, journal entries, or events. Every concrete fact in your output must trace to either (a) a file you actually read, or (b) a user message in the transcript.
 - When the state is sparse or messy (empty profile sections, missing fields, duplicate folders), surface the gap explicitly — do not paper over it with fabricated content.
 
-Empirical basis (2026-06-07 4-journey run): sub-agents with this guardrail behaved reliably (active-loop, edge-recovery — both PASS). Sub-agents without it fabricated plausible content (cold-start /today rendered "(url not captured)" instead of reading meta.md `link:` fields; reflection /today invented Fly.io, Render, Railway, Supabase as pipeline companies + a "Tom" interviewer + an "Anna 2026-05-04 message" — none of which existed in state).
+Empirical basis (2026-06-07 4-journey run): sub-agents with this guardrail behaved reliably (active-loop, edge-recovery — both PASS). Sub-agents without it fabricated plausible content (cold-start /today rendered "(url not captured)" instead of reading meta.md `link:` fields).
 
-**Verbatim-quote rule (added 2026-06-11 after both case-practice journeys flagged scoring-turn drift):** When your turn comments on, scores, or summarises content presented in an earlier transcript turn, you MUST paste the prior-turn content verbatim before commenting on it. Do not paraphrase, condense, or rewrite the content under any framing — even if the rewrite seems clearer or more concise.
+**Verbatim-quote rule (added 2026-06-11 after scoring-turn drift was flagged in testing):** When your turn comments on, scores, or summarises content presented in an earlier transcript turn, you MUST paste the prior-turn content verbatim before commenting on it. Do not paraphrase, condense, or rewrite the content under any framing — even if the rewrite seems clearer or more concise.
 
 Specifically:
 
@@ -164,7 +162,7 @@ Specifically:
 - If you are summarising a finding, decision, or fact the user (or an earlier assistant turn) provided, quote it verbatim with quotation marks before commenting on it.
 - Numbers, percentages, names, and product details from prior turns are especially prone to drift — never substitute them with similar-sounding values. "8 points" is not "18%". "three deals lost" is not "two enterprise deals". "permissions overhaul on paid Slack workspaces" is not "enterprise admin features".
 
-Empirical basis (2026-06-11 case-practice runs): both judge runs independently flagged Turn 8 scoring re-writing option texts from Turn 6. The most egregious example: case-practice-above Q7 option B was posed as "Ship the second-ranked item (a permissions overhaul, RICE 180) instead of the top-ranked Slack integration (RICE 240), because the enterprise sales team has lost three deals this quarter to permissions gaps and the integration's 'reach' estimate counted every Figma user rather than the ~12% on paid Slack workspaces" but was scored against an entirely different invented text ("Push back: the RICE 'reach' for enterprise admin features is wrongly scoped — it counts admins, not the dollar-weighted accounts they gate. Re-score with revenue-at-risk; the admin feature likely jumps. Also flag to the team that we just lost two enterprise deals citing this gap."). An in-prompt reminder alone ("quote the option text faithfully") was not sufficient — this rule needs to be structural.
+Empirical basis (2026-06-11 test runs): judge runs independently flagged a scoring turn re-writing option texts from an earlier turn instead of quoting them — numbers, product details, and framing all drifted in the rewrite. An in-prompt reminder alone ("quote the option text faithfully") was not sufficient — this rule needs to be structural.
 
 Do not break character as a Claude Code instance. Do not say "I am a sub-agent" or "this is a test". Just respond as the plugin would.
 
@@ -353,7 +351,7 @@ After the run summary, suggest the natural next action based on the verdicts:
 
 ## Cost note for maintainer
 
-A full run (7 journeys × ~15-25 turns × 2 sub-agent calls per turn + 7 judge calls) is roughly 200-300 sub-agent invocations. On Claude Max this counts against weekly quota — expect a full run to consume a notable chunk of weekly limits. Use `--journey <name>` for single-journey runs when iterating on a specific skill.
+A full release-gate run (3 journeys × ~15-25 turns × 2 sub-agent calls per turn + 3 judge calls) is roughly 90-150 sub-agent invocations. On Claude Max this counts against weekly quota. Use `--journey <name>` for single-journey runs when iterating on a specific skill. Deterministic coverage (schemas, golden set, snapshot conformance) lives in `tests/` and runs free in CI — do not add journeys to cover things a script can check.
 
 ## Known limitations and verifications needed
 
@@ -363,10 +361,10 @@ Gaps surfaced by the 2026-05-27 smoke test and the 2026-06-04 verification run. 
 - **Anti-leak rule — confirmed working (2026-06-07).** The fresh cold-start run completed 19 plugin turns with zero `Q\d+:` leaks. Resolved.
 - **Full 30-turn cold-start completion — confirmed (2026-06-07).** Journey terminated naturally at turn 19 (Heads-up printed + simulator acked). All four skills exercised. Resolved.
 - **Dashboard skill in sub-agent context — confirmed graceful degradation (2026-06-07).** Sub-agent acknowledged the constraint in plain prose rather than crashing or hanging. Resolved.
-- **Three other journeys untested end-to-end.** Active-loop, reflection, edge-recovery have only been validated as journey files + spec criteria. Cold-start now passes mechanism-wise; running the other three would widen coverage.
-- **Two `case-practice` journeys validated end-to-end (2026-06-11, v0.3.0-beta.6).** Both `case-practice-below` and `case-practice-above` PASS verdict-wise. Two findings surfaced and addressed: (a) verbatim-quote rule added above to fix recurring scoring-turn drift across both journeys; (b) `case-practice-below` could not reliably trigger the gate-not-met branch because Maya's Senior-PM reflexes catch obvious vanity metrics even when picking fast — journey-design refinement is open (see `plugin/memory.md` 2026-06-11 entries).
+- **Two other journeys untested end-to-end.** Active-loop, edge-recovery have only been validated as journey files + spec criteria. Cold-start now passes mechanism-wise; running the other two would widen coverage.
 - **Sub-agent fidelity drift.** Even with the full SKILL.md inlined + anti-leak rule + step-at-a-time discipline, the 2026-06-07 cold-start run showed sub-agents inventing field names (`role:` vs `position:`), skipping documented tail steps (/setup automation prompt), and failing to read downstream files (/today not reading meta.md `link:`). The judge catches these via spec criteria, but a post-Phase-3 schema check on `userdata/` would catch them earlier and more reliably. Worth investigating in v0.3.x.
 - **SendMessage continuity is not assumed.** Each plugin turn currently re-dispatches a fresh sub-agent with the SKILL.md + growing transcript inlined. If a stateful agent-continuation mechanism becomes available, switching to a continuous sub-agent session would cut cost ~5x and improve coherence. The fresh-per-turn design is the documented tradeoff but is the riskiest cost driver. Not blocking; deferred to v0.4.
+- **Journey set cut 8 → 3 + smoke (2026-08-07).** `cold-start-cv` retired (replaced by the profile.md schema check in `scripts/validate_userdata.py`); `reflection` retired (its date-gate checks belong to deterministic single-turn checks; snapshot kept); both `case-practice` journeys retired (`below` could not reach its target branch — see plugin/memory.md 2026-06-11; single-skill drills are the wrong size for a journey). `sweep-smoke` kept but excluded from the default sweep until its first run validates it.
 
 ## Voice for this skill's own output
 

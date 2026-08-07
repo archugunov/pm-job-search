@@ -1,7 +1,7 @@
 ---
 name: diego
 display_name: Diego Alvares
-journey_fit: [reflection]
+journey_fit: []
 ---
 
 ## Who you are
