@@ -374,7 +374,7 @@
     var parts = String(filename).split("/");
     var base = parts[parts.length - 1];
     var stem = base.replace(/\.judge\.md$/i, "").replace(/\.md$/i, "");
-    var id = parts.length > 1 ? parts.slice(0, -1).join("/") + "/" + stem : stem;
+    var id = parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
 
     var verdictMatch = norm.match(/^\*\*Overall:\s*(.+?)\*\*/m);
     var verdict_judge = verdictMatch ? verdictMatch[1].trim() : "";
@@ -456,10 +456,16 @@
 
   var runs = []; // ordered array of run state objects
 
-  function storageKey(id) { return STORAGE_PREFIX + id; }
+  // Storage keys are derived from `run.key` — the id parsed from the file
+  // path/stem at drop time. `run.id` is the user-editable display/export
+  // value. Keeping these separate means renaming a run in the UI never
+  // orphans its localStorage entry: the key that labels are saved under
+  // never changes just because the display id did.
+  function storageKey(key) { return STORAGE_PREFIX + key; }
 
   function saveRun(run) {
     var payload = {
+      id: run.id,
       verdict_human: run.verdict_human,
       findings: run.findings.map(function (f) { return { human: f.human, note: f.note }; }),
       blind: run.blind,
@@ -468,13 +474,13 @@
       blindText: run.blindText
     };
     try {
-      localStorage.setItem(storageKey(run.id), JSON.stringify(payload));
+      localStorage.setItem(storageKey(run.key), JSON.stringify(payload));
     } catch (e) { /* storage unavailable — ignore, tool still works in-memory */ }
   }
 
-  function loadRunLabels(id) {
+  function loadRunLabels(key) {
     try {
-      var raw = localStorage.getItem(storageKey(id));
+      var raw = localStorage.getItem(storageKey(key));
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
@@ -482,8 +488,9 @@
   }
 
   function applyStoredLabels(run) {
-    var stored = loadRunLabels(run.id);
+    var stored = loadRunLabels(run.key);
     if (!stored) return;
+    if (typeof stored.id === "string" && stored.id) run.id = stored.id;
     if (typeof stored.verdict_human === "string") run.verdict_human = stored.verdict_human;
     if (stored.blind !== undefined) run.blind = stored.blind;
     if (stored.revealed) run.revealed = true;
@@ -500,10 +507,16 @@
   function addOrUpdateRun(parsed) {
     var existingIndex = -1;
     for (var i = 0; i < runs.length; i++) {
-      if (runs[i].id === parsed.id) { existingIndex = i; break; }
+      if (runs[i].key === parsed.id) { existingIndex = i; break; }
     }
+    // Re-drops of the same file must not clobber a display id the user
+    // already edited in this session — only a fresh run starts from the
+    // freshly parsed id (applyStoredLabels may still override it below
+    // from a previous session's saved rename).
+    var displayId = existingIndex >= 0 ? runs[existingIndex].id : parsed.id;
     var run = {
-      id: parsed.id,
+      key: parsed.id,
+      id: displayId,
       filename: parsed.filename,
       verdict_judge: parsed.verdict_judge,
       verdict_human: null,
@@ -819,7 +832,10 @@
       type: "text",
       class: "run-id-input",
       value: run.id,
-      oninput: function (e) { run.id = e.target.value; }
+      oninput: function (e) {
+        run.id = e.target.value;
+        saveRun(run);
+      }
     });
     idInput.value = run.id;
     header.appendChild(idInput);
@@ -851,7 +867,7 @@
         run.blindSkipped = false;
         run.blindText = "";
         run.findings.forEach(function (f) { f.human = null; f.note = null; });
-        try { localStorage.removeItem(storageKey(run.id)); } catch (e) {}
+        try { localStorage.removeItem(storageKey(run.key)); } catch (e) {}
         renderAll();
       }
     }));
