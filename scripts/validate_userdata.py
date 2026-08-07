@@ -57,7 +57,12 @@ def parse_frontmatter(text: str) -> dict[str, str]:
             return fm
         m = KEY_RE.match(line)  # anchored: indented keys don't match
         if m:
-            value = m.group(2).split("#", 1)[0].strip().strip('"')
+            raw = m.group(2)
+            # Only treat '#' as starting a trailing comment when it begins the
+            # value or is preceded by whitespace — a bare '#' inside a value
+            # (e.g. a URL fragment like https://x/y#frag) is not a comment.
+            cm = re.search(r"(?:^|\s)#", raw)
+            value = (raw[:cm.start()] if cm else raw).strip().strip('"')
             fm[m.group(1)] = value
     return {}  # unterminated block — treat as no frontmatter
 

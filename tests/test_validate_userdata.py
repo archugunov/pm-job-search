@@ -125,3 +125,113 @@ def test_meta_role_slug_subfolder_is_scanned(tmp_path):
     findings = validate_tree(tmp_path)
     assert findings[0].path == "companies/Stripe/lead-pm/meta.md"
     assert findings[0].rule == "meta.status-enum"
+
+
+GOOD_PROFILE = """\
+    ---
+    name: Maya Patel
+    target_titles:
+      - Senior PM
+    tier_weights:
+      role_fit:
+        1: "a"
+    tier_thresholds:
+      p0: 13
+      p1: 11
+    ---
+
+    ## Positioning
+
+    Body.
+    """
+
+
+def test_clean_profile(tmp_path):
+    write(tmp_path / "profile.md", GOOD_PROFILE)
+    assert validate_tree(tmp_path) == []
+
+
+def test_profile_missing_tier_weights(tmp_path):
+    write(tmp_path / "profile.md", GOOD_PROFILE.replace("tier_weights:", "other_weights:"))
+    findings = validate_tree(tmp_path)
+    assert [f.rule for f in findings] == ["profile.required"]
+    assert "tier_weights" in findings[0].detail
+
+
+def test_profile_missing_positioning_heading(tmp_path):
+    write(tmp_path / "profile.md", GOOD_PROFILE.replace("## Positioning", "## Position"))
+    assert [f.rule for f in validate_tree(tmp_path)] == ["profile.positioning"]
+
+
+GOOD_STRATEGY = """\
+    ---
+    target_offer_date: 2026-10-17
+    weekly_targets:
+      applications: 3
+    ---
+    """
+
+
+def test_clean_strategy(tmp_path):
+    write(tmp_path / "strategy.md", GOOD_STRATEGY)
+    assert validate_tree(tmp_path) == []
+
+
+def test_strategy_null_date_allowed(tmp_path):
+    write(tmp_path / "strategy.md", GOOD_STRATEGY.replace("2026-10-17", "null"))
+    assert validate_tree(tmp_path) == []
+
+
+def test_strategy_bad_date(tmp_path):
+    write(tmp_path / "strategy.md", GOOD_STRATEGY.replace("2026-10-17", "October 2026"))
+    assert [f.rule for f in validate_tree(tmp_path)] == ["strategy.date-format"]
+
+
+def test_strategy_forbidden_target_date(tmp_path):
+    write(tmp_path / "strategy.md", """\
+        ---
+        target_date: 2026-10-17
+        weekly_targets:
+          applications: 3
+        ---
+        """)
+    rules = [f.rule for f in validate_tree(tmp_path)]
+    assert "strategy.forbidden-key" in rules
+    assert "strategy.required" in rules  # target_offer_date genuinely missing
+
+
+def test_brief_source_line_and_match(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META)
+    write(tmp_path / "companies" / "Plaid" / "research-brief.md", """\
+        ---
+        company: Plaid
+        ---
+        **Source:** https://example.com/plaid
+        """)
+    assert validate_tree(tmp_path) == []
+
+
+def test_brief_missing_source_line(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "research-brief.md", "# Plaid\nNo source.\n")
+    assert [f.rule for f in validate_tree(tmp_path)] == ["brief.source-line"]
+
+
+def test_brief_link_mismatch(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META)
+    write(tmp_path / "companies" / "Plaid" / "research-brief.md",
+          "**Source:** https://example.com/other\n")
+    assert [f.rule for f in validate_tree(tmp_path)] == ["brief.link-mismatch"]
+
+
+def test_meta_link_with_fragment_matches_brief_source(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META.replace(
+        "link: https://example.com/plaid", "link: https://example.com/x?y=1#frag"))
+    write(tmp_path / "companies" / "Plaid" / "research-brief.md",
+          "**Source:** https://example.com/x?y=1#frag\n")
+    assert validate_tree(tmp_path) == []
+
+
+def test_parse_frontmatter_strips_genuine_trailing_comment():
+    text = "---\nstatus: applied  # awaiting reply\n---\n"
+    fm = parse_frontmatter(text)
+    assert fm["status"] == "applied"
