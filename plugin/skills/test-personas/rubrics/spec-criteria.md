@@ -25,12 +25,8 @@ Some criteria are conditional — they only apply when a specific skill ran or a
 4. **[required] Profile + strategy not silently overwritten.** If a skill writes to `userdata/profile.md` or `userdata/strategy.md`, the transcript must show a confirmation message naming what changed.
    *Applies when:* a skill in the journey wrote to one of those files.
 
-5. **[required] JD link present in three places.**
-   - `meta.md` frontmatter `link:` field
-   - `research-brief.md` Source line
-   - Chat row rendering (e.g. `- Plaid — Senior PM — to apply — https://...`)
-
-   *Applies when:* `/job-search` ran in the journey AND filed at least one new role.
+5. **[required] JD link present in the chat row.** New roles surfaced in chat render the live JD URL in the row (e.g. `- Plaid — Senior PM — to apply — https://...`). The file-side halves of this check (meta.md `link:`, research-brief Source line, and their equality) moved to `scripts/validate_userdata.py` and reach you through the SCHEMA VALIDATION block — do not re-litigate them from the transcript.
+   *Applies when:* `/job-search` or `/evaluate-position` ran in the journey AND surfaced at least one new role in chat.
 
 ## How to report findings under this rubric
 

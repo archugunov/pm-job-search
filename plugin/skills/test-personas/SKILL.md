@@ -227,23 +227,20 @@ Each journey defines its own termination — use the journey file as truth.
 
 After the conversation loop terminates and BEFORE dispatching the judge, validate that the files the plugin sub-agent wrote conform to documented schemas. Catches schema drift the conversation transcript hides — e.g. sub-agent inventing field names (`role:` vs `position:`) that propagate silently into downstream skills.
 
-Currently scoped to `meta.md` files only — the most schema-rigid file in the plugin. Other schemas (`profile.md`, `strategy.md`) can join in v0.3.x once meta.md proves out.
+Scope: meta.md, profile.md, strategy.md, and research-brief.md — everything `scripts/validate_userdata.py` covers.
 
 ### Inputs
 
-- `${CLAUDE_PLUGIN_ROOT}/schemas/meta.md.schema.md` — defines required keys, allowed status enum, forbidden keys (`role:`, `target_date:`).
-- All `userdata/companies/*/meta.md` AND `userdata/companies/*/*/meta.md` files written during this run.
+- `scripts/validate_userdata.py` — the shared schema validator (single source of truth; rules defined in `${CLAUDE_PLUGIN_ROOT}/schemas/*.schema.md`).
+- The `userdata/` tree as the conversation loop left it.
 
 ### Validation logic
 
-For each meta.md found, check the frontmatter (between the first two `---` lines):
+Run via Bash:
 
-1. **Required keys present:** `company`, `position`, `status`, `link` — flag any missing.
-2. **Status enum:** value must be one of `new`, `to_apply`, `applied`, `interviewing`, `offer`, `rejected`, `not_interested`.
-3. **Link format:** non-empty `link` must start with `http://` or `https://`.
-4. **Forbidden keys absent:** `role:`, `target_date:` — flag any present (these are documented sub-agent drift patterns).
+    python3 scripts/validate_userdata.py userdata/
 
-Implementation can be Bash (`awk`/`grep` over frontmatter) or a focused Read+inline-check pattern. Either way, produce structured findings — one bullet per failure with file path + rule violated + offending value.
+Capture stdout verbatim. Exit 0 with `No schema drift found.` means clean. Exit 1 means findings — one line each, `<path>: <rule> — <detail>`. Do NOT re-derive or paraphrase findings; paste the script output into the SCHEMA VALIDATION block as-is. Coverage: meta.md (required keys, status enum, link format, forbidden keys), profile.md (required keys, Positioning section), strategy.md (required keys, date format, forbidden target_date), research-brief.md (Source line present and matching meta link).
 
 ### Output
 
@@ -252,17 +249,10 @@ Compose a single markdown block:
 ```
 --- SCHEMA VALIDATION ---
 
-Scope: meta.md files in userdata/companies/
-
-Findings:
-- userdata/companies/plaid/meta.md: forbidden key `role:` found (canonical key is `position:` per schemas/meta.md.schema.md)
-- userdata/companies/klarna/meta.md: required key `link:` missing or empty
-- ...
-
-[Or, if all schemas pass: "No schema drift found."]
+<script stdout, verbatim — one line per finding as `<path>: <rule> — <detail>`, or the single line "No schema drift found." when clean>
 ```
 
-If zero meta.md files exist (e.g. cold-start journey that didn't reach /job-search yet), the block reads "Scope: meta.md files in userdata/companies/ (none present — schema check not applicable)".
+An empty or near-empty `userdata/` tree (e.g. cold-start journey that hasn't reached `/job-search` yet) is not a special case — the script has nothing to flag and reports `No schema drift found.` like any other clean run.
 
 Append this block to the judge input as the 6th labelled section (between MEMORY and METADATA in the judge prompt's input format).
 
