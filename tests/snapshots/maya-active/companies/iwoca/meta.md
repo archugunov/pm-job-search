@@ -5,8 +5,8 @@ tier: P1
 score: 11
 position: Senior PM, SMB Lending
 link: https://example.com/iwoca-jobs/senior-pm-smb-lending
-date_added: 2026-04-15
-date_applied: 2026-04-22
+date_added: 2026-07-01
+date_applied: 2026-07-08
 ---
 
 # iwoca
@@ -15,5 +15,5 @@ SMB lending platform — fast-decision flexible loans for small businesses. ~250
 
 ## History
 
-2026-04-15: status → new. Discovered via /job-search. P1 because 250 ppl is over the size ceiling. (source: user, user-entered)
-2026-04-22: status → applied. Cover note positioned messy-middle credit + SMB pricing crossover. (source: user, user-entered)
+2026-07-01: status → new. Discovered via /job-search. P1 because 250 ppl is over the size ceiling. (source: user, user-entered)
+2026-07-08: status → applied. Cover note positioned messy-middle credit + SMB pricing crossover. (source: user, user-entered)

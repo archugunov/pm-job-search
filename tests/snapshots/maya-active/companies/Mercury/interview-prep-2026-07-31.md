@@ -1,5 +1,5 @@
 # Interview prep — Mercury / Sr PM, Banking
-**Date:** 2026-05-15  **Stage:** case-study  **Format:** 30-min present + 30-min discussion, on Saturday 2026-05-16  **Tier:** P1
+**Date:** 2026-07-31  **Stage:** case-study  **Format:** 30-min present + 30-min discussion, on Saturday 2026-08-01  **Tier:** P1
 
 ## The prompt
 

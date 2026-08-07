@@ -1,7 +1,7 @@
 ---
 company: StaleCorp
 position: Senior PM
-generated: 2026-05-01
+generated: 2026-07-17
 ---
 
 # StaleCorp — Senior PM

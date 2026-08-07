@@ -1,5 +1,5 @@
 # Interview prep — Cleo / Head of Product Growth
-**Date:** 2026-05-05  **Stage:** hm  **Tier:** P1
+**Date:** 2026-07-21  **Stage:** hm  **Tier:** P1
 
 ## Anchors
 - **Why this company:** Cleo's activation loop — get-user → first money moment → habit formation — is the most technically interesting growth problem in UK consumer finance right now, and the chat-native surface makes it genuinely novel.

@@ -5,10 +5,10 @@ tier: P1
 score: 11
 position: Lead PM, Recurring Payments
 link: https://example.com/gocardless-jobs/lead-pm-recurring-payments
-date_added: 2026-04-05
-date_applied: 2026-04-08
-last_inbound: 2026-04-29
-date_not_interested: 2026-04-29
+date_added: 2026-06-21
+date_applied: 2026-06-24
+last_inbound: 2026-07-15
+date_not_interested: 2026-07-15
 close_reason: hiring manager on parental leave; role paused indefinitely
 monitoring: true  # re-open if role resurfaces in Q3
 ---

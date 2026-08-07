@@ -5,8 +5,8 @@ tier: P0
 score: 13
 position: Senior PM, Pricing & Risk
 link: https://example.com/marshmallow-jobs/senior-pm-pricing-risk
-date_added: 2026-05-08
-date_applied: 2026-05-13
+date_added: 2026-07-24
+date_applied: 2026-07-29
 ---
 
 # Marshmallow
@@ -15,5 +15,5 @@ Insurtech for non-standard motor insurance (immigrants, expats, new UK arrivals 
 
 ## History
 
-2026-05-08: status → new. Discovered via /job-search. P0 — pricing + risk is exactly the positioning. (source: user, user-entered)
-2026-05-13: status → applied. Cover note framed positioning around pricing-experiment work + consumer-credit risk parallels. (source: user, user-entered)
+2026-07-24: status → new. Discovered via /job-search. P0 — pricing + risk is exactly the positioning. (source: user, user-entered)
+2026-07-29: status → applied. Cover note framed positioning around pricing-experiment work + consumer-credit risk parallels. (source: user, user-entered)

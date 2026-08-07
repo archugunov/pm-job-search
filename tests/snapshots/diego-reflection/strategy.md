@@ -24,7 +24,7 @@
 -->
 ---
 # YYYY-MM-DD — when "done" should happen.
-target_offer_date: 2026-09-15
+target_offer_date: 2026-11-10
 
 # Outreach + applications per week. Either can be null to skip tracking.
 weekly_targets:
@@ -38,14 +38,14 @@ pipeline_targets:
 
 # Pre-committed if-then decisions. /today surfaces any whose date is within
 # the next 14 days. Shape:
-#   - date: 2026-06-15
+#   - date: 2026-08-10
 #     condition: "<2 active final-round threads"
 #     action: "expand search criteria; lower domain-fit floor"
 checkpoints:
-  - date: 2026-07-15
+  - date: 2026-09-09
     condition: "fewer than 3 active threads with $190K+ base disclosed"
     action: "open conversations with two US-remote-focused exec recruiters; consider lowering base floor to $175K"
-  - date: 2026-08-15
+  - date: 2026-10-10
     condition: "no offers in hand"
     action: "open advisory-engagement conversations to bridge income; extend timeline by 6 weeks"
 ---
@@ -78,4 +78,4 @@ Sign a Head of Product or VP Product offer at a P0-tier B2B SaaS or DevTools com
 - No companies still negotiating their seed-to-Series-A — too early, wrong shape.
 - No US-East-Coast-only working hours; need at least 4 hours of midday overlap from Mexico City.
 
-<!-- Last edited by /strategy on 2026-05-15 -->
+<!-- Last edited by /strategy on 2026-07-10 -->

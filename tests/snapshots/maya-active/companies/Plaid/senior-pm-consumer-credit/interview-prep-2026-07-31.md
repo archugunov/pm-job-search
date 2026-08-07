@@ -1,5 +1,5 @@
 # Interview prep — Plaid / Senior PM Consumer Credit
-**Date:** 2026-05-15  **Stage:** cpo-round  **Tier:** P0
+**Date:** 2026-07-31  **Stage:** cpo-round  **Tier:** P0
 
 ## Anchors
 - **Why this company:** Plaid's consumer credit division is a deliberate strategic bet — a direct-to-consumer product built on top of B2B financial infrastructure — which mirrors exactly the operating context I've navigated before.
@@ -41,7 +41,7 @@ Launched an underwriting product from scratch inside a parent infrastructure tha
 - Don't lead with team size managed — there's likely no direct-report scope at this stage; lead with outcome and autonomy instead.
 
 ## Notes from prior rounds
-- Panel (2026-05-12): pricing-experiment story landed deeply — CTO pushed on methodology three times; framing as a capital-allocation system was the key. Activation framework discussion never got airtime — panel was skewed toward risk and pricing depth. Drop activation framing from CPO prep.
+- Panel (2026-07-28): pricing-experiment story landed deeply — CTO pushed on methodology three times; framing as a capital-allocation system was the key. Activation framework discussion never got airtime — panel was skewed toward risk and pricing depth. Drop activation framing from CPO prep.
 - CTO flagged "pricing decisions have two layers of approval at Lendable" unprompted — this is a live internal topic, not just research-brief context. Name it proactively with Tom rather than waiting for him to surface it.
 - Hedged on "how do you operate when you don't control the pricing lever?" — no concrete example ready. Fix this: underwriting-zero-to-one story covers operating without controlling the rails directly.
 - Capital Markets gating question is still unresolved from panel — direct answer needed from CPO round before role-shape verdict can be finalised.

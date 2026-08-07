@@ -3,7 +3,7 @@ title: DevTools onboarding zero to one
 themes: [zero-to-one, dev-tools, onboarding, friction]
 role_lens: [strategy, execution, analytics]
 companies_used_in: [Linear, Retool]
-last_practised: 2026-05-15
+last_practised: 2026-07-10
 ---
 
 # DevTools onboarding zero to one

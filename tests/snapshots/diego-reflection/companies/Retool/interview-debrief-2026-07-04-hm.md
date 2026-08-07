@@ -1,5 +1,5 @@
 # Interview debrief — Retool / Head of Product, Apps
-**Date:** 2026-05-09  **Stage:** hm  **Source:** notes  **Tier (pre):** P0
+**Date:** 2026-07-04  **Stage:** hm  **Source:** notes  **Tier (pre):** P0
 
 ## What landed
 - PLG cohort methodology framing landed cleanly with Tom. When I described how I isolate pricing signal from organic growth using new-customer cohort comparisons, Tom stayed on the topic and asked follow-up questions about the attribution window — strong signal he was tracking and interested, not politely moving on.
@@ -26,11 +26,11 @@ Tom's questions were almost entirely about how things get built and measured —
 - No mention of trust-rebuilding, prior PM difficulties, or cross-functional conflicts requiring navigation.
 
 ## Process / next steps
-- Panel round scheduled for 2026-05-19 — three interviewers (CTO, eng manager, design lead).
+- Panel round scheduled for 2026-07-14 — three interviewers (CTO, eng manager, design lead).
 - Tom signalled continued interest explicitly at close.
 
 ## Recommended updates
 - **Stories to add or sharpen:** Add an "apps-vs-platform" angle to `plg-pricing-restructure` — specifically, frame the pricing surface as the PLG motion's growth engine, not a feature adjacent to it. That's the framing that landed with Tom and will need to be consistent across the panel.
 - **Profile updates:** <None — no profile misfit surfaced.>
-- **Meta updates:** Status remains `interviewing`. Add a monitoring note: Workflows scope is a Tom-watchpoint — if the panel surfaces the same question and Diego still can't give a sharp answer, it becomes a rejection risk. Prep the Apps-vs-Workflows view explicitly before 2026-05-19.
+- **Meta updates:** Status remains `interviewing`. Add a monitoring note: Workflows scope is a Tom-watchpoint — if the panel surfaces the same question and Diego still can't give a sharp answer, it becomes a rejection risk. Prep the Apps-vs-Workflows view explicitly before 2026-07-14.
 - **Next-round prep:** (1) Develop a concrete view on Apps-vs-Workflows sequencing before the panel — not a framework, a position. (2) Prep a sharper answer on org interface: would HoP Apps own Workflows growth or be consulted? Know the answer and know why it matters. (3) Panel includes CTO — lead with technical depth (cohort methodology, instrumentation) before strategic framing. (4) Design lead in the panel — prepare one example of PM/design collaboration that shows I protect design quality under speed pressure, not just shipping velocity.

@@ -5,8 +5,8 @@ tier: P0
 score: 14
 position: Lead PM, Claude Code
 link: https://example.com/anthropic-claude-code
-date_added: 2026-05-08
-date_applied: 2026-05-10
+date_added: 2026-07-24
+date_applied: 2026-07-26
 ---
 
 # Anthropic — Lead PM, Claude Code

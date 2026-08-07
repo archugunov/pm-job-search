@@ -1,5 +1,5 @@
 # Interview prep — Linear / Group PM, Workflow Automation
-**Date:** 2026-05-03  **Stage:** hm  **Tier:** P1
+**Date:** 2026-06-28  **Stage:** hm  **Tier:** P1
 
 ## Anchors
 - **Why this company:** Real PLG motion at exactly the right stage — free-to-paid through product gates, founder still in product decisions, small enough that GPM scope means actual IC-leadership not GM overhead.

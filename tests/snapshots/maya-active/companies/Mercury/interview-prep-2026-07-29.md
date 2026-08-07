@@ -1,5 +1,5 @@
 # Interview prep — Mercury / Sr PM, Banking
-**Date:** 2026-05-13  **Stage:** panel  **Panelists:** Jamie (PM peer), Raj (EM), Priya (Sr Designer)  **Tier:** P1
+**Date:** 2026-07-29  **Stage:** panel  **Panelists:** Jamie (PM peer), Raj (EM), Priya (Sr Designer)  **Tier:** P1
 
 ## Anchors
 

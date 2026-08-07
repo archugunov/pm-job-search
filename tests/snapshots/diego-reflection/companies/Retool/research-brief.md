@@ -12,7 +12,7 @@
 - **Role-shape:** HoP Apps with team ~30 puts me close to the founder without being too early-stage. Right ladder rung.
 - **Skills carry over:** PLG-pricing redesign and platform-API monetisation map cleanly onto an internal-tools PLG-to-enterprise motion.
 - **Compensation:** HoP at Retool likely $230–260K USD per Levels.fyi — above my $190–230K band, comfortable to negotiate.
-- **Honest risk:** Scope spans both Apps and the newer Workflows surface. Workflows is one step removed from my core. Panel on 2026-05-19 is the moment to surface scope clarity — accountable for Workflows growth, or just consulted?
+- **Honest risk:** Scope spans both Apps and the newer Workflows surface. Workflows is one step removed from my core. Panel on 2026-07-14 is the moment to surface scope clarity — accountable for Workflows growth, or just consulted?
 
 ## Open questions
 

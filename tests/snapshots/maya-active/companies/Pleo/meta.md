@@ -5,9 +5,9 @@ tier: P2
 score: 9
 position: Senior PM, Spend Controls
 link: https://example.com/pleo-jobs/senior-pm-spend-controls
-date_added: 2026-03-28
-last_inbound: 2026-04-02
-date_not_interested: 2026-04-02
+date_added: 2026-06-13
+last_inbound: 2026-06-18
+date_not_interested: 2026-06-18
 close_reason: role re-scoped to Berlin-only after office reorg; geography hard-filter
 monitoring: false
 ---

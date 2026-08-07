@@ -1,5 +1,5 @@
 # Interview prep — Mercury / Sr PM, Banking
-**Date:** 2026-05-17  **Stage:** founder  **Interviewer:** Immad Akhund (CEO)  **Format:** 45 min, 1:1, Tuesday 2026-05-19  **Tier:** P1
+**Date:** 2026-08-02  **Stage:** founder  **Interviewer:** Immad Akhund (CEO)  **Format:** 45 min, 1:1, Tuesday 2026-08-04  **Tier:** P1
 
 ## Anchors
 

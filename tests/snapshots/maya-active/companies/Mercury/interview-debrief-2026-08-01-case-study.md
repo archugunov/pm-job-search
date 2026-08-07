@@ -1,5 +1,5 @@
 # Interview debrief — Mercury / Sr PM, Banking
-**Date:** 2026-05-16  **Stage:** case-study  **Source:** notes  **Tier (pre):** P1  **Panel:** Sarah Chen + Jamie + Priya
+**Date:** 2026-08-01  **Stage:** case-study  **Source:** notes  **Tier (pre):** P1  **Panel:** Sarah Chen + Jamie + Priya
 
 ## What landed
 
@@ -33,7 +33,7 @@ Upgrading from 🟡 to 🟢 based on this round. The sub-product is real, the te
 
 ## Process / next steps
 
-- Founder round (Immad Akhund) confirmed for Tuesday 2026-05-19 at 11:00. 45 minutes, 1:1.
+- Founder round (Immad Akhund) confirmed for Tuesday 2026-08-04 at 11:00. 45 minutes, 1:1.
 - Recruiter (Jenna) said this round is the final gate. If it lands, offer follows within 2 business days.
 
 ## Recommended updates

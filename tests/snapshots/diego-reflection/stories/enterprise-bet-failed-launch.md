@@ -3,7 +3,7 @@ title: Enterprise bet failed launch
 themes: [failed-launch, enterprise, postmortem, judgment]
 role_lens: [strategy, execution, analytics]
 companies_used_in: []
-last_practised: 2026-04-18
+last_practised: 2026-06-13
 ---
 
 # Enterprise bet failed launch

@@ -1,5 +1,5 @@
 # Interview debrief — Lendable / Head of Product Consumer Credit
-**Date:** 2026-05-02  **Stage:** panel  **Source:** notes  **Tier (pre):** P0
+**Date:** 2026-07-18  **Stage:** panel  **Source:** notes  **Tier (pre):** P0
 
 ## What landed
 - The framing that pricing, retention, and default loops are one system landed cleanly — I introduced it explicitly at the start and the CTO referenced it back to me later in the session. Why it worked: the panel included Head of Risk and CTO, both of whom think in system terms; naming the system first gave them a shared frame for the rest of the session.

@@ -1,8 +1,8 @@
 # Offer evaluation — Lendable / Head of Product Consumer Credit
-**Date:** 2026-05-17  **Stage:** Series C  **Tier (pre):** P0
+**Date:** 2026-08-02  **Stage:** Series C  **Tier (pre):** P0
 
 ## Verdict
-**NEGOTIATE** — comp is mid-band and the role shape is the clearest fit in the pipeline, but the offer arrived 2.5 months ahead of the target date (2026-08-01), there is no urgency, and first-pass offers at founder-led companies almost always have headroom.
+**NEGOTIATE** — comp is mid-band and the role shape is the clearest fit in the pipeline, but the offer arrived 2.5 months ahead of the target date (2026-10-17), there is no urgency, and first-pass offers at founder-led companies almost always have headroom.
 
 ## Comp shape
 - **Base:** £155K. Sits at the lower-mid point of the £140K–£165K salary_band for leadership roles — acceptable but not at ceiling.
@@ -12,7 +12,7 @@
 - **Stage-vs-equity read:** Series C with founder-led IPO trajectory — equity upside is real but dependent on IPO materialising within 4–5 years. If IPO slips, comp story is base-only at £155K, which is mid-range for a London HoP. The tilt toward equity is appropriate for this stage; don't over-index on base at the cost of equity floor.
 
 ## Role-shape re-check (build-vs-defend)
-Lifting from `interview-debrief-2026-05-09-cpo-round.md`:
+Lifting from `interview-debrief-2026-07-25-cpo-round.md`:
 
 **🟢 building-with-team** — Tom's framing of the role was explicitly about shipping and owning product decisions, with the Capital Markets interface treated as a constraint to navigate through, not a political landmine to manage around.
 
@@ -82,9 +82,9 @@ If this offer fails in 18 months:
    Rationale: moving from a current role into a HoP position at a new company involves a gap in variable compensation and notice period cost. £30K is defensible against that framing and doesn't reopen the base conversation. Keep the framing practical ("transition cost buffer"), not aspirational.
    Fallback: if they hold at £20K, accept — this is not the load-bearing negotiation item.
 
-3. **Start date: ask to push to 2026-07-15**
+3. **Start date: ask to push to 2026-09-30**
    Rationale: approximately 4 weeks from a nominal June start. Framed as wrapping current commitments cleanly — a clean handover is in Lendable's interest too. Also preserves optionality if Plaid CPO round resolves before then (a few additional weeks creates a real decision window).
-   Fallback: if they need an earlier start, accept 2026-07-01 and use the two weeks to prepare properly.
+   Fallback: if they need an earlier start, accept 2026-09-16 and use the two weeks to prepare properly.
 
 4. **Direct-report structure: get clarity in writing before signing**
    Rationale: the anti-goals check flagged this as unresolved. Not a negotiation item per se, but a condition of signing — ask "can you send me the org chart for the HoP reporting structure?" in the same conversation as the equity ask. Don't sign without knowing the direct-report count.

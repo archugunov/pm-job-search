@@ -1,5 +1,5 @@
 # Interview debrief — Cleo / Head of Product Growth
-**Date:** 2026-05-07  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
+**Date:** 2026-07-23  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
 
 ## What landed
 - The activation framework portion landed well — when I walked through the signup-to-first-engagement funnel and named specific drop-off hypotheses, the interviewer leaned forward and asked a follow-up about how I'd instrument it in a chat context. Why it worked: it was concrete, methodical, and directly relevant to the surface they're building.
@@ -30,7 +30,7 @@ Priya showed genuine enthusiasm for the growth-mechanics portion of the conversa
 - "Biggest funnel drop is a known issue" framing suggests some problems are already defined — partial optimisation role, not blank-slate build.
 
 ## Process / next steps
-- 10 days post-HM with no inbound as of 2026-05-07. Recruiter has not followed up.
+- 10 days post-HM with no inbound as of 2026-07-23. Recruiter has not followed up.
 - Interviewer gave no explicit next-steps signal at close.
 
 ## Recommended updates

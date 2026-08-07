@@ -4,8 +4,8 @@ position: Senior Product Manager
 status: new
 tier: unscored
 link: https://example.com/acmecorp-senior-product-manager
-first_seen: 2026-05-22
-last_seen: 2026-05-22
+first_seen: 2026-08-07
+last_seen: 2026-08-07
 ---
 
 # AcmeCorp — Senior Product Manager
