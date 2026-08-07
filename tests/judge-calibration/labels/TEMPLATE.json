@@ -1,7 +1,11 @@
 {
   "run": "YYYY-MM-DD/persona-journey",
-  "verdict_judge": "PASS | FAIL (confirmed) | FAIL (one-of-two)",
-  "verdict_human": null,
+  "verdicts": {
+    "hard":    {"judge": "PASS | FAIL", "human": null},
+    "spec":    {"judge": "PASS | FAIL", "human": null},
+    "overall": {"judge": "PASS | FAIL (confirmed) | FAIL (one-of-two)", "human": null}
+  },
+  "advisory": {"soft_count": 0, "critique_count": 0},
   "findings": [
     {"tier": "hard | soft | spec | critique",
      "summary": "one-line copy of the judge's finding",

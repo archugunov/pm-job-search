@@ -19,7 +19,14 @@ against.
    its tier, a one-line copy, and your call — `agree` (real), `disagree`
    (not real), `borderline` (defensible either way; excluded from
    precision, reported separately).
-3. Set `verdict_human` to what the verdict should have been.
+3. Adjudicate `verdicts.hard.human` and `verdicts.spec.human` separately —
+   what each sub-verdict should have been (`PASS` or `FAIL`). Do NOT set
+   an overall verdict yourself: `verdicts.overall.human` stays `null`.
+   Overall is derived from the two sub-verdicts by the judge's own
+   aggregation rule (`Overall` passes only when both Hard violations and
+   Spec gaps pass); soft issues and open critiques are advisory counts
+   and never affect it. `stats.py` computes the derived overall for you
+   when comparing against the judge's stated `Overall`.
 
 ## Blind pass (recall) — do for >= 6 transcripts BEFORE reading their judge files
 
@@ -35,7 +42,14 @@ against.
 
 Bars: precision >= 0.9 per tier (tiers with >= 5 adjudicated findings),
 recall >= 0.8. Below the bars, a lone journey FAIL is "go look", not a
-release blocker.
+release blocker. Verdict agreement (hard, spec, derived overall) and
+advisory counts are reported alongside the bars but never gate at this
+corpus size.
+
+If a `judge self-contradiction` line appears, the judge's own stated
+`Overall` disagreed with what its own `Hard violations` and `Spec gaps`
+verdicts should have produced — that's a defect in the judge's output
+contract, not something to fix in your labelling. Note it and move on.
 
 `grade-judge.html` computes the same maths live in the browser while you
 label; the one cosmetic difference is that if blind data exists but every
@@ -56,7 +70,8 @@ omits the recall line entirely — both agree the gate never fails on it.
 Re-run the judge over `runs/<date>/<persona>-<journey>.md` transcripts
 (judge-prompt + rubrics + transcript, per test-personas Phase 4 — no
 conversation loop, no simulator). Diff new verdicts against
-`verdict_human` in the labels. ~11 LLM calls, minutes.
+`verdicts.hard.human` / `verdicts.spec.human` in the labels. ~11 LLM
+calls, minutes.
 
 ## Known corpus caveats
 
