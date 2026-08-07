@@ -3,7 +3,7 @@ title: PLG pricing restructure
 themes: [pricing, growth, PLG, B2B, 0-to-paid-conversion]
 role_lens: [strategy, execution, analytics, leadership]
 companies_used_in: [Linear, Retool]
-last_practised: 2026-05-15
+last_practised: 2026-07-10
 ---
 
 # PLG pricing restructure

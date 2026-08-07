@@ -1,5 +1,5 @@
 # Interview debrief — Mercury / Sr PM, Banking
-**Date:** 2026-05-12  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
+**Date:** 2026-07-28  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
 
 ## What landed
 
@@ -33,7 +33,7 @@ Sarah named a specific unsolved problem (activation-to-retention for sub-£50K a
 
 ## Process / next steps
 
-- Panel round confirmed for Thursday 2026-05-14 (PM peer Jamie, EM Raj, Sr Designer Priya).
+- Panel round confirmed for Thursday 2026-07-30 (PM peer Jamie, EM Raj, Sr Designer Priya).
 - Recruiter (Jenna) sending panel logistics tonight.
 
 ## Recommended updates

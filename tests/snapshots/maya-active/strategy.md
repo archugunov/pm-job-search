@@ -1,7 +1,7 @@
 <!-- Example file. Replace with your own via /setup. -->
 ---
 # YYYY-MM-DD — when "done" should happen.
-target_offer_date: 2026-08-01
+target_offer_date: 2026-10-17
 
 # Outreach + applications per week. Either can be null to skip tracking.
 weekly_targets:
@@ -15,14 +15,14 @@ pipeline_targets:
 
 # Pre-committed if-then decisions. /today surfaces any whose date is within
 # the next 14 days. Shape:
-#   - date: 2026-06-15
+#   - date: 2026-08-31
 #     condition: "<2 active final-round threads"
 #     action: "expand search criteria; lower domain-fit floor"
 checkpoints:
-  - date: 2026-06-15
+  - date: 2026-08-31
     condition: "<2 active final-round threads"
     action: "expand search to include Senior PM at P0 companies; lower domain-fit threshold one notch"
-  - date: 2026-07-15
+  - date: 2026-09-30
     condition: "no offers in hand"
     action: "open conversations with two specialist fintech recruiters; one interim/contract enquiry"
 ---
@@ -56,4 +56,4 @@ Sign a Head of Product or senior Lead PM offer at a P0-tier company by 1 August 
 - No company still pre-PMF — that's a different job to the one I want.
 - No more than 6 direct reports — that's GM scope, not the IC-lead I'm targeting.
 
-<!-- Last edited by /strategy on 2026-05-15 -->
+<!-- Last edited by /strategy on 2026-07-31 -->

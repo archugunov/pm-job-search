@@ -1,5 +1,5 @@
 # Interview debrief — Mercury / Sr PM, Banking
-**Date:** 2026-05-14  **Stage:** panel  **Source:** notes  **Tier (pre):** P1
+**Date:** 2026-07-30  **Stage:** panel  **Source:** notes  **Tier (pre):** P1
 
 ## What landed
 
@@ -34,8 +34,8 @@ Jamie + Raj signals are 🟢 — the team is doing real product work, the legacy
 
 ## Process / next steps
 
-- Case study round confirmed for Friday 2026-05-15. Prompt sent same day: "Mercury Banking is launching a sub-product for bookkeeping firms with multi-entity client accounts. Frame the opportunity, name the top three risks, and recommend a sequence." 24 hours, 30-min present + 30-min discussion.
-- Founder round (Immad Akhund, CEO) tentatively scheduled for Tuesday 2026-05-19.
+- Case study round confirmed for Friday 2026-07-31. Prompt sent same day: "Mercury Banking is launching a sub-product for bookkeeping firms with multi-entity client accounts. Frame the opportunity, name the top three risks, and recommend a sequence." 24 hours, 30-min present + 30-min discussion.
+- Founder round (Immad Akhund, CEO) tentatively scheduled for Tuesday 2026-08-04.
 
 ## Recommended updates
 

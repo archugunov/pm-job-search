@@ -1,4 +1,4 @@
-# Daily brief — 2026-05-18
+# Daily brief — 2026-08-03
 
 ## Top 3 actions today
 1. **Brex** — HM panel scheduled. Refresh your "spend mgmt cross-functional" story — last reviewed 4 days ago.

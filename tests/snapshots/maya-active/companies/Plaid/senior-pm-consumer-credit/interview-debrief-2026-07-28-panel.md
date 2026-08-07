@@ -1,5 +1,5 @@
 # Interview debrief — Plaid / Senior PM Consumer Credit
-**Date:** 2026-05-12  **Stage:** panel  **Source:** notes  **Tier (pre):** P0
+**Date:** 2026-07-28  **Stage:** panel  **Source:** notes  **Tier (pre):** P0
 
 ## What landed
 - The pricing-experiment story landed deeply — I took it from "we ran a test" to "we designed a system for testing under capital constraints", and the CTO followed up with three pushes on the methodology. Why it worked: the framing matched their actual operating environment (constrained pricing decisions, infrastructure advantages, capital allocation tradeoffs).
@@ -31,7 +31,7 @@ Panel focused entirely on how we'd ship and what constraints we'd be designing a
 
 ## Process / next steps
 - CPO round with Tom expected — recruiter indicated timeline of 1-2 weeks post-panel.
-- No specific timeline given; last inbound from recruiter was 2026-05-13.
+- No specific timeline given; last inbound from recruiter was 2026-07-29.
 
 ## Recommended updates
 - **Stories to add or sharpen:** add a new angle to `payments-pricing-experiment` — "pricing systems at scale" — that stays at the methodology level for infrastructure-minded audiences, not just outcome-minded ones. Swap the activation-framework angle out of CPO prep — it didn't land here and won't be the CPO's primary probe either.

@@ -4,7 +4,7 @@ story_type: failed-launch
 themes: [failed-launch, instalments, postmortem, judgment]
 role_lens: [strategy, execution, analytics]
 companies_used_in: [Lendable]
-last_practised: 2026-04-30
+last_practised: 2026-07-16
 ---
 
 # Instalments failed launch

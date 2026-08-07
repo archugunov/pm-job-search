@@ -5,8 +5,8 @@ tier: P2
 score: 8
 position: Head of Product
 link: https://example.com/atom-jobs/head-of-product
-date_added: 2026-05-04
-date_not_interested: 2026-05-06
+date_added: 2026-07-20
+date_not_interested: 2026-07-22
 ---
 
 # Atom Bank
@@ -15,5 +15,5 @@ UK challenger bank, app-only, ~450 ppl. HoP role is GM-shaped (8+ direct reports
 
 ## History
 
-2026-05-04: status → new. Discovered via /job-search. Flagged as anti-goal-violating immediately. (source: user, user-entered)
-2026-05-06: status → not_interested. Two anti-goal violations (size + GM scope). Not pursuing. (source: user, user-entered)
+2026-07-20: status → new. Discovered via /job-search. Flagged as anti-goal-violating immediately. (source: user, user-entered)
+2026-07-22: status → not_interested. Two anti-goal violations (size + GM scope). Not pursuing. (source: user, user-entered)

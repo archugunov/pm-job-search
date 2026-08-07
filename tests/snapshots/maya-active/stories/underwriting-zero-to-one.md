@@ -4,7 +4,7 @@ story_type: ambiguity-0-to-1
 themes: [zero-to-one, underwriting, risk, ambiguity]
 role_lens: [strategy, analytics, design-partnership]
 companies_used_in: [Cleo, Plaid]
-last_practised: 2026-05-15
+last_practised: 2026-07-31
 ---
 
 # Underwriting zero-to-one

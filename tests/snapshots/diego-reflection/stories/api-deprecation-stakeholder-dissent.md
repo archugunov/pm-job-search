@@ -3,7 +3,7 @@ title: API deprecation stakeholder dissent
 themes: [cross-functional, deprecation, dissent, stakeholder-management]
 role_lens: [strategy, execution, design-partnership]
 companies_used_in: [Linear, Retool]
-last_practised: 2026-05-15
+last_practised: 2026-07-10
 ---
 
 # API deprecation stakeholder dissent

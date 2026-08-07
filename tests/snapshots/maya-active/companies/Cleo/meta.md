@@ -5,9 +5,9 @@ tier: P1
 score: 11
 position: Senior PM, Growth
 link: https://example.com/cleo-jobs/senior-pm-growth
-date_added: 2026-04-15
-date_applied: 2026-04-18
-last_inbound: 2026-05-08
+date_added: 2026-07-01
+date_applied: 2026-07-04
+last_inbound: 2026-07-24
 next_event: ""
 ---
 
@@ -17,8 +17,8 @@ AI personal finance assistant. ~180 ppl, Series C, US/UK consumer-facing. Hiring
 
 ## History
 
-2026-04-15: status → new. Discovered via /job-search. Borderline against the >150 ppl anti-goal. (source: user, user-entered)
-2026-04-18: status → applied. Decided to test the boundary — consumer growth fit was strong enough to risk it. (source: user, user-entered)
-2026-04-28: status → interviewing. Recruiter screen with Lisa. (source: gmail, confirmed)
-2026-05-07: HM round with Priya happened. Activation framework discussion went OK; interviewer seemed checked out on consumer-credit framing. (source: granola, confirmed)
-2026-05-08: Follow-up note from recruiter — "we'll be back in touch shortly". (source: gmail, confirmed)
+2026-07-01: status → new. Discovered via /job-search. Borderline against the >150 ppl anti-goal. (source: user, user-entered)
+2026-07-04: status → applied. Decided to test the boundary — consumer growth fit was strong enough to risk it. (source: user, user-entered)
+2026-07-14: status → interviewing. Recruiter screen with Lisa. (source: gmail, confirmed)
+2026-07-23: HM round with Priya happened. Activation framework discussion went OK; interviewer seemed checked out on consumer-credit framing. (source: granola, confirmed)
+2026-07-24: Follow-up note from recruiter — "we'll be back in touch shortly". (source: gmail, confirmed)

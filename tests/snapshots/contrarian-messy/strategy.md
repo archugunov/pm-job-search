@@ -1,6 +1,6 @@
 <!-- Synthetic test persona. Fictional. -->
 ---
-target_date: 2026-09-01
+target_date: 2026-11-17
 
 weekly_targets:
   applications: 2

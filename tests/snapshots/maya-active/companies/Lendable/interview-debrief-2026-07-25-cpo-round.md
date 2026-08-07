@@ -1,5 +1,5 @@
 # Interview debrief — Lendable / Head of Product Consumer Credit
-**Date:** 2026-05-09  **Stage:** cpo-round  **Source:** notes  **Tier (pre):** P0
+**Date:** 2026-07-25  **Stage:** cpo-round  **Source:** notes  **Tier (pre):** P0
 
 ## What landed
 - The founder-vetting questions landed well — all three were asked and answered, and Tom's responses were specific and unhedged. The political-capital question ("where has the last HoP spent most political capital internally?") got the best answer: Tom named the capital markets / product interface as the primary friction point, said the previous HoP spent too long trying to negotiate around it rather than through it, and that he wanted a HoP who would "own the conversation, not avoid it". Why it worked: asking the question framed me as someone who does due diligence on founders, not just companies — and his answer was a genuine signal, not a rehearsed one.

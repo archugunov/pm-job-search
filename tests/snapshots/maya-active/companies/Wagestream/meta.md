@@ -5,7 +5,7 @@ tier: P0
 score: 17
 position: Senior PM, Consumer Lending
 link: https://example.com/wagestream-jobs/senior-pm-consumer-lending
-date_added: 2026-05-18
+date_added: 2026-08-03
 ---
 
 # Wagestream
@@ -14,4 +14,4 @@ UK financial-wellness scaling on top of earned-wage access and short-tenor consu
 
 ## History
 
-2026-05-18: status → new. Discovered via /job-search. P0 — size + surface + geography all align with target shape. (source: user, user-entered)
+2026-08-03: status → new. Discovered via /job-search. P0 — size + surface + geography all align with target shape. (source: user, user-entered)

@@ -1,5 +1,5 @@
 # Interview prep — Lendable / Head of Product Consumer Credit
-**Date:** 2026-04-30  **Stage:** panel  **Tier:** P0
+**Date:** 2026-07-16  **Stage:** panel  **Tier:** P0
 
 ## Anchors
 - **Why this company:** Lendable at IPO-track and 120 ppl is the clearest stage-fit in the pipeline — founder-led, consumer credit, capital-markets-constrained product decisions — exactly the operating context I've navigated before.
@@ -41,6 +41,6 @@ Launched an instalment product variant that didn't find traction. The failure wa
 - Don't neglect to name a specific number for the activation-to-first-loan funnel if it comes up — I have the data (4.1% signup-to-first-draw on a 90-day window), I should use it.
 
 ## Notes from prior rounds
-- HM round (2026-04-22): pricing-experiment story landed well — Tom probed the default-rate dimension and the system framing resolved his objection about reading retention in isolation. Add the CFO-pushback scenario to this prep — it came up in the HM and will likely resurface with the panel.
+- HM round (2026-07-08): pricing-experiment story landed well — Tom probed the default-rate dimension and the system framing resolved his objection about reading retention in isolation. Add the CFO-pushback scenario to this prep — it came up in the HM and will likely resurface with the panel.
 - Tom asked about operating against a CFO who pushes back on portfolio risk; the answer needs to be more concrete than a framework. Frame as: "I structure the decision for the person above me — here's what we each recommend, here's what we'd each accept, here's what we need you to resolve."
 - Tom moves quickly past standard PM warmup; the panel may follow his style — be ready to go straight to depth.

@@ -5,9 +5,9 @@ tier: P1
 score: 11
 position: Sr PM, Banking
 link: https://example.com/mercury-banking
-date_added: 2026-04-22
-date_applied: 2026-04-24
-last_inbound: 2026-05-09
+date_added: 2026-07-08
+date_applied: 2026-07-10
+last_inbound: 2026-07-25
 ---
 # Mercury
 

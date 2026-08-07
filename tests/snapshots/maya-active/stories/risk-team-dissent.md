@@ -4,7 +4,7 @@ story_type: stakeholder-dissent
 themes: [cross-functional, risk, dissent, stakeholder-management]
 role_lens: [strategy, execution, design-partnership]
 companies_used_in: [Lendable, Plaid]
-last_practised: 2026-05-15
+last_practised: 2026-07-31
 ---
 
 # Risk team dissent

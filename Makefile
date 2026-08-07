@@ -1,4 +1,4 @@
-.PHONY: demo demo-snapshot demo-build demo-preview demo-preview-build dashboard-build sync-sweep check-sweep-sync
+.PHONY: demo demo-snapshot demo-build demo-preview demo-preview-build dashboard-build sync-sweep check-sweep-sync rebase-fixtures check-fixture-freshness
 
 # Build the GitHub Pages demo bundle and stage it under docs/, then restore
 # plugin/dashboard/dist/ to the live (non-demo) build so the plugin's shipped
@@ -73,3 +73,18 @@ check-sweep-sync:
 		exit 1; \
 	fi; \
 	echo "Shared files in sync."
+
+# Shift test-snapshot dates forward so date-gated skill logic stays reachable.
+# /today gates on "within 7 days", ">14 days ago", and ISO-week boundaries, so a
+# snapshot frozen months back stops exercising those branches — and a journey that
+# can't tell a regression from fixture rot has stopped being a test.
+# Prints a diff and writes nothing to git; review and commit separately.
+rebase-fixtures:
+	python3 scripts/rebase_fixture_dates.py all
+	@echo ""
+	@echo "Review with 'git diff' — expect only date shifts and renames — then commit."
+
+# Read-only staleness report. Run before a sweep that touches date-gated journeys.
+# Deliberately not a CI gate: it would go red on a repo nobody touched this week.
+check-fixture-freshness:
+	@python3 scripts/rebase_fixture_dates.py check

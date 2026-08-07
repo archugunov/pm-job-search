@@ -1,5 +1,5 @@
 # Interview debrief — Lendable / Head of Product Consumer Credit
-**Date:** 2026-04-22  **Stage:** hm  **Source:** notes  **Tier (pre):** P0
+**Date:** 2026-07-08  **Stage:** hm  **Source:** notes  **Tier (pre):** P0
 
 ## What landed
 - The pricing-experiment story landed well — Tom probed the default-rate dimension specifically and seemed satisfied when I named the exact statistical method we used to separate pricing signal from cohort-quality signal. Why it worked: Tom has strong product opinions and wants to see technical depth, not just outcome headlines. He didn't stop at "what was the result" — he asked "how did you know it wasn't a cohort effect".
@@ -32,4 +32,4 @@ Tom's questions were almost entirely about how things get designed and built —
 - **Stories to add or sharpen:** `risk-team-dissent` needs an angle explicitly covering "operating against financial risk pushback at C-suite level" — not just peer-level dissent. The CFO-pushback question is the same shape.
 - **Profile updates:** "escalate" as the answer to conflict situations reads as passive. The framing should be "I structure the decision for the person above me" not "I hand it upward". Add to `## What NOT to Frame As`.
 - **Meta updates:** status remains `interviewing`; hold for panel invite.
-- **Next-round prep:** (1) CFO-pushback question is a live risk for panel and CPO round — prepare a concrete example before panel (2026-05-02). (2) Sharper decision-structure framing needed for disagreements: "here's what we each recommend, here's what we'd each accept, here's what we need you to resolve." (3) Capital Markets gating is a structural question for Tom's round — save it for him, not the panel.
+- **Next-round prep:** (1) CFO-pushback question is a live risk for panel and CPO round — prepare a concrete example before panel (2026-07-18). (2) Sharper decision-structure framing needed for disagreements: "here's what we each recommend, here's what we'd each accept, here's what we need you to resolve." (3) Capital Markets gating is a structural question for Tom's round — save it for him, not the panel.

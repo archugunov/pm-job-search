@@ -1,5 +1,5 @@
 # Interview prep — Mercury / Sr PM, Banking
-**Date:** 2026-05-11  **Stage:** hm  **Interviewer:** Sarah Chen (Head of Product, Banking)  **Tier:** P1
+**Date:** 2026-07-27  **Stage:** hm  **Interviewer:** Sarah Chen (Head of Product, Banking)  **Tier:** P1
 
 ## Anchors
 

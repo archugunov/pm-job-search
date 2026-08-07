@@ -1,5 +1,5 @@
 # Interview prep — Retool / Head of Product, Apps
-**Date:** 2026-05-15  **Stage:** panel  **Tier:** P0
+**Date:** 2026-07-10  **Stage:** panel  **Tier:** P0
 
 ## Anchors
 - **Why this company:** Retool's PLG motion is real and well-established — not aspirational — and the Apps team scope at ~30 puts me close to the founder without being so early that there's no machine to leverage.
@@ -43,6 +43,6 @@ Late in the pricing-redesign work I pushed for a pricing-page restructure the CE
 - Don't leave the Apps-vs-Workflows scope question unasked. It's the live risk from the research brief and the HM round. If the panel doesn't surface it, I raise it.
 
 ## Notes from prior rounds
-- HM round (2026-05-09, Tom — Apps GM): apps-vs-platform framing landed well. Tom was engaged on PLG cohort methodology. When the conversation shifted to Workflows scope, I didn't have a sharp answer on how Apps and Workflows should be sequenced over the next 12 months — that was the visible gap.
+- HM round (2026-07-04, Tom — Apps GM): apps-vs-platform framing landed well. Tom was engaged on PLG cohort methodology. When the conversation shifted to Workflows scope, I didn't have a sharp answer on how Apps and Workflows should be sequenced over the next 12 months — that was the visible gap.
 - Tom's culture cues pointed to a "ship-and-measure" cadence; the panel likely shares that value. Bring data to every answer, not just the narrative.
 - Scope clarity on Apps-vs-Workflows is the single most important thing to establish in this panel. Surface it in the questions section if it hasn't come up organically by the midpoint.

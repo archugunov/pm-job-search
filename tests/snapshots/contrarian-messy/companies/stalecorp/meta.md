@@ -5,9 +5,9 @@ status: to_apply
 tier: 1
 score: 13
 link: https://example.com/stalecorp-senior-pm
-first_seen: 2026-05-01
-last_seen: 2026-05-01
-last_activity: 2026-05-01
+first_seen: 2026-07-17
+last_seen: 2026-07-17
+last_activity: 2026-07-17
 ---
 
 # StaleCorp — Senior PM

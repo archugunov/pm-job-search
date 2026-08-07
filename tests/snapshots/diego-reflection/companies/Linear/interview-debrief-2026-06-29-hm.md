@@ -1,5 +1,5 @@
 # Interview debrief — Linear / Group PM, Workflow Automation
-**Date:** 2026-05-04  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
+**Date:** 2026-06-29  **Stage:** hm  **Source:** notes  **Tier (pre):** P1
 
 ## What landed
 - The PLG pricing restructure story landed cleanly. When I walked through the cohort comparison methodology — new-customer cohorts on old vs new pricing, isolating the attribution from organic growth — Karri asked a follow-up about how I'd apply the same methodology to a rules-engine surface without an existing conversion baseline. That follow-up was the signal: he understood the story was directly relevant to workflow automation and wanted to extend it.
@@ -27,15 +27,15 @@ The round was substantively good on PLG mechanics but had a visible warning sign
 - Positive build signal: Karri's follow-up on cohort methodology extended into a 4-minute side-thread on adoption measurement for power-user surfaces — that's active intellectual engagement, not a box-check interview.
 - Mixed signal: disengagement on platform-framing suggests the role's evaluation axis is narrower than the JD implied. This is a product-feature GPM role, not a platform-architecture role. That's a smaller scope than my prior work.
 - Mixed signal: the api-deprecation story's weak landing (enterprise-context mismatch) suggests Karri is pattern-matching against small-team, bottom-up product work — and stories from 200+ person companies don't transfer cleanly.
-- No next-step commitment from Karri despite a follow-up note from Anna on 2026-05-04 — "coming soon" is recruiter-speak for a decision that isn't moving quickly. The post-HM silence is consistent with a 🟡 round.
+- No next-step commitment from Karri despite a follow-up note from Anna on 2026-06-29 — "coming soon" is recruiter-speak for a decision that isn't moving quickly. The post-HM silence is consistent with a 🟡 round.
 
 ## Process / next steps
-- Anna (recruiter) sent a follow-up note on 2026-05-04 — "next round coming soon." No specific timeline.
+- Anna (recruiter) sent a follow-up note on 2026-06-29 — "next round coming soon." No specific timeline.
 - No direct next-steps signal from Karri at close.
-- As of 2026-05-04, no further inbound. Interview trajectory is stale.
+- As of 2026-06-29, no further inbound. Interview trajectory is stale.
 
 ## Recommended updates
 - **Stories to add or sharpen:** Add a new angle to `plg-pricing-restructure` scoped explicitly to "PLG surface instrumentation at small-team scale" — removing enterprise-scale context (CFO alignment, NDA pricing tests) and keeping the cohort-methodology core. That version will land at companies like Linear where the referent is 2-engineer surfaces, not $40M ARR processes. Separately, `api-deprecation-stakeholder-dissent` needs a small-team variant or should be retired from Linear-type companies entirely.
 - **Profile updates:** Consider adding to `## What NOT to Frame As` — "don't use apps-vs-platform framing at sub-100 person companies — it reads as an abstraction layer the company hasn't reached yet."
-- **Meta updates:** Mark `monitoring: true` if 10 business days pass with no round-2 invite. The post-HM silence plus 🟡 round verdict suggests a genuine decision point for Linear, not a process delay. If no inbound by 2026-05-20, consider status: `closed`.
+- **Meta updates:** Mark `monitoring: true` if 10 business days pass with no round-2 invite. The post-HM silence plus 🟡 round verdict suggests a genuine decision point for Linear, not a process delay. If no inbound by 2026-07-15, consider status: `closed`.
 - **Next-round prep:** If a panel invite arrives — (1) drop api-deprecation entirely from Linear prep; (2) rewrite devtools-onboarding-zero-to-one with small-team instrumentation framing (sub-50-engineer company, no existing baseline); (3) prepare a specific view on how to grow bottom-up adoption of automation features without a sales-assist layer — that is the real evaluation axis.
