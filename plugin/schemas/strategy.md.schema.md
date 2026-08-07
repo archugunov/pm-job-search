@@ -2,7 +2,7 @@
 
 The user's plan. Read by `/today` (progress tracking), `/evaluate-position` (anti-goals), and `career-coach`. Written by `/setup` (basic) and edited via `career-coach`.
 
-Checked by `scripts/validate_userdata.py` (rules `strategy.required`, `strategy.date-format`, `strategy.forbidden-key`).
+Checked by `scripts/validate_userdata.py` (rules `strategy.required`, `strategy.date-format`, `strategy.forbidden-key`). The frontmatter's opening `---` may be preceded by blank lines and/or a leading HTML comment block (as in `plugin/templates/strategy.template.md`) — the validator skips past it before parsing.
 
 ## Required frontmatter keys
 

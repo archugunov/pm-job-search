@@ -31,12 +31,28 @@ KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(.*)$")
 def parse_frontmatter(text: str) -> dict[str, str]:
     """Top-level frontmatter keys only. Nested/indented keys are ignored;
     a key introducing a nested block maps to ''. Values keep inline text,
-    with trailing '# comment' stripped."""
+    with trailing '# comment' stripped.
+
+    The opening '---' may be preceded by blank lines and/or a single leading
+    HTML comment block (possibly spanning multiple lines) — both templates
+    (plugin/templates/profile.template.md, strategy.template.md) and real
+    userdata files open with such a comment before the frontmatter."""
     lines = text.splitlines()
-    if not lines or lines[0].strip() != "---":
+    i = 0
+    while i < len(lines) and lines[i].strip() == "":
+        i += 1
+    if i < len(lines) and lines[i].strip().startswith("<!--"):
+        if "-->" not in lines[i]:
+            i += 1
+            while i < len(lines) and "-->" not in lines[i]:
+                i += 1
+        i += 1  # past the line containing '-->'
+        while i < len(lines) and lines[i].strip() == "":
+            i += 1
+    if i >= len(lines) or lines[i].strip() != "---":
         return {}
     fm: dict[str, str] = {}
-    for line in lines[1:]:
+    for line in lines[i + 1:]:
         if line.strip() == "---":
             return fm
         m = KEY_RE.match(line)  # anchored: indented keys don't match

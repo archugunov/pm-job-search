@@ -88,6 +88,37 @@ def test_meta_forbidden_role_key(tmp_path):
     assert "meta.forbidden-key" in [f.rule for f in validate_tree(tmp_path)]
 
 
+def test_profile_with_leading_html_comment_parses_and_has_no_required_finding(tmp_path):
+    write(tmp_path / "profile.md", """\
+        <!--
+          pm-job-search — profile template.
+
+          /setup fills in {{PLACEHOLDERS}} from your answers and leaves this file in
+          userdata/profile.md as the single source of truth for all skills.
+
+          - Placeholders ({{X}}) → answered during /setup.
+          - Hardcoded values (tier_weights, tier_thresholds, company_shape_adjustment)
+            → opinionated senior-PM-tuned defaults; edit values inline if your
+            preferences differ.
+        -->
+        ---
+        name: Maya Patel
+        target_titles:
+          - Head of Product
+        tier_weights:
+          role_fit: 3
+        tier_thresholds:
+          p0: 8
+        ---
+
+        ## Positioning
+
+        Placeholder positioning text.
+        """)
+    findings = validate_tree(tmp_path)
+    assert [f.rule for f in findings] == []
+
+
 def test_meta_role_slug_subfolder_is_scanned(tmp_path):
     write(tmp_path / "companies" / "Stripe" / "lead-pm" / "meta.md", GOOD_META.replace(
         "status: interviewing", "status: nonsense"))

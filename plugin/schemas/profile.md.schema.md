@@ -2,7 +2,7 @@
 
 The user's identity + tier rubric. Read by `/evaluate-position`, `/job-search`, `/apply`, `/interview-prep`, `/today`, and the reviewer agents. Written by `/setup`.
 
-Checked by `scripts/validate_userdata.py` (rules `profile.required`, `profile.positioning`), which the test-personas harness runs in Phase 3.5 and CI runs over `tests/snapshots/`.
+Checked by `scripts/validate_userdata.py` (rules `profile.required`, `profile.positioning`), which the test-personas harness runs in Phase 3.5 and CI runs over `tests/snapshots/`. The frontmatter's opening `---` may be preceded by blank lines and/or a leading HTML comment block (as in `plugin/templates/profile.template.md`) — the validator skips past it before parsing.
 
 ## Required frontmatter keys
 
