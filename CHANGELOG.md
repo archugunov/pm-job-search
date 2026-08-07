@@ -30,6 +30,42 @@ without adopting the pipeline tracker.
 
 ---
 
+## [Unreleased]
+
+### Changed
+- Test harness restructured: journeys cut 8 → 3 (+ sweep-smoke, run-by-name);
+  `cold-start-cv`, `reflection`, and both `case-practice` journeys retired.
+- Phase 3.5 schema validation now runs `scripts/validate_userdata.py`
+  (meta.md + profile.md + strategy.md + research-brief), shared with CI.
+
+### Added
+- `harness-checks` CI: deterministic pytest layer over snapshots, schemas,
+  and golden-set labels — 56 tests, $0, every push.
+- Golden set for `/evaluate-position` (12 labeled synthetic JDs) with a
+  release-time agreement gate (`tests/golden/evaluate-position/`).
+- Judge-calibration tooling: `tests/judge-calibration/grade-judge.html`, a
+  single-file browser tool for grading the judge with a blind-pass gate and
+  a live precision/recall readout, and `tests/judge-calibration/stats.py`,
+  its command-line equivalent, with the adjudication protocol in
+  `tests/judge-calibration/README.md`.
+- Frozen judge-calibration corpus: 31 files across 11 judged runs in 7
+  dated directories, scrubbed and committed under
+  `tests/judge-calibration/runs/`.
+- `plugin/skills/test-personas/manual-checklist.md` — the three manual
+  release checks, out of chat lore and into the repo.
+- Schema docs: `plugin/schemas/profile.md.schema.md`,
+  `plugin/schemas/strategy.md.schema.md`.
+
+### Fixed
+- Privacy blocklist gained one more city-name term surfaced during
+  calibration-corpus scrubbing (`.github/workflows/privacy-check.yml`,
+  `CONTRIBUTING.md`).
+- 22 research briefs across the test snapshots gained the
+  `**Source:** <url>` first line `plugin/skills/evaluate-position/SKILL.md`
+  requires, and `tests/snapshots/contrarian-messy/profile.md` gained the
+  tier rubric it was missing — fixture repairs the new schema validator
+  surfaced.
+
 ## [0.4.0] — 2026-08-04
 
 CV-first onboarding. `/setup` now reads a CV up front and pre-fills what it can,
