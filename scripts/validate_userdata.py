@@ -41,6 +41,7 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     files (e.g. tests/snapshots/diego-reflection/strategy.md) have TWO
     consecutive comment blocks: a short one-liner followed by the longer
     template comment."""
+    text = text.lstrip("﻿")  # UTF-8 BOM, if present, precedes everything
     lines = text.splitlines()
     i = 0
     while i < len(lines):
@@ -67,7 +68,9 @@ def parse_frontmatter(text: str) -> dict[str, str]:
             # value or is preceded by whitespace — a bare '#' inside a value
             # (e.g. a URL fragment like https://x/y#frag) is not a comment.
             cm = re.search(r"(?:^|\s)#", raw)
-            value = (raw[:cm.start()] if cm else raw).strip().strip('"')
+            value = (raw[:cm.start()] if cm else raw).strip()
+            if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+                value = value[1:-1]
             fm[m.group(1)] = value
     return {}  # unterminated block — treat as no frontmatter
 

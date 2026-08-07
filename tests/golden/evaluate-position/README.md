@@ -25,7 +25,7 @@ silent profile edits. No LLM involved.
    > gate fires, otherwise the P0/P1/P2 tier and final score. Write it to
    > tests/golden/evaluate-position/results-<YYYY-MM-DD>.json.
 
-2. Grade: `python3 tests/golden/evaluate-position/grade.py results-<date>.json`
+2. Grade: `python3 tests/golden/evaluate-position/grade.py tests/golden/evaluate-position/results-<date>.json`
 3. Gate: exit 0 required before tagging a release. On FAIL, the per-case
    table shows which JD drifted; check the skill's scoring section first,
    the label second (labels lose only if the rubric strings genuinely

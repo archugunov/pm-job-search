@@ -21,11 +21,17 @@ def load_exceptions(snapshot: Path) -> set[tuple[str, str]]:
     if not f.exists():
         return set()
     pairs = set()
-    for line in f.read_text().splitlines():
-        line = line.split("#", 1)[0].strip()
-        if line:
-            path, rule = [s.strip() for s in line.split("::")]
-            pairs.add((path, rule))
+    for raw_line in f.read_text().splitlines():
+        line = raw_line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        parts = [s.strip() for s in line.split("::")]
+        if len(parts) != 2:
+            raise ValueError(
+                f"{f}: exceptions line missing '::' separator: {raw_line!r} "
+                "(expected '<path> :: <rule>')")
+        path, rule = parts
+        pairs.add((path, rule))
     return pairs
 
 
@@ -38,3 +44,15 @@ def test_snapshot_conforms(name):
     missing_mess = expected - actual
     assert not unexpected, f"schema drift in {name}: {sorted(unexpected)}"
     assert not missing_mess, f"deliberate mess missing from {name}: {sorted(missing_mess)}"
+
+
+def test_load_exceptions_missing_separator_raises_readable_error(tmp_path):
+    snapshot = tmp_path / "some-snapshot"
+    snapshot.mkdir()
+    exceptions = snapshot / ".schema-exceptions"
+    exceptions.write_text("companies/Plaid/meta.md meta.status-enum\n")
+    with pytest.raises(ValueError) as exc_info:
+        load_exceptions(snapshot)
+    message = str(exc_info.value)
+    assert str(exceptions) in message
+    assert "companies/Plaid/meta.md meta.status-enum" in message

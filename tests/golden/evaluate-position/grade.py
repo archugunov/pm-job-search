@@ -19,7 +19,22 @@ def main(argv: list[str]) -> int:
     if len(argv) != 2:
         print("usage: grade.py <results.json>", file=sys.stderr)
         return 2
-    results = {r["id"]: r for r in json.loads(Path(argv[1]).read_text())}
+    results_path = Path(argv[1])
+    try:
+        parsed = json.loads(results_path.read_text())
+    except json.JSONDecodeError as e:
+        print(f"{results_path}: not valid JSON ({e})", file=sys.stderr)
+        return 2
+    if not isinstance(parsed, list):
+        print(f"{results_path}: expected a JSON array of result objects, "
+              f"got {type(parsed).__name__}", file=sys.stderr)
+        return 2
+    try:
+        results = {r["id"]: r for r in parsed}
+    except (TypeError, KeyError) as e:
+        print(f"{results_path}: each result must be an object with an 'id' "
+              f"key ({e})", file=sys.stderr)
+        return 2
     cases = [json.loads(p.read_text()) for p in sorted((HERE / "cases").glob("*.json"))]
 
     missing = [c["id"] for c in cases if c["id"] not in results]
@@ -30,7 +45,7 @@ def main(argv: list[str]) -> int:
             continue
         label, got = case["label"], results[case["id"]]
         if label["tier"] == "filtered":
-            ok = bool(got.get("matched_filter"))
+            ok = got.get("matched_filter") == label["hard_filter"]
             if not ok:
                 filter_misses.append(case["id"])
             rows.append((case["id"], label["tier"], got.get("tier"),

@@ -69,6 +69,18 @@ def test_meta_bad_link_format(tmp_path):
     assert [f.rule for f in validate_tree(tmp_path)] == ["meta.link-format"]
 
 
+def test_meta_single_quoted_status_parses_clean(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META.replace(
+        "status: interviewing", "status: 'applied'"))
+    assert validate_tree(tmp_path) == []
+
+
+def test_meta_single_quoted_link_parses_clean(tmp_path):
+    write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META.replace(
+        "link: https://example.com/plaid", "link: 'https://example.com/plaid'"))
+    assert validate_tree(tmp_path) == []
+
+
 def test_meta_empty_link_allowed(tmp_path):
     write(tmp_path / "companies" / "Plaid" / "meta.md", GOOD_META.replace(
         "link: https://example.com/plaid", "link:"))
@@ -117,6 +129,16 @@ def test_profile_with_leading_html_comment_parses_and_has_no_required_finding(tm
         """)
     findings = validate_tree(tmp_path)
     assert [f.rule for f in findings] == []
+
+
+def test_meta_with_utf8_bom_parses_clean(tmp_path):
+    # BOM prepended AFTER dedent — prepending before would confuse dedent's
+    # margin detection (the BOM isn't whitespace), which is not what this
+    # test is about.
+    p = tmp_path / "companies" / "Plaid" / "meta.md"
+    p.parent.mkdir(parents=True)
+    p.write_text("﻿" + dedent(GOOD_META))
+    assert validate_tree(tmp_path) == []
 
 
 def test_meta_role_slug_subfolder_is_scanned(tmp_path):
