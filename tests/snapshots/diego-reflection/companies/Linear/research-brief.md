@@ -1,3 +1,5 @@
+**Source:** https://example.com/linear-jobs/group-pm-workflow-automation
+
 ## Company snapshot
 
 - **Stage:** Series C-equivalent, ~80 ppl, founder-led (Karri Saarinen + co-founders visibly in product debates).

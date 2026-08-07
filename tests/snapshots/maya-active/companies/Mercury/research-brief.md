@@ -1,3 +1,5 @@
+**Source:** https://example.com/mercury-banking
+
 ## Company snapshot
 
 - **Stage:** Series B, ~700 ppl, profitable, no near-term funding pressure.

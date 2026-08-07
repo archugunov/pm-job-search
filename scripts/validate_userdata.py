@@ -33,22 +33,27 @@ def parse_frontmatter(text: str) -> dict[str, str]:
     a key introducing a nested block maps to ''. Values keep inline text,
     with trailing '# comment' stripped.
 
-    The opening '---' may be preceded by blank lines and/or a single leading
-    HTML comment block (possibly spanning multiple lines) — both templates
+    The opening '---' may be preceded by blank lines and/or any number of
+    leading HTML comment blocks (each possibly spanning multiple lines),
+    interspersed with blank lines — both templates
     (plugin/templates/profile.template.md, strategy.template.md) and real
-    userdata files open with such a comment before the frontmatter."""
+    userdata files open with such comments before the frontmatter. Some real
+    files (e.g. tests/snapshots/diego-reflection/strategy.md) have TWO
+    consecutive comment blocks: a short one-liner followed by the longer
+    template comment."""
     lines = text.splitlines()
     i = 0
-    while i < len(lines) and lines[i].strip() == "":
-        i += 1
-    if i < len(lines) and lines[i].strip().startswith("<!--"):
-        if "-->" not in lines[i]:
-            i += 1
-            while i < len(lines) and "-->" not in lines[i]:
-                i += 1
-        i += 1  # past the line containing '-->'
+    while i < len(lines):
         while i < len(lines) and lines[i].strip() == "":
             i += 1
+        if i < len(lines) and lines[i].strip().startswith("<!--"):
+            if "-->" not in lines[i]:
+                i += 1
+                while i < len(lines) and "-->" not in lines[i]:
+                    i += 1
+            i += 1  # past the line containing '-->'
+            continue
+        break
     if i >= len(lines) or lines[i].strip() != "---":
         return {}
     fm: dict[str, str] = {}

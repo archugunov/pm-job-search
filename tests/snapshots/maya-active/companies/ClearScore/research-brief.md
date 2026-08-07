@@ -1,3 +1,5 @@
+**Source:** https://example.com/clearscore-jobs/lead-pm-credit-marketplace
+
 ## Company snapshot
 
 - **Stage:** Profitable, ~300 ppl, UK-based.

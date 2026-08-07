@@ -1,3 +1,5 @@
+**Source:** https://example.com/atom-jobs/head-of-product
+
 ## Company snapshot
 
 - **Stage:** ~450 ppl, app-only UK challenger bank, Durham-based.

@@ -1,3 +1,5 @@
+**Source:** https://example.com/replit-jobs/head-of-product-education
+
 ## Company snapshot
 
 - **Stage:** Series B, ~150 ppl.

@@ -1,3 +1,5 @@
+**Source:** https://example.com/stripe-jobs/lead-pm-growth
+
 # Research Brief — Stripe
 
 ## Company snapshot

@@ -1,3 +1,5 @@
+**Source:** https://example.com/vercel-jobs/senior-pm-edge-platform
+
 ## Company snapshot
 
 - **Stage:** ~400 ppl total, Edge Platform team ~25. Still founder-influenced at the product layer.

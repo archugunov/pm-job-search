@@ -187,6 +187,29 @@ def test_strategy_bad_date(tmp_path):
     assert [f.rule for f in validate_tree(tmp_path)] == ["strategy.date-format"]
 
 
+def test_strategy_with_two_leading_html_comment_blocks_parses(tmp_path):
+    # Modelled on tests/snapshots/diego-reflection/strategy.md's real opening:
+    # a short one-line comment immediately followed by a second, multi-line
+    # comment block, both before the frontmatter '---'. parse_frontmatter
+    # must skip past ALL leading comment blocks, not just the first.
+    write(tmp_path / "strategy.md", """\
+        <!-- Example file. -->
+        <!--
+          pm-job-search — strategy template.
+
+          Multi-line explanatory comment, as in the real template.
+        -->
+        ---
+        target_offer_date: 2026-11-10
+        weekly_targets:
+          warm_outreach: 6
+          applications: 2
+        ---
+        """)
+    findings = validate_tree(tmp_path)
+    assert findings == []
+
+
 def test_strategy_forbidden_target_date(tmp_path):
     write(tmp_path / "strategy.md", """\
         ---

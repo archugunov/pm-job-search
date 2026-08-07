@@ -1,3 +1,5 @@
+**Source:** https://example.com/plaid-jobs/senior-pm-growth-loops
+
 # Plaid — Senior PM, Growth Loops
 
 ## Company snapshot

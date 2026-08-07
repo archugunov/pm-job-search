@@ -1,3 +1,5 @@
+**Source:** https://example.com/plaid-jobs/senior-pm-consumer-credit
+
 # Plaid — Senior PM, Consumer Credit
 
 ## Company snapshot

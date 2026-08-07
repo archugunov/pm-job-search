@@ -1,0 +1,4 @@
+# Deliberate mess — see README.md. The edge-recovery journey exists to
+# exercise exactly these; if one vanishes, the fixture rotted.
+strategy.md :: strategy.forbidden-key
+strategy.md :: strategy.required

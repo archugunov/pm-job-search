@@ -1,3 +1,5 @@
+**Source:** https://example.com/supabase-jobs/group-pm-platform
+
 ## Company snapshot
 
 - **Stage:** Series B, ~140 ppl.

@@ -1,3 +1,5 @@
+**Source:** https://example.com/zopa-jobs/senior-pm-consumer-credit
+
 ## Company snapshot
 
 - **Stage:** ~600 ppl, profitable, IPO-track. Started 2005 as a P2P lender, now a full retail bank with a licence.

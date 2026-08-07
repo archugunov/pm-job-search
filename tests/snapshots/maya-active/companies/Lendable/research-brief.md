@@ -1,3 +1,5 @@
+**Source:** https://example.com/lendable-jobs/head-of-product-consumer-credit
+
 ## Company snapshot
 
 - **Stage:** £130M growth round late 2025 (effectively Series C), ~120 ppl, IPO-track.
