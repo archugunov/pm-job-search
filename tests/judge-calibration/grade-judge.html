@@ -426,6 +426,21 @@
     color: var(--ink);
   }
 
+  .criterion-chip {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.3rem;
+    margin-left: 0.3rem;
+  }
+  .criterion-chip.agree { background: var(--agree-bg); color: var(--agree); }
+  .criterion-chip.disagree { background: var(--disagree-bg); color: var(--disagree); }
+  .criterion-chip.borderline { background: var(--borderline-bg); color: var(--borderline); }
+
+  .spec-group-hint { margin: 0 0 0.5rem; }
+
   .finding-card {
     border-left: 3px dashed var(--muted);
     background: var(--mono-bg);
@@ -613,12 +628,20 @@
       for (var b = 0; b < bulletLines.length; b++) {
         var summary = bulletLines[b];
         var turnMatch = summary.match(/turn\s+(\d+)/i);
+        // Spec-gaps bullets carry the judge's own per-criterion verdict
+        // right after the bolded criterion, e.g. "**End-of-run nudge:**
+        // PASS — Turn 8 ends with...". Surfaced as a read-only chip in the
+        // UI so a human adjudicating "is this PASS call right" isn't
+        // staring at an unlabelled wall of bullets. Not exported — it's a
+        // presentation aid over data that's already in `summary`.
+        var criterionMatch = summary.match(/^\*\*.+?:\*\*\s*(PASS|FAIL|NOT EXERCISED|NOT APPLICABLE)\b/);
         findings.push({
           tier: tier,
           summary: summary,
           human: null,
           note: null,
-          turn: turnMatch ? parseInt(turnMatch[1], 10) : null
+          turn: turnMatch ? parseInt(turnMatch[1], 10) : null,
+          criterionVerdict: criterionMatch ? criterionMatch[1] : null
         });
       }
     }
@@ -881,6 +904,12 @@
     var softTotal = 0, critiqueTotal = 0;
 
     runs.forEach(function (run) {
+      // Judge-derived fields (verdicts.*.judge, advisory counts,
+      // self-contradiction) exist in memory the moment a judge file is
+      // parsed — independent of this run's blind-pass reveal. Excluding
+      // unrevealed runs here keeps the sidebar readout from leaking a
+      // count or verdict for a run whose blind pass is still in progress.
+      if (!run.revealed) return;
       var v = run.verdicts;
       if (v.hard.human != null && v.hard.judge != null) {
         hardAgreement.total++;
@@ -1039,10 +1068,22 @@
     renderContextPane({ scroll: true });
   }
 
+  function criterionChipClass(token) {
+    if (token === "PASS") return "agree";
+    if (token === "FAIL") return "disagree";
+    return "borderline"; // NOT EXERCISED / NOT APPLICABLE
+  }
+
   function renderFindingCard(run, finding) {
     var stateClass = finding.human ? " state-" + finding.human : "";
     var card = el("div", { class: "finding-card" + stateClass });
     card.appendChild(el("span", { class: "tier-chip", text: TIER_LABEL[finding.tier] || finding.tier }));
+    if (finding.criterionVerdict) {
+      card.appendChild(el("span", {
+        class: "criterion-chip " + criterionChipClass(finding.criterionVerdict),
+        text: finding.criterionVerdict
+      }));
+    }
     card.appendChild(el("div", { class: "finding-summary mono", text: finding.summary }));
 
     if (finding.turn != null) {
@@ -1154,6 +1195,12 @@
         ? "0 (" + ignoredCount + " confirmation bullets ignored)"
         : String(list.length);
       group.appendChild(el("div", { class: "tier-group-heading", text: TIER_LABEL[t] + " — " + countText }));
+      if (t === "spec" && list.length > 0) {
+        group.appendChild(el("p", {
+          class: "hint spec-group-hint",
+          text: "Each bullet is the judge's own per-criterion verdict (chip on the left). You're grading whether that PASS / FAIL / NOT EXERCISED call is right — not only whether something is a violation."
+        }));
+      }
       list.forEach(function (f) { group.appendChild(renderFindingCard(run, f)); });
       container.appendChild(group);
     });
@@ -1287,10 +1334,11 @@
 
     section.appendChild(header);
 
-    if (!run.transcriptOnly) {
-      section.appendChild(renderVerdictBlock(run));
-    }
-
+    // Everything judge-derived — verdict chips, advisory counts, the
+    // self-contradiction note, and the human PASS/FAIL controls — waits
+    // behind the blind-pass reveal. Adjudicating a Hard-violations verdict
+    // requires having seen the findings, so the controls live here too,
+    // not above the gate.
     if (!run.revealed) {
       renderBlindGate(run, section);
     } else {
@@ -1298,6 +1346,7 @@
       if (run.transcriptOnly) {
         section.appendChild(el("p", { class: "no-judge-note", text: "No judge file for this run — nothing to adjudicate. Read the transcript in the context pane." }));
       } else {
+        section.appendChild(renderVerdictBlock(run));
         renderFindingsList(run, section);
       }
     }
