@@ -593,6 +593,17 @@
 
     var findings = [];
     var ignored = {};
+    var sectionsSeen = 0;
+
+    // Accepts both markdown bullet styles the corpus actually uses: dash
+    // bullets ("- ...") and numbered-list bullets ("1. ...", "2. ..." —
+    // e.g. 2026-06-07/diego-reflection.judge.md's Open critique section).
+    // Group 1 is the bullet's content with the marker stripped.
+    var bulletRe = /^(?:-|\d+\.)\s+(.*)$/;
+    // A bullet whose entire content is a "None ..." statement (e.g.
+    // "None applicable.", "None flagged.") is the judge saying this
+    // sub-list is empty, not a finding — must not be counted as one.
+    var noneBulletRe = /^None\b.*$/i;
 
     for (var i = 0; i < headings.length; i++) {
       var h = headings[i];
@@ -604,6 +615,7 @@
         }
       }
       if (!tier) continue;
+      sectionsSeen++;
 
       var end = (i + 1 < headings.length) ? headings[i + 1].start : norm.length;
       var body = norm.slice(h.contentStart, end);
@@ -611,37 +623,58 @@
 
       var bulletLines = [];
       var hasNoneMarker = false;
+      var noneBulletCount = 0;
       for (var k = 0; k < lines.length; k++) {
         var line = lines[k];
-        if (/^- /.test(line)) {
-          bulletLines.push(line.replace(/^- /, ""));
+        var bulletMatch = line.match(bulletRe);
+        if (bulletMatch) {
+          if (noneBulletRe.test(bulletMatch[1].trim())) {
+            noneBulletCount++;
+          } else {
+            bulletLines.push(bulletMatch[1]);
+          }
         } else if (/^No .*(found|critiques)\.?$/i.test(line.trim())) {
           hasNoneMarker = true;
         }
       }
 
+      // A section-level "No hard violations found." (or similar) narrative
+      // line means every bullet underneath it is a confirmation, not a
+      // finding — the whole section's bullets are ignored (existing
+      // behaviour, unchanged). A "None ..." *bullet* is narrower: it only
+      // says its own sub-list (e.g. "### Opportunistic") is empty, so only
+      // that bullet is excluded — real findings elsewhere in the same
+      // section (e.g. "### Required") must still parse.
       if (hasNoneMarker) {
-        ignored[tier] = (ignored[tier] || 0) + bulletLines.length;
+        ignored[tier] = (ignored[tier] || 0) + bulletLines.length + noneBulletCount;
         continue;
+      }
+      if (noneBulletCount) {
+        ignored[tier] = (ignored[tier] || 0) + noneBulletCount;
       }
 
       for (var b = 0; b < bulletLines.length; b++) {
         var summary = bulletLines[b];
         var turnMatch = summary.match(/turn\s+(\d+)/i);
-        // Spec-gaps bullets carry the judge's own per-criterion verdict
-        // right after the bolded criterion, e.g. "**End-of-run nudge:**
-        // PASS — Turn 8 ends with...". Surfaced as a read-only chip in the
-        // UI so a human adjudicating "is this PASS call right" isn't
-        // staring at an unlabelled wall of bullets. Not exported — it's a
-        // presentation aid over data that's already in `summary`.
-        var criterionMatch = summary.match(/^\*\*.+?:\*\*\s*(PASS|FAIL|NOT EXERCISED|NOT APPLICABLE)\b/);
+        // Spec-gaps bullets carry the judge's own per-criterion verdict,
+        // in one of the forms the corpus actually uses:
+        //   **End-of-run nudge:** PASS — Turn 8 ends with...
+        //   **heads-up surfaced non-obvious risks:** **FAIL** — ...
+        //   One-line mix statement, no preamble: PASS. Turn 2 opens...
+        // i.e. the bold around the criterion label is optional, and the
+        // verdict token itself may also be bolded. Surfaced as a
+        // read-only chip in the UI so a human adjudicating "is this PASS
+        // call right" isn't staring at an unlabelled wall of bullets. Not
+        // exported — it's a presentation aid over data already in
+        // `summary`.
+        var criterionMatch = summary.match(/^\*{0,2}([^:\n]+?):\*{0,2}\s*\*{0,2}(PASS|FAIL|NOT EXERCISED|NOT APPLICABLE)\*{0,2}\b/);
         findings.push({
           tier: tier,
           summary: summary,
           human: null,
           note: null,
           turn: turnMatch ? parseInt(turnMatch[1], 10) : null,
-          criterionVerdict: criterionMatch ? criterionMatch[1] : null
+          criterionVerdict: criterionMatch ? criterionMatch[2] : null
         });
       }
     }
@@ -652,7 +685,8 @@
       verdicts: verdicts,
       advisory: advisory,
       findings: findings,
-      ignored: ignored
+      ignored: ignored,
+      sectionsSeen: sectionsSeen
     };
   }
 
@@ -753,10 +787,14 @@
     };
   }
 
+  // Mirrors tests/judge-calibration/stats.py: the derived overall requires
+  // BOTH sub-verdicts to be set before it means anything. A half-labelled
+  // run (only Hard adjudicated, say) must not resolve to FAIL just because
+  // one side happens to be FAIL — that short-circuit would let the browser
+  // count a run in "Overall verdict agreement" that the CLI excludes.
   function deriveOverall(hardHuman, specHuman) {
-    if (hardHuman === "FAIL" || specHuman === "FAIL") return "FAIL";
-    if (hardHuman === "PASS" && specHuman === "PASS") return "PASS";
-    return null;
+    if (hardHuman == null || specHuman == null) return null;
+    return (hardHuman === "PASS" && specHuman === "PASS") ? "PASS" : "FAIL";
   }
 
   function selfContradiction(run) {
@@ -844,6 +882,7 @@
       advisory: { soft_count: 0, critique_count: 0 },
       findings: [],
       ignored: {},
+      sectionsSeen: 0,
       transcript: null,
       blind: null,
       revealed: false,
@@ -858,6 +897,7 @@
       run.advisory = payload.judge.advisory;
       run.findings = payload.judge.findings;
       run.ignored = payload.judge.ignored;
+      run.sectionsSeen = payload.judge.sectionsSeen || 0;
     }
     if (payload.transcript) {
       run.transcriptFilename = filename;
@@ -897,9 +937,9 @@
     });
     var recall = (hasBlind && recallDen > 0) ? (recallNum / recallDen) : null;
 
-    var hardAgreement = { hits: 0, total: 0 };
-    var specAgreement = { hits: 0, total: 0 };
-    var overallAgreement = { hits: 0, total: 0 };
+    var hardAgreement = { hits: 0, total: 0, excluded: 0 };
+    var specAgreement = { hits: 0, total: 0, excluded: 0 };
+    var overallAgreement = { hits: 0, total: 0, excluded: 0 };
     var contradictions = [];
     var softTotal = 0, critiqueTotal = 0;
 
@@ -911,18 +951,34 @@
       // count or verdict for a run whose blind pass is still in progress.
       if (!run.revealed) return;
       var v = run.verdicts;
-      if (v.hard.human != null && v.hard.judge != null) {
-        hardAgreement.total++;
-        if ((v.hard.judge.indexOf("PASS") === 0) === (v.hard.human.indexOf("PASS") === 0)) hardAgreement.hits++;
+      // A human verdict with no judge verdict to compare it to (the judge
+      // wrote e.g. "Hard violations: judges disagreed — ..." so nothing
+      // parsed) is missing data, not a disagreement — count it as excluded
+      // so the denominator's shrinkage stays visible, matching stats.py.
+      if (v.hard.human != null) {
+        if (v.hard.judge != null) {
+          hardAgreement.total++;
+          if ((v.hard.judge.indexOf("PASS") === 0) === (v.hard.human.indexOf("PASS") === 0)) hardAgreement.hits++;
+        } else {
+          hardAgreement.excluded++;
+        }
       }
-      if (v.spec.human != null && v.spec.judge != null) {
-        specAgreement.total++;
-        if ((v.spec.judge.indexOf("PASS") === 0) === (v.spec.human.indexOf("PASS") === 0)) specAgreement.hits++;
+      if (v.spec.human != null) {
+        if (v.spec.judge != null) {
+          specAgreement.total++;
+          if ((v.spec.judge.indexOf("PASS") === 0) === (v.spec.human.indexOf("PASS") === 0)) specAgreement.hits++;
+        } else {
+          specAgreement.excluded++;
+        }
       }
       var derivedHuman = deriveOverall(v.hard.human, v.spec.human);
-      if (derivedHuman != null && v.overall.judge != null) {
-        overallAgreement.total++;
-        if ((v.overall.judge.indexOf("PASS") === 0) === (derivedHuman === "PASS")) overallAgreement.hits++;
+      if (derivedHuman != null) {
+        if (v.overall.judge != null) {
+          overallAgreement.total++;
+          if ((v.overall.judge.indexOf("PASS") === 0) === (derivedHuman === "PASS")) overallAgreement.hits++;
+        } else {
+          overallAgreement.excluded++;
+        }
       }
       if (selfContradiction(run)) contradictions.push(run.id);
 
@@ -1016,11 +1072,21 @@
       readoutEl.appendChild(recallRow);
     }
 
+    // Wording matches stats.py's excluded_suffix() exactly, so a maintainer
+    // reading the browser sidebar and the CLI report side by side sees the
+    // same sentence for the same condition.
+    function excludedSuffix(n) {
+      if (!n) return "";
+      return " (" + n + " run" + (n !== 1 ? "s" : "") + " excluded: judge verdict unavailable)";
+    }
+
     [["Hard verdict agreement", stats.hardAgreement], ["Spec verdict agreement", stats.specAgreement], ["Overall verdict agreement", stats.overallAgreement]].forEach(function (pair) {
-      if (pair[1].total > 0) {
+      var agg = pair[1];
+      if (agg.total > 0 || agg.excluded > 0) {
         var row = el("div", { class: "tier-row" });
         row.appendChild(el("span", { text: pair[0] }));
-        row.appendChild(el("span", { text: pair[1].hits + "/" + pair[1].total }));
+        var value = agg.total > 0 ? (agg.hits + "/" + agg.total) : "n/a";
+        row.appendChild(el("span", { text: value + excludedSuffix(agg.excluded) }));
         readoutEl.appendChild(row);
       }
     });
@@ -1261,7 +1327,12 @@
       verdicts: {
         hard: { judge: run.verdicts.hard.judge, human: run.verdicts.hard.human || null },
         spec: { judge: run.verdicts.spec.judge, human: run.verdicts.spec.human || null },
-        overall: { judge: run.verdicts.overall.judge, human: deriveOverall(run.verdicts.hard.human, run.verdicts.spec.human) }
+        // Overall stays null here — it's derived from hard/spec human
+        // verdicts at read time (by stats.py and this tool's own readout),
+        // never set directly by a human and never read back from the
+        // export. Matches TEMPLATE.json / README: "do NOT set an overall
+        // verdict yourself".
+        overall: { judge: run.verdicts.overall.judge, human: null }
       },
       advisory: {
         soft_count: run.advisory.soft_count || 0,
@@ -1275,7 +1346,10 @@
   }
 
   function exportFilename(run) {
-    return run.id.replace(/\//g, "->") + ".json";
+    // README convention: <date>-<persona>-<journey>.json — run.id is
+    // "<date>/<persona>-<journey>", so only the directory separator needs
+    // flattening to a hyphen.
+    return run.id.replace(/\//g, "-") + ".json";
   }
 
   function downloadJSON(filename, obj) {
@@ -1339,14 +1413,27 @@
     // behind the blind-pass reveal. Adjudicating a Hard-violations verdict
     // requires having seen the findings, so the controls live here too,
     // not above the gate.
-    if (!run.revealed) {
+    //
+    // Transcript-only runs (no .judge.md sibling) skip the gate entirely —
+    // per README, there's nothing to diff a blind pass against, so making
+    // the maintainer click through "blind pass" for a run that can never
+    // be revealed into anything is friction with no payoff.
+    if (run.transcriptOnly) {
+      section.appendChild(el("p", {
+        class: "no-judge-note",
+        text: "No judge file for this run — blind-pass gate skipped, nothing to diff against. Read the transcript in the context pane."
+      }));
+    } else if (!run.revealed) {
       renderBlindGate(run, section);
     } else {
       renderBlindSummary(run, section);
-      if (run.transcriptOnly) {
-        section.appendChild(el("p", { class: "no-judge-note", text: "No judge file for this run — nothing to adjudicate. Read the transcript in the context pane." }));
+      section.appendChild(renderVerdictBlock(run));
+      if (run.sectionsSeen === 0) {
+        section.appendChild(el("p", {
+          class: "no-judge-note",
+          text: "This judge file has no ## Hard violations / ## Soft issues / ## Spec gaps / ## Open critique sections — nothing parsed as a finding. Check the raw file."
+        }));
       } else {
-        section.appendChild(renderVerdictBlock(run));
         renderFindingsList(run, section);
       }
     }
@@ -1521,6 +1608,24 @@
   // ---------------------------------------------------------------------
   // File intake
   // ---------------------------------------------------------------------
+  // The "Choose files" picker (as opposed to the folder picker or a
+  // dropped folder) hands back bare filenames with no directory —
+  // `file.webkitRelativePath` is "". classifyPath then derives the run id
+  // from the stem alone, so e.g. the corpus's four differently-dated
+  // maya-cold-start.judge.md files would all collapse onto the same run
+  // key and silently overwrite each other. Detect that specific case —
+  // a bare path about to land in a run-id/kind slot that's already
+  // populated — and refuse instead of clobbering.
+  function wouldCollideBareFilename(path, kind, id) {
+    if (String(path).indexOf("/") !== -1) return false; // has directory context — safe
+    var idx = findRunIndex(id);
+    if (idx < 0) return false;
+    var existing = runs[idx];
+    if (kind === "judge") return !!existing.judgeFilename;
+    if (kind === "transcript") return !!existing.transcriptFilename;
+    return false;
+  }
+
   function ingestFileEntry(file, path) {
     return file.text().then(function (text) {
       var cls = classifyPath(path);
@@ -1529,6 +1634,18 @@
       if (cls.kind === "rubric") {
         rubrics[cls.tier] = { text: norm, filename: path };
         return;
+      }
+      if (cls.kind === "judge" || cls.kind === "transcript") {
+        if (wouldCollideBareFilename(path, cls.kind, cls.id)) {
+          window.alert(
+            "Refusing to load \"" + path + "\" as run \"" + cls.id + "\" — " +
+            "another file with the same bare filename is already loaded for " +
+            "that run, and the \"Choose files\" picker gives no directory to " +
+            "tell them apart. Use \"Choose a folder\" (or drag the runs/ " +
+            "folder) instead so each run's date directory disambiguates it."
+          );
+          return;
+        }
       }
       if (cls.kind === "judge") {
         var parsed = parseJudgeFile(text, path);
