@@ -65,14 +65,20 @@ def main(argv: list[str]) -> int:
     for tier in ("hard", "soft", "spec", "critique"):
         t = tally[tier]
         n = t["agree"] + t["disagree"]
+        # "spec" measures something narrower than the other three tiers: whether
+        # the judge's own PASS/FAIL call on a spec-criteria bullet was correct,
+        # not whether a reported violation was real. Label it so the two
+        # questions aren't mistaken for each other at a glance (see README).
+        label = "spec: criterion-adjudication precision" if tier == "spec" else f"{tier}: precision"
+        noun = "spec: criterion-adjudication" if tier == "spec" else tier
         if n:
             precision = t["agree"] / n
-            print(f"{tier}: precision {precision:.2f} ({t['agree']}/{n})"
+            print(f"{label} {precision:.2f} ({t['agree']}/{n})"
                   f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
             if gate and n >= MIN_N and precision < P_BAR:
                 gate_ok = False
         elif t["borderline"] or t[None]:
-            print(f"{tier}: no adjudicated findings"
+            print(f"{noun}: no adjudicated findings"
                   f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
 
     found = sum(r["blind"]["human_found"] for r in labels if r.get("blind"))
@@ -83,40 +89,68 @@ def main(argv: list[str]) -> int:
         if gate and recall < R_BAR:
             gate_ok = False
 
+    def excluded_suffix(n):
+        if not n:
+            return ""
+        return f" ({n} run{'s' if n != 1 else ''} excluded: judge verdict unavailable)"
+
+    # A null judge verdict (e.g. "Hard violations: judges disagreed — ...")
+    # is missing data, not a FAIL — it must not be compared against a human
+    # call. Pairs are only "measurable" when both sides are set; runs the
+    # human adjudicated anyway are reported as excluded, not silently
+    # dropped, so the denominator's shrinkage is visible.
     for rubric in ("hard", "spec"):
-        pairs = [(r["verdicts"][rubric]["judge"], r["verdicts"][rubric]["human"])
-                 for r in labels if r.get("verdicts", {}).get(rubric, {}).get("human")]
-        if pairs:
-            hits = sum(j.startswith("PASS") == h.startswith("PASS") for j, h in pairs)
-            print(f"{rubric} verdict agreement: {hits}/{len(pairs)}")
+        adjudicated = [r for r in labels
+                       if r.get("verdicts", {}).get(rubric, {}).get("human")]
+        measurable = [(r["verdicts"][rubric]["judge"], r["verdicts"][rubric]["human"])
+                      for r in adjudicated if r["verdicts"][rubric]["judge"] is not None]
+        excluded = len(adjudicated) - len(measurable)
+        if measurable:
+            hits = sum(j.startswith("PASS") == h.startswith("PASS") for j, h in measurable)
+            print(f"{rubric} verdict agreement: {hits}/{len(measurable)}"
+                  f"{excluded_suffix(excluded)}")
+        elif excluded:
+            print(f"{rubric} verdict agreement: n/a{excluded_suffix(excluded)}")
 
     # Overall is never read from the judge's own overall verdict for
     # agreement purposes — it's derived from the two human sub-verdicts
     # (PASS iff both PASS) and compared against what the judge asserted.
     overall_pairs = []
+    overall_excluded = 0
     for r in labels:
         v = r.get("verdicts", {})
         hard_h = v.get("hard", {}).get("human")
         spec_h = v.get("spec", {}).get("human")
         if hard_h is not None and spec_h is not None:
             derived_human = "PASS" if hard_h == "PASS" and spec_h == "PASS" else "FAIL"
-            overall_pairs.append((v.get("overall", {}).get("judge"), derived_human))
+            overall_j = v.get("overall", {}).get("judge")
+            if overall_j is None:
+                overall_excluded += 1
+                continue
+            overall_pairs.append((overall_j, derived_human))
     if overall_pairs:
         hits = sum(j.startswith("PASS") == h.startswith("PASS") for j, h in overall_pairs)
-        print(f"overall verdict agreement: {hits}/{len(overall_pairs)}")
+        print(f"overall verdict agreement: {hits}/{len(overall_pairs)}"
+              f"{excluded_suffix(overall_excluded)}")
+    elif overall_excluded:
+        print(f"overall verdict agreement: n/a{excluded_suffix(overall_excluded)}")
 
     # Self-contradiction: the judge's own overall verdict disagreeing with
     # the aggregation of its own hard/spec verdicts. This is a defect in
     # the judge's output contract, independent of any human labelling —
-    # never corrected, only reported.
+    # never corrected, only reported. A null hard/spec/overall judge verdict
+    # means there's nothing to aggregate — skip rather than treat missing
+    # data as an implicit FAIL.
     contradictions = []
     for r in labels:
         v = r.get("verdicts", {})
         hard_j = v.get("hard", {}).get("judge")
         spec_j = v.get("spec", {}).get("judge")
         overall_j = v.get("overall", {}).get("judge")
+        if hard_j is None or spec_j is None or overall_j is None:
+            continue
         derived_pass = hard_j == "PASS" and spec_j == "PASS"
-        if overall_j is not None and (overall_j.startswith("PASS")) != derived_pass:
+        if (overall_j.startswith("PASS")) != derived_pass:
             contradictions.append(r.get("run", "?"))
     if contradictions:
         print(f"judge self-contradiction: {len(contradictions)} run(s)"

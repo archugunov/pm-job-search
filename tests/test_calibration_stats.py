@@ -38,7 +38,7 @@ def test_precision_per_tier(tmp_path):
     code, out = run_stats(tmp_path, labels)
     assert code == 0
     assert "hard: precision 0.50 (1/2)" in out
-    assert "spec: precision 1.00 (2/2)" in out
+    assert "spec: criterion-adjudication precision 1.00 (2/2)" in out
 
 
 def test_borderline_excluded_but_counted(tmp_path):
@@ -112,6 +112,39 @@ def test_overall_is_derived_not_read(tmp_path):
     assert "overall verdict agreement: 0/1" in out
 
 
+def test_null_judge_verdict_excluded_from_agreement_not_a_crash(tmp_path):
+    # Mirrors the real corpus: 2 of 11 runs write "judges disagreed" for
+    # Hard violations, so the export has {"judge": null, "human": "PASS"} —
+    # a human call with no judge verdict to compare it to. Must not raise
+    # AttributeError from `None.startswith(...)`, and must not silently
+    # vanish from the report — it's reported as excluded.
+    labels = [label(hard_judge=None, hard_human="PASS", spec_judge="PASS", spec_human="PASS"),
+              label(hard_judge="PASS", hard_human="PASS", spec_judge="PASS", spec_human="PASS")]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 0
+    assert "hard verdict agreement: 1/1 (1 run excluded: judge verdict unavailable)" in out
+    assert "spec verdict agreement: 2/2" in out
+
+
+def test_null_judge_verdict_excluded_from_overall_agreement(tmp_path):
+    # Both sub-verdicts adjudicated (so a derived overall exists), but the
+    # judge's stated Overall is null — nothing to compare the derived
+    # overall against. Must not crash and must not silently drop the run.
+    labels = [label(hard_judge="PASS", hard_human="PASS",
+                     spec_judge="PASS", spec_human="PASS",
+                     overall_judge=None)]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 0
+    assert "overall verdict agreement: n/a (1 run excluded: judge verdict unavailable)" in out
+
+
+def test_all_null_judge_hard_verdicts_reported_as_na(tmp_path):
+    labels = [label(hard_judge=None, hard_human="PASS", spec_judge="PASS", spec_human="PASS")]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 0
+    assert "hard verdict agreement: n/a (1 run excluded: judge verdict unavailable)" in out
+
+
 def test_runs_with_unset_rubric_verdicts_excluded(tmp_path):
     labels = [label(hard_human="PASS", spec_human=None)]
     _, out = run_stats(tmp_path, labels)
@@ -130,6 +163,16 @@ def test_judge_self_contradiction_reported(tmp_path):
 
 def test_no_self_contradiction_line_when_none(tmp_path):
     _, out = run_stats(tmp_path, [label()])
+    assert "self-contradiction" not in out
+
+
+def test_self_contradiction_guards_null_judge_hard_verdict(tmp_path):
+    # hard.judge is null ("judges disagreed") — there's nothing to aggregate,
+    # so this must NOT be flagged as a self-contradiction just because
+    # `None == "PASS"` is False. Missing data is not a FAIL.
+    labels = [label(hard_judge=None, spec_judge="PASS", overall_judge="PASS")]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 0
     assert "self-contradiction" not in out
 
 
