@@ -19,6 +19,8 @@
     --borderline: #96660f;
     --borderline-bg: #f6edd8;
     --mono-bg: #eff1f4;
+    --highlight-bg: #d8e8fb;
+    --highlight-ink: #1a1f26;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -36,6 +38,8 @@
       --borderline: #dcae55;
       --borderline-bg: #372f1b;
       --mono-bg: #242932;
+      --highlight-bg: #1f3a54;
+      --highlight-ink: #e6e9ed;
     }
   }
 
@@ -53,6 +57,8 @@
     --borderline: #dcae55;
     --borderline-bg: #372f1b;
     --mono-bg: #242932;
+    --highlight-bg: #1f3a54;
+    --highlight-ink: #e6e9ed;
   }
 
   * { box-sizing: border-box; }
@@ -135,19 +141,36 @@
 
   .app {
     display: grid;
-    grid-template-columns: 19rem 1fr;
+    grid-template-columns: 19rem 1fr 24rem;
+    grid-template-areas: "sidebar findings context";
     gap: 1.5rem;
     align-items: start;
-    max-width: 84rem;
+    max-width: 104rem;
     margin: 0 auto;
   }
 
+  @media (max-width: 1200px) {
+    .app {
+      grid-template-columns: 19rem 1fr;
+      grid-template-areas:
+        "sidebar findings"
+        "sidebar context";
+    }
+  }
+
   @media (max-width: 900px) {
-    .app { grid-template-columns: 1fr; }
-    .sidebar { position: static !important; max-height: none !important; }
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "sidebar"
+        "findings"
+        "context";
+    }
+    .sidebar, .context-pane { position: static !important; max-height: none !important; }
   }
 
   .sidebar {
+    grid-area: sidebar;
     position: sticky;
     top: 1.25rem;
     max-height: calc(100vh - 2.5rem);
@@ -162,10 +185,93 @@
   }
 
   .runs {
+    grid-area: findings;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     min-width: 0;
+  }
+
+  .context-pane {
+    grid-area: context;
+    position: sticky;
+    top: 1.25rem;
+    max-height: calc(100vh - 2.5rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 0.6rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .context-header { display: flex; flex-direction: column; gap: 0.5rem; }
+  .context-run-select { font-size: 0.82rem; }
+
+  .tab-row { display: flex; gap: 0.4rem; }
+  .tab-btn {
+    flex: 1;
+    font-size: 0.82rem;
+    padding: 0.35rem 0.5rem;
+  }
+  .tab-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .context-body { font-size: 0.82rem; min-width: 0; }
+  .context-empty {
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 1rem 0;
+  }
+
+  .transcript-preamble, .rubric-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+  .rubric-text { color: var(--ink); }
+
+  .turn-block {
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .turn-block.turn-highlight {
+    background: var(--highlight-bg);
+    color: var(--highlight-ink);
+  }
+  .turn-heading {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    margin: 0.6rem 0 0.2rem;
+    scroll-margin-top: 1rem;
+  }
+  .turn-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+
+  .tier-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+  .tier-picker button { font-size: 0.78rem; padding: 0.3rem 0.5rem; }
+  .tier-picker button.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
   }
 
   .dropzone {
@@ -194,6 +300,7 @@
   }
   .readout .tier-row.thin { opacity: 0.55; }
   .readout .thin-note { font-size: 0.72rem; color: var(--muted); }
+  .readout .contradiction-line { font-size: 0.78rem; color: var(--borderline); padding: 0.2rem 0; }
   .readout .gate-line {
     margin-top: 0.5rem;
     padding: 0.5rem;
@@ -221,8 +328,32 @@
   }
   .run-header .run-id-input { max-width: 20rem; }
   .run-header .filename { font-size: 0.78rem; color: var(--muted); word-break: break-all; }
-  .verdict-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
-  .verdict-row input { max-width: 9rem; }
+  .badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--borderline-bg);
+    color: var(--borderline);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .verdict-block {
+    border: 1px solid var(--rule);
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .verdict-control-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; font-size: 0.85rem; }
+  .verdict-label { min-width: 7.5rem; font-weight: 600; }
+  .pf-group { display: flex; gap: 0.3rem; }
+  .pf-btn { font-size: 0.8rem; padding: 0.25rem 0.6rem; }
+  .pf-btn.active-pass { background: var(--agree-bg); color: var(--agree); border-color: var(--agree); }
+  .pf-btn.active-fail { background: var(--disagree-bg); color: var(--disagree); border-color: var(--disagree); }
   .verdict-chip {
     display: inline-block;
     padding: 0.1rem 0.5rem;
@@ -230,6 +361,23 @@
     background: var(--mono-bg);
     font-size: 0.78rem;
   }
+  .derived-overall {
+    font-weight: 600;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.35rem;
+    background: var(--mono-bg);
+    font-size: 0.85rem;
+    width: fit-content;
+  }
+  .derived-overall.gate-pass, .derived-overall.gate-fail { width: fit-content; }
+  .contradiction-note {
+    font-size: 0.78rem;
+    color: var(--borderline);
+    background: var(--borderline-bg);
+    border-radius: 0.35rem;
+    padding: 0.4rem 0.5rem;
+  }
+  .advisory-note { margin: 0; }
 
   .blind-gate {
     border: 1px dashed var(--rule);
@@ -250,6 +398,14 @@
     flex-wrap: wrap;
   }
   .blind-summary input[type="number"] { width: 5rem; }
+
+  .no-judge-note {
+    color: var(--muted);
+    font-size: 0.85rem;
+    border: 1px dashed var(--rule);
+    border-radius: 0.5rem;
+    padding: 0.8rem;
+  }
 
   .tier-group { margin-bottom: 1rem; }
   .tier-group-heading {
@@ -292,6 +448,12 @@
     margin: 0.3rem 0 0.5rem;
   }
 
+  .turn-link {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.45rem;
+    margin: 0 0 0.4rem;
+  }
+
   .label-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
   .label-btn {
     border-radius: 0.3rem;
@@ -330,9 +492,9 @@
 <div class="app">
   <aside class="sidebar">
     <h1>Judge calibration</h1>
-    <p class="hint">Drop <code>.judge.md</code> files (or a whole <code>runs/</code> folder). Everything stays in this browser tab — no network calls.</p>
+    <p class="hint">Drop the <code>runs/</code> folder (judge output + transcripts) and the <code>rubrics/</code> folder. Everything stays in this browser tab — no network calls.</p>
 
-    <div id="dropzone" class="dropzone">Drop .judge.md files or a folder here</div>
+    <div id="dropzone" class="dropzone">Drop the <code>runs/</code> folder and the <code>rubrics/</code> folder here</div>
 
     <div class="picker-row">
       <label for="filePicker">Choose files</label>
@@ -359,6 +521,8 @@
   <main class="runs" id="runsContainer">
     <div class="empty-state" id="emptyState">No runs loaded yet.</div>
   </main>
+
+  <aside class="context-pane" id="contextPane"></aside>
 </div>
 
 <script>
@@ -377,7 +541,22 @@
     var id = parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
 
     var verdictMatch = norm.match(/^\*\*Overall:\s*(.+?)\*\*/m);
-    var verdict_judge = verdictMatch ? verdictMatch[1].trim() : "";
+    var overall = verdictMatch ? verdictMatch[1].trim() : null;
+
+    var hardMatch = norm.match(/^-\s*Hard violations:\s*(PASS|FAIL)\b/im);
+    var specMatch = norm.match(/^-\s*Spec gaps:\s*(PASS|FAIL)\b/im);
+    var softMatch = norm.match(/^-\s*Soft issues:\s*(\d+)/im);
+    var critiqueMatch = norm.match(/^-\s*Open critiques:\s*(\d+)/im);
+
+    var verdicts = {
+      hard: { judge: hardMatch ? hardMatch[1] : null, human: null },
+      spec: { judge: specMatch ? specMatch[1] : null, human: null },
+      overall: { judge: overall, human: null }
+    };
+    var advisory = {
+      soft_count: softMatch ? parseInt(softMatch[1], 10) : 0,
+      critique_count: critiqueMatch ? parseInt(critiqueMatch[1], 10) : 0
+    };
 
     var tierMap = [
       ["Hard violations", "hard"],
@@ -432,19 +611,99 @@
       }
 
       for (var b = 0; b < bulletLines.length; b++) {
-        findings.push({ tier: tier, summary: bulletLines[b], human: null, note: null });
+        var summary = bulletLines[b];
+        var turnMatch = summary.match(/turn\s+(\d+)/i);
+        findings.push({
+          tier: tier,
+          summary: summary,
+          human: null,
+          note: null,
+          turn: turnMatch ? parseInt(turnMatch[1], 10) : null
+        });
       }
     }
 
     return {
       id: id,
       filename: filename,
-      verdict_judge: verdict_judge,
-      verdict_human: null,
+      verdicts: verdicts,
+      advisory: advisory,
       findings: findings,
-      blind: null,
       ignored: ignored
     };
+  }
+
+  // Splits a transcript into its preamble plus `## Turn N — ROLE` blocks.
+  // No DOM references — rendering builds elements from this structure.
+  function parseTranscript(text, filename) {
+    var norm = String(text).replace(/\r\n/g, "\n");
+    var headingRe = /^## Turn\s+(\d+)\s*[-–—]\s*(USER|ASSISTANT)\s*$/gim;
+    var matches = [];
+    var m;
+    while ((m = headingRe.exec(norm)) !== null) {
+      matches.push({
+        n: parseInt(m[1], 10),
+        role: m[2].toUpperCase(),
+        headingText: m[0].replace(/^##\s*/, "").trim(),
+        start: m.index,
+        contentStart: m.index + m[0].length
+      });
+    }
+
+    var preamble = matches.length ? norm.slice(0, matches[0].start).trim() : norm.trim();
+    var turns = [];
+    for (var i = 0; i < matches.length; i++) {
+      var end = (i + 1 < matches.length) ? matches[i + 1].start : norm.length;
+      var body = norm.slice(matches[i].contentStart, end).replace(/^\n+/, "").replace(/\n+$/, "");
+      turns.push({
+        n: matches[i].n,
+        role: matches[i].role,
+        id: "turn-" + matches[i].n + "-" + matches[i].role.toLowerCase(),
+        heading: matches[i].headingText,
+        body: body
+      });
+    }
+
+    return { filename: filename, preamble: preamble, turns: turns };
+  }
+
+  // Classifies a dropped file by its path per the corpus layout:
+  // runs/<date>/<persona-journey>.judge.md + .md (transcript), plus the
+  // four fixed rubric filenames, wherever they land. SUMMARY.md is inert.
+  var RUBRIC_TIER_BY_FILENAME = {
+    "lint-checklist.md": "hard",
+    "tone.md": "soft",
+    "spec-criteria.md": "spec",
+    "open-critique.md": "critique"
+  };
+  var RUBRIC_FILENAME_BY_TIER = {
+    hard: "lint-checklist.md",
+    soft: "tone.md",
+    spec: "spec-criteria.md",
+    critique: "open-critique.md"
+  };
+
+  function idFromParts(parts, stem) {
+    return parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
+  }
+
+  function classifyPath(path) {
+    var parts = String(path).split("/");
+    var base = parts[parts.length - 1];
+
+    if (base === "SUMMARY.md") return { kind: "ignore" };
+    if (RUBRIC_TIER_BY_FILENAME.hasOwnProperty(base)) {
+      return { kind: "rubric", tier: RUBRIC_TIER_BY_FILENAME[base] };
+    }
+    if (/\.judge\.md$/i.test(base)) {
+      var jstem = base.replace(/\.judge\.md$/i, "");
+      return { kind: "judge", id: idFromParts(parts, jstem) };
+    }
+    if (/\.md$/i.test(base)) {
+      var tstem = base.replace(/\.md$/i, "");
+      return { kind: "transcript", id: idFromParts(parts, tstem) };
+    }
+    return { kind: "ignore" };
   }
 
   // ---------------------------------------------------------------------
@@ -455,6 +714,36 @@
   var STORAGE_PREFIX = "judge-calibration/";
 
   var runs = []; // ordered array of run state objects
+  var rubrics = { hard: null, soft: null, spec: null, critique: null }; // {text, filename}
+
+  // Context pane selection — independent of any single run's DOM node so
+  // it survives the findings list re-rendering underneath it.
+  var contextState = { runKey: null, tab: "transcript", turn: null, tier: null };
+
+  function isValidPF(v) { return v === "PASS" || v === "FAIL" || v === null || v === undefined; }
+
+  function emptyVerdicts() {
+    return {
+      hard: { judge: null, human: null },
+      spec: { judge: null, human: null },
+      overall: { judge: null, human: null }
+    };
+  }
+
+  function deriveOverall(hardHuman, specHuman) {
+    if (hardHuman === "FAIL" || specHuman === "FAIL") return "FAIL";
+    if (hardHuman === "PASS" && specHuman === "PASS") return "PASS";
+    return null;
+  }
+
+  function selfContradiction(run) {
+    var v = run.verdicts;
+    if (v.hard.judge == null || v.spec.judge == null || v.overall.judge == null) return null;
+    var derivedPass = v.hard.judge === "PASS" && v.spec.judge === "PASS";
+    var statesPass = v.overall.judge.indexOf("PASS") === 0;
+    if (statesPass === derivedPass) return null;
+    return "judge self-contradiction: states " + v.overall.judge + " but its own sub-verdicts give " + (derivedPass ? "PASS" : "FAIL");
+  }
 
   // Storage keys are derived from `run.key` — the id parsed from the file
   // path/stem at drop time. `run.id` is the user-editable display/export
@@ -466,7 +755,10 @@
   function saveRun(run) {
     var payload = {
       id: run.id,
-      verdict_human: run.verdict_human,
+      verdicts: {
+        hard: { human: run.verdicts.hard.human },
+        spec: { human: run.verdicts.spec.human }
+      },
       findings: run.findings.map(function (f) { return { human: f.human, note: f.note }; }),
       blind: run.blind,
       revealed: run.revealed,
@@ -491,45 +783,67 @@
     var stored = loadRunLabels(run.key);
     if (!stored) return;
     if (typeof stored.id === "string" && stored.id) run.id = stored.id;
-    if (typeof stored.verdict_human === "string") run.verdict_human = stored.verdict_human;
+    if (stored.verdicts) {
+      var sh = stored.verdicts.hard && stored.verdicts.hard.human;
+      var ss = stored.verdicts.spec && stored.verdicts.spec.human;
+      if (isValidPF(sh)) run.verdicts.hard.human = sh || null;
+      if (isValidPF(ss)) run.verdicts.spec.human = ss || null;
+    }
     if (stored.blind !== undefined) run.blind = stored.blind;
     if (stored.revealed) run.revealed = true;
     if (stored.blindSkipped) run.blindSkipped = true;
     if (typeof stored.blindText === "string") run.blindText = stored.blindText;
     if (Array.isArray(stored.findings)) {
       for (var i = 0; i < run.findings.length && i < stored.findings.length; i++) {
-        run.findings[i].human = stored.findings[i].human || null;
+        var h = stored.findings[i].human;
+        run.findings[i].human = (h === "agree" || h === "disagree" || h === "borderline") ? h : null;
         run.findings[i].note = stored.findings[i].note || null;
       }
     }
   }
 
-  function addOrUpdateRun(parsed) {
-    var existingIndex = -1;
+  function findRunIndex(key) {
     for (var i = 0; i < runs.length; i++) {
-      if (runs[i].key === parsed.id) { existingIndex = i; break; }
+      if (runs[i].key === key) return i;
     }
-    // Re-drops of the same file must not clobber a display id the user
-    // already edited in this session — only a fresh run starts from the
-    // freshly parsed id (applyStoredLabels may still override it below
-    // from a previous session's saved rename).
-    var displayId = existingIndex >= 0 ? runs[existingIndex].id : parsed.id;
-    var run = {
-      key: parsed.id,
-      id: displayId,
-      filename: parsed.filename,
-      verdict_judge: parsed.verdict_judge,
-      verdict_human: null,
-      findings: parsed.findings,
-      ignored: parsed.ignored,
+    return -1;
+  }
+
+  function upsertRun(id, filename, payload) {
+    var idx = findRunIndex(id);
+    var run = idx >= 0 ? runs[idx] : {
+      key: id,
+      id: id,
+      judgeFilename: null,
+      transcriptFilename: null,
+      transcriptOnly: true,
+      verdicts: emptyVerdicts(),
+      advisory: { soft_count: 0, critique_count: 0 },
+      findings: [],
+      ignored: {},
+      transcript: null,
       blind: null,
       revealed: false,
       blindSkipped: false,
       blindText: ""
     };
+
+    if (payload.judge) {
+      run.judgeFilename = filename;
+      run.transcriptOnly = false;
+      run.verdicts = payload.judge.verdicts;
+      run.advisory = payload.judge.advisory;
+      run.findings = payload.judge.findings;
+      run.ignored = payload.judge.ignored;
+    }
+    if (payload.transcript) {
+      run.transcriptFilename = filename;
+      run.transcript = payload.transcript;
+    }
+
     applyStoredLabels(run);
-    if (existingIndex >= 0) runs[existingIndex] = run;
-    else runs.push(run);
+    if (idx >= 0) runs[idx] = run; else runs.push(run);
+    if (!contextState.runKey) contextState.runKey = run.key;
   }
 
   // ---------------------------------------------------------------------
@@ -560,14 +874,31 @@
     });
     var recall = (hasBlind && recallDen > 0) ? (recallNum / recallDen) : null;
 
-    var vaHits = 0, vaTotal = 0;
+    var hardAgreement = { hits: 0, total: 0 };
+    var specAgreement = { hits: 0, total: 0 };
+    var overallAgreement = { hits: 0, total: 0 };
+    var contradictions = [];
+    var softTotal = 0, critiqueTotal = 0;
+
     runs.forEach(function (run) {
-      if (run.verdict_human) {
-        vaTotal++;
-        var jp = run.verdict_judge.indexOf("PASS") === 0;
-        var hp = run.verdict_human.indexOf("PASS") === 0;
-        if (jp === hp) vaHits++;
+      var v = run.verdicts;
+      if (v.hard.human != null && v.hard.judge != null) {
+        hardAgreement.total++;
+        if ((v.hard.judge.indexOf("PASS") === 0) === (v.hard.human.indexOf("PASS") === 0)) hardAgreement.hits++;
       }
+      if (v.spec.human != null && v.spec.judge != null) {
+        specAgreement.total++;
+        if ((v.spec.judge.indexOf("PASS") === 0) === (v.spec.human.indexOf("PASS") === 0)) specAgreement.hits++;
+      }
+      var derivedHuman = deriveOverall(v.hard.human, v.spec.human);
+      if (derivedHuman != null && v.overall.judge != null) {
+        overallAgreement.total++;
+        if ((v.overall.judge.indexOf("PASS") === 0) === (derivedHuman === "PASS")) overallAgreement.hits++;
+      }
+      if (selfContradiction(run)) contradictions.push(run.id);
+
+      softTotal += run.advisory.soft_count || 0;
+      critiqueTotal += run.advisory.critique_count || 0;
     });
 
     var gatePass = true;
@@ -592,8 +923,12 @@
       perTier: perTier,
       recall: recall,
       hasBlind: hasBlind,
-      vaHits: vaHits,
-      vaTotal: vaTotal,
+      hardAgreement: hardAgreement,
+      specAgreement: specAgreement,
+      overallAgreement: overallAgreement,
+      contradictions: contradictions,
+      softTotal: softTotal,
+      critiqueTotal: critiqueTotal,
       gatePass: gatePass,
       gateReasons: gateReasons
     };
@@ -611,6 +946,7 @@
   var runsContainer = document.getElementById("runsContainer");
   var emptyState = document.getElementById("emptyState");
   var readoutEl = document.getElementById("readout");
+  var contextPane = document.getElementById("contextPane");
 
   function el(tag, attrs, children) {
     var node = document.createElement(tag);
@@ -651,11 +987,27 @@
       readoutEl.appendChild(recallRow);
     }
 
-    if (stats.vaTotal > 0) {
-      var vaRow = el("div", { class: "tier-row" });
-      vaRow.appendChild(el("span", { text: "Verdict agreement" }));
-      vaRow.appendChild(el("span", { text: stats.vaHits + "/" + stats.vaTotal }));
-      readoutEl.appendChild(vaRow);
+    [["Hard verdict agreement", stats.hardAgreement], ["Spec verdict agreement", stats.specAgreement], ["Overall verdict agreement", stats.overallAgreement]].forEach(function (pair) {
+      if (pair[1].total > 0) {
+        var row = el("div", { class: "tier-row" });
+        row.appendChild(el("span", { text: pair[0] }));
+        row.appendChild(el("span", { text: pair[1].hits + "/" + pair[1].total }));
+        readoutEl.appendChild(row);
+      }
+    });
+
+    if (stats.contradictions.length > 0) {
+      readoutEl.appendChild(el("div", {
+        class: "contradiction-line",
+        text: "judge self-contradiction: " + stats.contradictions.length + " run(s) — " + stats.contradictions.join(", ")
+      }));
+    }
+
+    if (stats.softTotal > 0 || stats.critiqueTotal > 0) {
+      var advRow = el("div", { class: "tier-row" });
+      advRow.appendChild(el("span", { text: "Advisory" }));
+      advRow.appendChild(el("span", { text: stats.softTotal + " soft, " + stats.critiqueTotal + " critiques" }));
+      readoutEl.appendChild(advRow);
     }
 
     var gate = el("div", {
@@ -679,11 +1031,28 @@
     });
   }
 
+  function selectFindingContext(run, finding) {
+    contextState.runKey = run.key;
+    contextState.tab = "transcript";
+    contextState.turn = finding.turn;
+    contextState.tier = finding.tier;
+    renderContextPane({ scroll: true });
+  }
+
   function renderFindingCard(run, finding) {
     var stateClass = finding.human ? " state-" + finding.human : "";
     var card = el("div", { class: "finding-card" + stateClass });
     card.appendChild(el("span", { class: "tier-chip", text: TIER_LABEL[finding.tier] || finding.tier }));
     card.appendChild(el("div", { class: "finding-summary mono", text: finding.summary }));
+
+    if (finding.turn != null) {
+      card.appendChild(el("button", {
+        class: "turn-link",
+        type: "button",
+        text: "turn " + finding.turn + " →",
+        onclick: function () { selectFindingContext(run, finding); }
+      }));
+    }
 
     var labelRow = el("div", { class: "label-row" });
     labelRow.appendChild(labelButton(run, finding, "agree", "Agree"));
@@ -790,11 +1159,67 @@
     });
   }
 
+  function pfButton(run, rubric, choice) {
+    var active = run.verdicts[rubric].human === choice;
+    return el("button", {
+      class: "pf-btn" + (active ? " active-" + choice.toLowerCase() : ""),
+      type: "button",
+      text: choice,
+      onclick: function () {
+        run.verdicts[rubric].human = active ? null : choice;
+        saveRun(run);
+        renderAll();
+      }
+    });
+  }
+
+  function renderVerdictBlock(run) {
+    var wrap = el("div", { class: "verdict-block" });
+
+    [["hard", "Hard violations"], ["spec", "Spec gaps"]].forEach(function (pair) {
+      var rubric = pair[0], label = pair[1];
+      var row = el("div", { class: "verdict-control-row" });
+      row.appendChild(el("span", { class: "verdict-label", text: label }));
+      var group = el("div", { class: "pf-group" });
+      group.appendChild(pfButton(run, rubric, "PASS"));
+      group.appendChild(pfButton(run, rubric, "FAIL"));
+      row.appendChild(group);
+      row.appendChild(el("span", { class: "verdict-chip", text: "judge: " + (run.verdicts[rubric].judge || "—") }));
+      wrap.appendChild(row);
+    });
+
+    var derived = deriveOverall(run.verdicts.hard.human, run.verdicts.spec.human);
+    var derivedClass = derived === "PASS" ? " gate-pass" : derived === "FAIL" ? " gate-fail" : "";
+    wrap.appendChild(el("div", {
+      class: "derived-overall" + derivedClass,
+      text: "Derived overall: " + (derived === null ? "not yet set" : derived) + " (judge stated: " + (run.verdicts.overall.judge || "—") + ")"
+    }));
+
+    var contradiction = selfContradiction(run);
+    if (contradiction) {
+      wrap.appendChild(el("div", { class: "contradiction-note", text: contradiction }));
+    }
+
+    wrap.appendChild(el("p", {
+      class: "advisory-note hint",
+      text: "Advisory — soft issues: " + (run.advisory.soft_count || 0) + ", open critiques: " + (run.advisory.critique_count || 0)
+    }));
+
+    return wrap;
+  }
+
   function toExportObject(run) {
     return {
       run: run.id,
-      verdict_judge: run.verdict_judge,
-      verdict_human: run.verdict_human || null,
+      verdicts: {
+        hard: { judge: run.verdicts.hard.judge, human: run.verdicts.hard.human || null },
+        spec: { judge: run.verdicts.spec.judge, human: run.verdicts.spec.human || null },
+        overall: { judge: run.verdicts.overall.judge, human: deriveOverall(run.verdicts.hard.human, run.verdicts.spec.human) }
+      },
+      advisory: {
+        soft_count: run.advisory.soft_count || 0,
+        critique_count: run.advisory.critique_count || 0
+      },
       findings: run.findings.map(function (f) {
         return { tier: f.tier, summary: f.summary, human: f.human || null, note: f.note || null };
       }),
@@ -819,8 +1244,8 @@
   }
 
   function isLabelled(run) {
-    if (run.verdict_human) return true;
     if (run.blind) return true;
+    if (run.verdicts.hard.human || run.verdicts.spec.human) return true;
     return run.findings.some(function (f) { return f.human || f.note; });
   }
 
@@ -839,29 +1264,17 @@
     });
     idInput.value = run.id;
     header.appendChild(idInput);
-    header.appendChild(el("span", { class: "filename", text: run.filename }));
-
-    var verdictRow = el("div", { class: "verdict-row" });
-    verdictRow.appendChild(el("span", { class: "verdict-chip", text: "judge: " + (run.verdict_judge || "?") }));
-    verdictRow.appendChild(el("span", { text: "human:" }));
-    var vhInput = el("input", {
-      type: "text",
-      value: run.verdict_human || "",
-      placeholder: "PASS / FAIL",
-      oninput: function (e) {
-        run.verdict_human = e.target.value || null;
-        saveRun(run);
-        renderReadout();
-      }
-    });
-    vhInput.value = run.verdict_human || "";
-    verdictRow.appendChild(vhInput);
-    header.appendChild(verdictRow);
+    var filenames = [run.judgeFilename, run.transcriptFilename].filter(Boolean).join(" + ");
+    header.appendChild(el("span", { class: "filename", text: filenames }));
+    if (run.transcriptOnly) {
+      header.appendChild(el("span", { class: "badge", text: "transcript only — no judge file" }));
+    }
 
     header.appendChild(el("button", {
       text: "Clear this run",
       onclick: function () {
-        run.verdict_human = null;
+        run.verdicts.hard.human = null;
+        run.verdicts.spec.human = null;
         run.blind = null;
         run.revealed = false;
         run.blindSkipped = false;
@@ -874,11 +1287,19 @@
 
     section.appendChild(header);
 
+    if (!run.transcriptOnly) {
+      section.appendChild(renderVerdictBlock(run));
+    }
+
     if (!run.revealed) {
       renderBlindGate(run, section);
     } else {
       renderBlindSummary(run, section);
-      renderFindingsList(run, section);
+      if (run.transcriptOnly) {
+        section.appendChild(el("p", { class: "no-judge-note", text: "No judge file for this run — nothing to adjudicate. Read the transcript in the context pane." }));
+      } else {
+        renderFindingsList(run, section);
+      }
     }
 
     var footer = el("div", { class: "run-footer" });
@@ -900,9 +1321,152 @@
     runs.forEach(function (run) { runsContainer.appendChild(renderRun(run)); });
   }
 
+  // ---------------------------------------------------------------------
+  // Context pane — Transcript / Rubric tabs
+  // ---------------------------------------------------------------------
+  function currentContextRun() {
+    if (!contextState.runKey) return null;
+    var idx = findRunIndex(contextState.runKey);
+    return idx >= 0 ? runs[idx] : null;
+  }
+
+  function renderRunSelect(container) {
+    var select = el("select", {
+      class: "context-run-select",
+      onchange: function (e) {
+        contextState.runKey = e.target.value || null;
+        contextState.turn = null;
+        renderContextPane();
+      }
+    });
+    select.appendChild(el("option", { value: "", text: runs.length ? "Select a run…" : "No runs loaded" }));
+    runs.forEach(function (run) {
+      var opt = el("option", { value: run.key, text: run.id });
+      if (run.key === contextState.runKey) opt.setAttribute("selected", "selected");
+      select.appendChild(opt);
+    });
+    container.appendChild(select);
+  }
+
+  function renderTabs(container) {
+    var row = el("div", { class: "tab-row" });
+    [["transcript", "Transcript"], ["rubric", "Rubric"]].forEach(function (pair) {
+      row.appendChild(el("button", {
+        class: "tab-btn" + (contextState.tab === pair[0] ? " active" : ""),
+        type: "button",
+        text: pair[1],
+        onclick: function () {
+          contextState.tab = pair[0];
+          renderContextPane({ scroll: true });
+        }
+      }));
+    });
+    container.appendChild(row);
+  }
+
+  function renderTranscriptBody(run, body) {
+    if (!run || !run.transcript) {
+      body.appendChild(el("div", { class: "context-empty", text: "No transcript loaded for this run yet. Drop its runs/<date>/<persona>-<journey>.md file." }));
+      return;
+    }
+    var t = run.transcript;
+    if (t.preamble) {
+      body.appendChild(el("pre", { class: "transcript-preamble mono", text: t.preamble }));
+    }
+    t.turns.forEach(function (turn) {
+      var isHighlighted = contextState.tab === "transcript" && contextState.turn === turn.n;
+      var block = el("div", { class: "turn-block" + (isHighlighted ? " turn-highlight" : "") });
+      block.appendChild(el("h3", { class: "turn-heading", id: turn.id, text: turn.heading }));
+      block.appendChild(el("pre", { class: "turn-body mono", text: turn.body }));
+      body.appendChild(block);
+    });
+    if (t.turns.length === 0 && !t.preamble) {
+      body.appendChild(el("div", { class: "context-empty", text: "Transcript loaded but no ## Turn N — ROLE headers were found." }));
+    }
+  }
+
+  function renderRubricBody(run, body) {
+    if (!contextState.tier) {
+      body.appendChild(el("p", { class: "hint", text: "Pick a rubric, or select a finding's turn control to jump straight to its tier." }));
+      var picker = el("div", { class: "tier-picker" });
+      TIERS.forEach(function (t) {
+        picker.appendChild(el("button", {
+          type: "button",
+          text: TIER_LABEL[t] + " (" + RUBRIC_FILENAME_BY_TIER[t] + ")",
+          onclick: function () {
+            contextState.tier = t;
+            renderContextPane();
+          }
+        }));
+      });
+      body.appendChild(picker);
+      return;
+    }
+
+    var picker2 = el("div", { class: "tier-picker" });
+    TIERS.forEach(function (t) {
+      picker2.appendChild(el("button", {
+        class: t === contextState.tier ? "active" : "",
+        type: "button",
+        text: TIER_LABEL[t],
+        onclick: function () {
+          contextState.tier = t;
+          renderContextPane();
+        }
+      }));
+    });
+    body.appendChild(picker2);
+
+    var rubric = rubrics[contextState.tier];
+    if (!rubric) {
+      body.appendChild(el("div", {
+        class: "context-empty",
+        text: "Rubric not loaded — drop plugin/skills/test-personas/rubrics/" + RUBRIC_FILENAME_BY_TIER[contextState.tier] + " (or the whole rubrics/ folder)."
+      }));
+      return;
+    }
+    body.appendChild(el("pre", { class: "rubric-text mono", text: rubric.text }));
+  }
+
+  function renderContextPane(opts) {
+    opts = opts || {};
+    contextPane.innerHTML = "";
+
+    var header = el("div", { class: "context-header" });
+    renderRunSelect(header);
+    renderTabs(header);
+    contextPane.appendChild(header);
+
+    var body = el("div", { class: "context-body" });
+    var run = currentContextRun();
+
+    if (!run) {
+      body.appendChild(el("div", { class: "context-empty", text: "Select a run above, or click a finding's turn control, to see its transcript and rubric here." }));
+      contextPane.appendChild(body);
+      return;
+    }
+
+    if (contextState.tab === "transcript") {
+      renderTranscriptBody(run, body);
+    } else {
+      renderRubricBody(run, body);
+    }
+    contextPane.appendChild(body);
+
+    if (opts.scroll && contextState.tab === "transcript" && contextState.turn != null) {
+      var target = document.getElementById("turn-" + contextState.turn + "-user") ||
+        document.getElementById("turn-" + contextState.turn + "-assistant");
+      if (target) {
+        var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      }
+    }
+  }
+
   function renderAll() {
     renderRuns();
     renderReadout();
+    renderContextPane();
   }
 
   // ---------------------------------------------------------------------
@@ -910,8 +1474,23 @@
   // ---------------------------------------------------------------------
   function ingestFileEntry(file, path) {
     return file.text().then(function (text) {
-      var parsed = parseJudgeFile(text, path);
-      addOrUpdateRun(parsed);
+      var cls = classifyPath(path);
+      if (cls.kind === "ignore") return;
+      var norm = String(text).replace(/\r\n/g, "\n");
+      if (cls.kind === "rubric") {
+        rubrics[cls.tier] = { text: norm, filename: path };
+        return;
+      }
+      if (cls.kind === "judge") {
+        var parsed = parseJudgeFile(text, path);
+        upsertRun(cls.id, path, { judge: parsed });
+        return;
+      }
+      if (cls.kind === "transcript") {
+        var pt = parseTranscript(text, path);
+        upsertRun(cls.id, path, { transcript: pt });
+        return;
+      }
     });
   }
 
@@ -1038,7 +1617,8 @@
       toRemove.forEach(function (k) { localStorage.removeItem(k); });
     } catch (e) {}
     runs.forEach(function (run) {
-      run.verdict_human = null;
+      run.verdicts.hard.human = null;
+      run.verdicts.spec.human = null;
       run.blind = null;
       run.revealed = false;
       run.blindSkipped = false;
