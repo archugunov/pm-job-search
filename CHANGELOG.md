@@ -30,24 +30,37 @@ without adopting the pipeline tracker.
 
 ---
 
-## [Unreleased]
+## [0.5.0] — 2026-08-10
+
+The test strategy inverted. Almost all testing weight used to sit in an
+expensive LLM-judged conversation harness that ran every few weeks; the
+deterministic layer underneath barely existed. This release flips that.
 
 ### Changed
 - Test harness restructured: journeys cut 8 → 3 (+ sweep-smoke, run-by-name);
   `cold-start-cv`, `reflection`, and both `case-practice` journeys retired.
+- Judge calibration is now per rubric, not per run. Label files carry
+  separate Hard-violations and Spec-gaps verdicts; the overall verdict is
+  derived from those two rather than recorded by hand, and a mismatch
+  between the judge's stated overall and its own sub-verdicts is reported
+  as a self-contradiction.
 - Phase 3.5 schema validation now runs `scripts/validate_userdata.py`
   (meta.md + profile.md + strategy.md + research-brief), shared with CI.
 
 ### Added
 - `harness-checks` CI: deterministic pytest layer over snapshots, schemas,
-  and golden-set labels — 56 tests, $0, every push.
+  and golden-set labels — 73 tests, $0, every push.
 - Golden set for `/evaluate-position` (12 labeled synthetic JDs) with a
   release-time agreement gate (`tests/golden/evaluate-position/`).
 - Judge-calibration tooling: `tests/judge-calibration/grade-judge.html`, a
   single-file browser tool for grading the judge with a blind-pass gate and
   a live precision/recall readout, and `tests/judge-calibration/stats.py`,
   its command-line equivalent, with the adjudication protocol in
-  `tests/judge-calibration/README.md`.
+  `tests/judge-calibration/README.md`. The tool shows the transcript and the
+  rubric beside the findings, and links a finding to the transcript turn it
+  cites; the blind-pass gate keeps every judge-derived value — findings,
+  verdicts, advisory counts and the sidebar readout — out of the page until
+  you have written your own list.
 - Frozen judge-calibration corpus: 31 files across 11 judged runs in 7
   dated directories, scrubbed and committed under
   `tests/judge-calibration/runs/`.
