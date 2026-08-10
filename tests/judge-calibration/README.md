@@ -13,6 +13,16 @@ pick these for a blind pass; there's nothing to diff your findings
 against — `grade-judge.html` knows this and skips the blind-pass gate for
 them automatically, with a note on the card.
 
+`2026-08-10/` is the newest run and the only one produced by the current
+code. It is also the only run judged **twice** — `maya-cold-start.judge.md`
+and `maya-cold-start.judge2.md` are two independent readings of the same
+transcript, and they disagree: 4 hard violations against 1, plus a
+required spec criterion one passed and the other failed. Label both. That
+disagreement is the cleanest measurement of judge variance in the corpus,
+and its `SUMMARY.md` names one finding already known to be wrong (judge 1
+calls `setup/SKILL.md:291` self-contradictory; it isn't) — a free
+calibration data point to start on.
+
 ## Labelling with the tool (primary path)
 
 Open `tests/judge-calibration/grade-judge.html` directly in a browser —
@@ -119,8 +129,12 @@ When a run's judge verdict is `null`, both report it the same way: e.g.
 
 ### What the numbers actually mean, at this corpus size
 
-Say the quiet part out loud: across the current 11 judged runs the
-finding pools are **hard 2, soft 18, spec 154, critique 41**. `MIN_N` is
+Say the quiet part out loud: across the 11 judged runs measured when
+these bars were set, the finding pools were **hard 2, soft 18, spec 154,
+critique 41**. (The corpus has since grown — `2026-08-10` adds a twelfth
+run, judged twice, which on its own contributes 4-5 hard findings and so
+shifts the hard pool materially. Re-measure before leaning on these
+numbers.) `MIN_N` is
 5, so the hard tier can *never* gate on this corpus — there simply aren't
 enough hard-violation findings to reach the precision-gate's minimum
 sample size, ever, regardless of how the judge performs. In practice the

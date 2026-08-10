@@ -13,23 +13,30 @@ as `<state directory>`.
 Check, in order: `<state directory>cv.md`, `<state directory>cv.txt`,
 `<state directory>cv.pdf`. First hit wins.
 
-If a `cv.*` file exists in an unreadable format (`.docx`, `.pages`, `.rtf`, or
-anything else), print exactly one line and continue without it:
+The check itself is silent. Never narrate it — no "Found X? No", no "checking
+for a CV", no restating the branch you took. The user sees only the one line the
+branch below prints, and nothing before it.
+
+**Branch A — a `cv.*` file exists but in an unreadable format** (`.docx`,
+`.pages`, `.rtf`, or anything else). Before printing, substitute BOTH
+placeholders: `<state directory>` becomes the path the calling skill states
+below, and `<ext>` becomes the actual extension you found. A line printed with
+either placeholder still in it is a bug — it sends the user to convert a file
+that isn't there. Then print exactly this one line and continue without the CV:
 
 > `Found <state directory>cv.<ext>. Readable formats are .md, .txt, or .pdf — convert your CV first if you want me to draft from it.`
 
-Substitute `<state directory>` here too — the same path the calling skill states
-below. Naming the wrong folder sends the user to convert a file that isn't there.
-
-If no `cv.*` file exists, offer the drop. The calling skill states its own state
+**Branch B — no `cv.*` file exists at all.** Branch A's line does NOT apply here;
+printing it, or any narrated variant of it, when there is no CV file is the most
+common failure of this reference. Offer the drop instead. The calling skill states its own state
 directory and any scaffold files that go with it (`/setup` states `userdata/`
 plus the three `.gitkeep` files; `job-sweep` states `job-sweep/` with no scaffold
 files). Create that directory and those scaffold files, if any, FIRST, so the
-user has somewhere to put it, then say:
+user has somewhere to put it. Then substitute `<state directory>` with the path
+the calling skill stated — again, a printed placeholder is a bug — and say
+exactly this, with nothing before it:
 
 > `I've created <state directory> for you — drop your CV there as cv.md, cv.txt, or cv.pdf. Say 'ready' when it's in.`
-
-Substitute `<state directory>` with the path the calling skill stated.
 
 When the user says ready, re-detect. Still absent → continue without a CV; every
 step below simply has no pre-filled value.

@@ -154,6 +154,10 @@ Specifically:
 - Never invent companies, dates, people, debrief filenames, journal entries, or events. Every concrete fact in your output must trace to either (a) a file you actually read, or (b) a user message in the transcript.
 - When the state is sparse or messy (empty profile sections, missing fields, duplicate folders), surface the gap explicitly — do not paper over it with fabricated content.
 
+**Corpus is off-limits (added 2026-08-10).** `tests/judge-calibration/runs/` and `userdata/test-runs/` hold transcripts of PAST runs, full of company names, position titles and live job-posting URLs. Never read them, and never let anything from them reach your output. A skill that discovers roles must discover them for real this run; a role lifted from an old transcript looks identical to a real find, so the harness silently loses the ability to tell discovery from recall. If you catch yourself about to reuse a URL or a listing you saw in one of those files, stop and search instead.
+
+Empirical basis (2026-08-10 cold-start run): `/job-search` returned a Klarna posting whose URL and exact position title both appear verbatim in `tests/judge-calibration/runs/2026-07-11/maya-cold-start.md`, committed to the repo a few days earlier. It may have been a genuine live hit — ATS UUIDs are stable per posting, and the two other roles that run filed were not in the corpus — but that is the problem: the output alone cannot distinguish the two.
+
 Empirical basis (2026-06-07 4-journey run): sub-agents with this guardrail behaved reliably (active-loop, edge-recovery — both PASS). Sub-agents without it fabricated plausible content (cold-start /today rendered "(url not captured)" instead of reading meta.md `link:` fields).
 
 **Verbatim-quote rule (added 2026-06-11 after scoring-turn drift was flagged in testing):** When your turn comments on, scores, or summarises content presented in an earlier transcript turn, you MUST paste the prior-turn content verbatim before commenting on it. Do not paraphrase, condense, or rewrite the content under any framing — even if the rewrite seems clearer or more concise.

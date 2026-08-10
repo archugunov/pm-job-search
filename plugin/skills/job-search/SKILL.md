@@ -80,6 +80,14 @@ dispatched:
    `_None yet — fill in as you discover them._`. Either way the heading now
    exists, so this never asks twice.
 
+   **Confirm the write in chat.** This is an edit to `profile.md`, so the user
+   must be told it happened — one short line naming the file and what went into
+   it (e.g. `Saved to profile.md — I'll seed the sweep with Plaid, Klarna,
+   Lendable, Mercury.`). Writing to `profile.md` silently is a violation of the
+   plugin-wide rule that a skill never edits profile or strategy without saying
+   so; the run summary at the end of the sweep is too late and too far away to
+   count as that confirmation.
+
 2. **Heading present with entries** — pass them to Discovery as additional
    targets (e.g. `site:<company>.com/careers senior product manager`). Treat them
    as candidates like any other: they still go through scoring and dedup.
@@ -221,6 +229,8 @@ Plain prose (TONE.md Rule B — no fenced code blocks, no key-value dumps). Temp
 Each application row printed in chat (when the user asks to see roles, when stubs are listed, etc.) includes the JD URL inline. Format: `- <Company> — <Position> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
 
 Close the chat output with a context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`. For a fresh filing pass, the typical nudge is to open `/pm-job-search:dashboard`.
+
+**Dashboard nudge cross-reference.** The line above invites the user to change a status in chat, so this skill can be the one that handles the first such change of the conversation. When confirming an in-chat status change (e.g. "mark Lendable to apply"), check whether the "In-chat update nudge — fire once per session" rule in `${CLAUDE_PLUGIN_ROOT}/skills/dashboard/SKILL.md` should fire, and append the tip line per that rule if it is the first of the conversation. Track the flag transiently in conversation context, not on disk. (Same cross-reference `/today` carries — the nudge is documented in the dashboard file but fires from whichever skill handles the change.)
 
 If nothing surfaces: "No new roles this week. Pipeline state unchanged."
 

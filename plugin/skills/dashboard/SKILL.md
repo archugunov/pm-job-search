@@ -57,7 +57,11 @@ When the server starts and the URL is known, print this to chat:
 
 > Opening your job-search dashboard at http://localhost:<port> — you'll see every role you're tracking in one view. Change a status, add a note, or archive a role inline. To add a new role, drop the link to me here and I'll score and file it.
 
-Where `<port>` is the actual port the server bound to (e.g. 7890). Print once and stop.
+Where `<port>` is the actual port the server bound to (e.g. 7890). Print that line once.
+
+Then add one context-aware next-step nudge per `${CLAUDE_PLUGIN_ROOT}/references/recommended-flow.md`, derived from what is actually in `userdata/companies/` — for example, unscored roles are worth `/evaluate-position`, a `to_apply` role with no `cv-<date>.md` is worth `/apply`. One line, naming the real companies. Skip it only if nothing in the pipeline suggests a next step.
+
+If the environment cannot hold a blocking foreground process, say so plainly in one line, give the user the command to run themselves, and still add the nudge — the launch failing is not a reason to end without one.
 
 ## In-chat update nudge — fire once per session
 
