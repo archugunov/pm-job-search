@@ -30,6 +30,35 @@ without adopting the pipeline tracker.
 
 ---
 
+## [Unreleased]
+
+Continues 0.5.0's inversion. Two independent judge readings of the same
+transcript split 4:1 on hard violations, and every disagreement was about a
+word list — whether `meta.md`, `status: new` and `tier: unscored` counted as
+explained jargon. So the largest measured source of judge variance in the
+corpus was a rule that never needed a judge.
+
+- `scripts/lint_transcript.py` — deterministic lint over a journey transcript.
+  Bare fenced blocks used as chat summaries, references to skills or files that
+  don't resolve, banned internal jargon in user-facing copy, prior-state prompts
+  on a first run, and cadence numbers that don't trace to the user's own plan.
+  Stdlib only, like the schema validator it joins.
+- Internal jargon is now a flat ban rather than "jargon without explanation".
+  The judgement call was the whole disagreement; the flat ban is also the better
+  product rule.
+- Rules whose input is missing report `NOT CHECKED` rather than passing
+  silently — a clean run must not be mistaken for full coverage.
+- `rubrics/lint-checklist.md` deleted. Six of its seven rules are now scripts;
+  the seventh ("two unrelated asks in one message") was already duplicated
+  verbatim in `rubrics/tone.md` as Rule A.
+- The judge no longer decides hard violations. It transcribes the two
+  deterministic blocks — schema validation and lint findings — and is told
+  explicitly not to add, drop or re-litigate them.
+- 46 new tests, including a frozen-corpus baseline asserted as
+  `(transcript, turn, rule)` triples so quote-formatting changes don't churn it.
+
+---
+
 ## [0.5.0] — 2026-08-10
 
 The test strategy inverted. Almost all testing weight used to sit in an

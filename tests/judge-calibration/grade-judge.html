@@ -726,19 +726,29 @@
 
   // Classifies a dropped file by its path per the corpus layout:
   // runs/<date>/<persona-journey>.judge.md + .md (transcript), plus the
-  // four fixed rubric filenames, wherever they land. SUMMARY.md is inert.
+  // three fixed rubric filenames, wherever they land. SUMMARY.md is inert.
+  // The hard tier deliberately has no rubric file: those rules moved into
+  // scripts/validate_userdata.py and scripts/lint_transcript.py, and the judge
+  // transcribes their output rather than deciding it. Historical judge files in
+  // runs/ still carry hard findings that were judged under the old
+  // rubrics/lint-checklist.md — they render fine, there is just no rubric to
+  // show alongside them.
   var RUBRIC_TIER_BY_FILENAME = {
-    "lint-checklist.md": "hard",
     "tone.md": "soft",
     "spec-criteria.md": "spec",
     "open-critique.md": "critique"
   };
   var RUBRIC_FILENAME_BY_TIER = {
-    hard: "lint-checklist.md",
     soft: "tone.md",
     spec: "spec-criteria.md",
     critique: "open-critique.md"
   };
+  var DETERMINISTIC_TIER_NOTE = "Hard violations are decided by scripts, not by a rubric — "
+    + "scripts/validate_userdata.py (schema drift) and scripts/lint_transcript.py "
+    + "(fenced summaries, unresolved references, banned jargon, prior-state prompts, "
+    + "untraceable cadence numbers). The judge transcribes their output verbatim. "
+    + "Findings here from runs before that change were judged under the retired "
+    + "rubrics/lint-checklist.md.";
 
   function idFromParts(parts, stem) {
     return parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
@@ -1528,7 +1538,7 @@
       TIERS.forEach(function (t) {
         picker.appendChild(el("button", {
           type: "button",
-          text: TIER_LABEL[t] + " (" + RUBRIC_FILENAME_BY_TIER[t] + ")",
+          text: TIER_LABEL[t] + (RUBRIC_FILENAME_BY_TIER[t] ? " (" + RUBRIC_FILENAME_BY_TIER[t] + ")" : " (deterministic)"),
           onclick: function () {
             contextState.tier = t;
             renderContextPane();
@@ -1557,7 +1567,10 @@
     if (!rubric) {
       body.appendChild(el("div", {
         class: "context-empty",
-        text: "Rubric not loaded — drop plugin/skills/test-personas/rubrics/" + RUBRIC_FILENAME_BY_TIER[contextState.tier] + " (or the whole rubrics/ folder)."
+        text: RUBRIC_FILENAME_BY_TIER[contextState.tier]
+          ? "Rubric not loaded — drop plugin/skills/test-personas/rubrics/"
+            + RUBRIC_FILENAME_BY_TIER[contextState.tier] + " (or the whole rubrics/ folder)."
+          : DETERMINISTIC_TIER_NOTE
       }));
       return;
     }

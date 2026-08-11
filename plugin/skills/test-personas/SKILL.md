@@ -14,7 +14,7 @@ For each `(persona × journey)` pairing requested, runs five phases:
 1. **Snapshot reset** — `rsync` a clean snapshot into `userdata/`.
 2. **Schema validation** — verify the snapshot matches current plugin expectations.
 3. **Conversation loop** — orchestrate two sub-agents (plugin-under-test + user-simulator) until termination.
-4. **Judge** — one sub-agent reads the transcript + four rubrics, produces structured findings.
+4. **Judge** — one sub-agent reads the transcript + three rubrics, produces structured findings. Hard violations are not judged: they come from the Phase 3.5 scripts and are transcribed verbatim.
 5. **Aggregate** — write a `SUMMARY.md` across all journeys in this run.
 
 ## Argument parsing
@@ -39,8 +39,7 @@ If the user's message is ambiguous, ask one clarifying question (Rule A) and sto
    ```bash
    mkdir -p userdata/test-runs/$RUN_DATE
    ```
-3. Read all four rubric files into memory (Read tool):
-   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/lint-checklist.md`
+3. Read all three rubric files into memory (Read tool):
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/tone.md`
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md`
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/open-critique.md`
@@ -227,50 +226,53 @@ Each journey defines its own termination — use the journey file as truth.
 - Empty plugin reply: if `LATEST_PLUGIN_OUTPUT` is empty or whitespace-only, exit with a note.
 - Empty simulator reply: if the simulator returns empty, exit with a note (simulator hit its termination cue).
 
-## Phase 3.5: Schema validation on userdata/ files written during the run
+## Phase 3.5: Deterministic checks (schema + transcript lint)
 
-After the conversation loop terminates and BEFORE dispatching the judge, validate that the files the plugin sub-agent wrote conform to documented schemas. Catches schema drift the conversation transcript hides — e.g. sub-agent inventing field names (`role:` vs `position:`) that propagate silently into downstream skills.
+After the conversation loop terminates and BEFORE dispatching the judge, run both deterministic checkers. Between them they own every rule that a script can decide, so the judge never has to. Nothing here is a judgement call, and nothing here goes back to the judge for a second opinion.
 
-Scope: meta.md, profile.md, strategy.md, and research-brief.md — everything `scripts/validate_userdata.py` covers.
+Two scripts, two blocks:
 
-### Inputs
-
-- `scripts/validate_userdata.py` — the shared schema validator (single source of truth; rules defined in `${CLAUDE_PLUGIN_ROOT}/schemas/*.schema.md`).
-- The `userdata/` tree as the conversation loop left it.
+- `scripts/validate_userdata.py` — schema drift in the files the run wrote. Catches drift the transcript hides, e.g. a sub-agent inventing field names (`role:` vs `position:`) that propagate silently into downstream skills. Rules defined in `${CLAUDE_PLUGIN_ROOT}/schemas/*.schema.md`.
+- `scripts/lint_transcript.py` — structural violations in the transcript itself: bare fenced blocks used as chat summaries, references to skills or files that don't resolve, banned internal jargon in user-facing copy, prior-state prompts on a first run, and cadence numbers that don't trace to the user's own plan.
 
 ### Validation logic
 
-Run via Bash:
+Run both via Bash, from the repo root:
 
     python3 scripts/validate_userdata.py userdata/
+    python3 scripts/lint_transcript.py userdata/test-runs/$RUN_DATE/$persona-$journey.md --userdata userdata/
 
-Both paths are relative to the repo root — run this from there.
+`lint_transcript.py` resolves the starting snapshot from the transcript's own `**Snapshot:**` header; pass `--userdata userdata/` so the cadence rule can check numbers against the `strategy.md` the run produced. Without it that rule reports `NOT CHECKED` rather than passing silently.
 
-Capture stdout verbatim. Exit 0 with `No schema drift found.` means clean. Exit 1 means findings — one line each, `<path>: <rule> — <detail>`. Do NOT re-derive or paraphrase findings; paste the script output into the SCHEMA VALIDATION block as-is. Coverage: meta.md (required keys, status enum, link format, forbidden keys), profile.md (required keys, Positioning section), strategy.md (required keys, date format, forbidden target_date), research-brief.md (Source line present and matching meta link).
+Capture both stdouts verbatim. Exit 0 means clean (`No schema drift found.` / `No lint findings.`); exit 1 means findings, one line each. Do NOT re-derive, paraphrase, filter or re-judge any line — paste each script's output into its block as-is. A `NOT CHECKED:` line is information for the reader, not a finding; pass it through too.
 
 ### Output
 
-Compose a single markdown block:
+Compose two markdown blocks:
 
 ```
 --- SCHEMA VALIDATION ---
 
-<script stdout, verbatim — one line per finding as `<path>: <rule> — <detail>`, or the single line "No schema drift found." when clean>
+<validate_userdata.py stdout, verbatim>
+
+--- LINT FINDINGS ---
+
+<lint_transcript.py stdout, verbatim>
 ```
 
-An empty or near-empty `userdata/` tree (e.g. cold-start journey that hasn't reached `/job-search` yet) is not a special case — the script has nothing to flag and reports `No schema drift found.` like any other clean run.
+An empty or near-empty `userdata/` tree (e.g. a cold-start journey that never reached `/job-search`) is not a special case — the schema script has nothing to flag and reports `No schema drift found.` like any other clean run.
 
-Append this block to the judge input as the 6th labelled section (between MEMORY and METADATA in the judge prompt's input format).
+Append both blocks to the judge input as the 6th and 7th labelled sections (between MEMORY and METADATA in the judge prompt's input format).
 
 ## Phase 4: Judge (per journey, unless --skip-judge)
 
-After the conversation loop terminates AND the Phase 3.5 schema check has run, dispatch the judge.
+After the conversation loop terminates AND the Phase 3.5 deterministic checks have run, dispatch the judge.
 
 1. Build the judge input by concatenating:
-   - The four rubric files (read once in Phase 0, available in memory).
-   - The journey file's own `Spec criteria` section, appended to Rubric 3 (spec-criteria).
-   - `${CLAUDE_PLUGIN_ROOT}/memory.md` contents (read once in Phase 0) as the 5th block labelled `--- MEMORY (context, not checklist) ---`.
-   - The Phase 3.5 schema validation block as the 6th labelled section `--- SCHEMA VALIDATION ---`. Schema findings flow through to the judge as authoritative — they're provable from file contents alone.
+   - The three rubric files (read once in Phase 0, available in memory).
+   - The journey file's own `Spec criteria` section, appended to Rubric 2 (spec-criteria).
+   - `${CLAUDE_PLUGIN_ROOT}/memory.md` contents (read once in Phase 0) as the 4th block labelled `--- MEMORY (context, not checklist) ---`.
+   - The Phase 3.5 blocks as the 5th and 6th labelled sections, `--- SCHEMA VALIDATION ---` and `--- LINT FINDINGS ---`. Both flow through to the judge as authoritative — they're provable from file contents and from the transcript's own structure, so the judge transcribes them rather than deciding them.
    - The full transcript file contents.
    - Metadata: `journey`, `persona`, `snapshot`, `date`.
 2. Dispatch a sub-agent via the Agent tool:

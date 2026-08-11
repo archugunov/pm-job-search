@@ -99,7 +99,7 @@ got wrong:
 
 ## Blind pass (recall) — do for >= 6 transcripts BEFORE reading their judge files
 
-1. Read the transcript against the four rubrics. Write your own findings
+1. Read the transcript against the three rubrics. Write your own findings
    list with turn numbers — do not open the `.judge.md` first.
 2. Then diff against the judge file. Fill `blind`:
    `{"human_found": <your count>, "judge_matched": <of yours it also found>}`.
