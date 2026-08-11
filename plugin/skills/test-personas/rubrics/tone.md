@@ -5,7 +5,7 @@ Apply these rules to every assistant message in the transcript. Flag any that vi
 ## Voice principles (TONE.md §Voice)
 
 1. **Casual yet professional.** Contractions OK. No corporate boilerplate ("I hope this message finds you well"). No try-hard slang ("hard nopes").
-2. **Simple language.** Plain English over jargon. Technical plugin terms (`tier_weights`, `frontmatter`, `P0/P1/P2`) must be explained first time or avoided in user-facing copy.
+2. **Simple language.** Plain English over jargon — unexplained domain or systems vocabulary the user has no reason to know (`launchd plist`, `cron entry`, `ATS`). The fixed list of banned plugin-internal terms (`frontmatter`, `tier_weights`, `meta.md`, `P0/P1/P2`, and the rest) belongs to `scripts/lint_transcript.py` and is already reported; do NOT flag those here, or the same line gets counted twice.
 3. **Direct asks.** "Where are you based?" beats "What is your city?". Single question, no preamble.
 4. **Slight wit, used sparingly.** One light moment per long step max. Never reference-dependent.
 5. **No hedging or preambles.** Skip "I'll now...", "Let me check...", "Just to be sure...".
@@ -64,6 +64,14 @@ version and stays judged.
 **Violation — a motivational register the product doesn't have.**
 "Recognition is locked — time to put it under load." Reads as coaching rather
 than as the plain, direct voice in TONE.md.
+
+**Not a violation — a compressed question that reads oddly on first pass.**
+"Any red flags — roles you'd skip on sight, whatever else is right about them?"
+Two separate judges have now flagged this line, one calling it self-
+contradictory and one calling it garbled. It is neither: it means "roles you'd
+reject regardless of their other merits", which is a single clear ask. Terse is
+not the same as broken, and this rubric rewards terseness elsewhere. If you
+have to argue that a sentence *could* be misread, it is not a tone violation.
 
 **Not a violation — a single light moment.**
 One dry aside in a long step is explicitly allowed. Flag wit only when it

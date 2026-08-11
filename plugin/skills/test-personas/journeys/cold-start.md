@@ -49,8 +49,8 @@ Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportun
 - **[required]** `/setup` did NOT show the weekly-reflection nudge (it was moved to `/today`)
 - **[required]** `/setup`'s automation prompt was 2-step (y/n first, then time) — not bundled
 - **[required]** `/job-search` auto-filed at least one role with `status: new` in `meta.md`
-- **[required]** `/job-search` set `link:` in every new `meta.md`'s frontmatter
-- **[required]** `applications.md` GENERATED block contains a `Link` column
+- **[deterministic]** `/job-search` set `link:` in every new `meta.md`'s frontmatter — decided by `scripts/validate_userdata.py`, never by the judge. Do not assess it from the transcript.
+- **[deterministic]** `applications.md` GENERATED block contains a `Link` column — file-side and NOT currently covered by any script (`validate_userdata.py` does not read `applications.md`). A known gap, listed here so it is not mistaken for covered. Do not assess it from the transcript.
 - **[required]** The chat rendering of the application row included the URL inline
 - **[required]** `/today`'s first run skipped the input-loop prompt entirely (no "anything that moved since last time")
 - **[required]** `/today`'s brief rendered Heads-up section ABOVE Pipeline state

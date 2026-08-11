@@ -7,8 +7,9 @@ These criteria apply to every journey. The journey file's own `## Spec criteria`
 
 ## Required vs opportunistic convention
 
-Every criterion in this rubric and in every journey file is annotated with one of two tags:
+Every criterion in this rubric and in every journey file is annotated with one of three tags:
 
+- **`[deterministic]`** — not yours. A script decides it, or nothing does yet. Skip it entirely: do not report it, do not mark it NOT EXERCISED, do not mention it in your findings. A criterion about the contents of a file that was never rendered in chat is structurally unassessable from a transcript, and guessing at it produces a confident finding with no evidence behind it.
 - **`[required]`** — must be exercised AND pass for the journey to PASS verdict. If a required criterion is "not exercised" when it was in scope (its preconditions were met), the journey's spec-gaps verdict is FAIL.
 - **`[opportunistic]`** — nice to have. Can be "not exercised" or "fail" without affecting the verdict. Surfaced for awareness but never blocks a release.
 
