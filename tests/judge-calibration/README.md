@@ -1,5 +1,15 @@
 # Judge calibration
 
+> **STALE — being rewritten.** On 2026-08-12 the rubrics were restructured
+> (lint extracted to scripts; groundedness and coherence added; open critique
+> deleted; one judge call per rubric; five-line verdict block) and the seven
+> live-journey transcripts were re-judged under the new set. Everything below
+> describing four tiers named hard / soft / spec / critique, and the
+> transcript-only list, predates that. `stats.py`, `grade-judge.html` and
+> `labels/TEMPLATE.json` still expect the OLD shape and are reshaped next —
+> don't start labelling against this document. Plan:
+> `docs/superpowers/2026-08-11-rubric-restructure-plan.md`.
+
 Frozen corpus of harness runs (`runs/`, scrubbed) + human labels
 (`labels/`) + `stats.py`. Purpose: know the judge's error rate so a FAIL
 means something, and replay rubric edits in minutes instead of a full
