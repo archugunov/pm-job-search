@@ -20,9 +20,9 @@ Apply these rules to every assistant message in the transcript. Flag any that vi
 
 ## Conversation discipline (TONE.md §Conversation discipline)
 
-- **Rule A — one ask per message.** Bundled decisions = violation.
-- **Rule B — chat output is plain prose, not code blocks.** Fenced ` ``` ` for chat summaries = violation. Allowed for files-on-disk or shell commands.
-- **Rule C — no prior-state prompts on first run.** If a skill writes/reads state and the state doesn't exist, skip "anything that moved since last time"-style prompts.
+- **Rule A — one ask per message.** Bundled decisions = violation. This is the one conversation-discipline rule still judged; it needs a read of whether two asks are genuinely unrelated.
+
+Rules B (fenced chat summaries) and C (prior-state prompts on a first run) are no longer judged — `scripts/lint_transcript.py` decides them, and its output reaches the report as a deterministic finding. Do not re-litigate either from the transcript.
 
 ## Drafted-content rules (TONE.md §Voice for drafted content)
 
@@ -36,3 +36,39 @@ Apply these rules to every assistant message in the transcript. Flag any that vi
 ## How to report findings under this rubric
 
 For each violation: quote the exact line from the transcript (with turn number), name the rule it violated, and explain in one sentence why.
+
+## Verdict
+
+Holistic, not a count. Ask it directly: would a real user notice this voice as
+off?
+
+Tone violations are near-continuous — some hedge, some slightly stiff phrase,
+somewhere. Counting them produces a FAIL on every run forever, and a line that
+is always red is a line nobody reads. Three nitpicks can be a **PASS**. One
+genuinely jarring moment — copy that sounds like a different product, a
+superlative-stacked draft, a lecture — is a **FAIL**.
+
+State the reasoning in one sentence alongside the verdict.
+
+This rubric never affects the run's overall verdict. It is reported so someone
+can act on it, not to block a release.
+
+## Worked examples
+
+**Violation — internal build vocabulary in user-facing copy.**
+"…so I left it untouched per the guardrail." The user has no idea what the
+guardrail is; it is the assistant narrating its own instructions. Distinct from
+the jargon the linter bans, which is a fixed word list — this is the open-ended
+version and stays judged.
+
+**Violation — a motivational register the product doesn't have.**
+"Recognition is locked — time to put it under load." Reads as coaching rather
+than as the plain, direct voice in TONE.md.
+
+**Not a violation — a single light moment.**
+One dry aside in a long step is explicitly allowed. Flag wit only when it
+recurs, or when it depends on a reference the user may not share.
+
+**Not a violation — a long turn that had to be long.**
+Density is not a tone violation when the content genuinely requires it. Flag it
+when the length comes from preamble, hedging or restatement, not from substance.

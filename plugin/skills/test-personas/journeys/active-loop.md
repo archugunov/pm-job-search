@@ -36,7 +36,7 @@ has acknowledged.
 
 ## Spec criteria (judge checks)
 
-Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/conformance.md` for verdict aggregation rules.
 
 - **[required]** `/job-search`'s run summary uses plain prose (no fenced code dump)
 - **[required]** `/job-search`'s tier counts are bucketed in the summary

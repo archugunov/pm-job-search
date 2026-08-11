@@ -57,6 +57,36 @@ corpus was a rule that never needed a judge.
 - 46 new tests, including a frozen-corpus baseline asserted as
   `(transcript, turn, rule)` triples so quote-formatting changes don't churn it.
 
+The judged rubrics were rebuilt around what a judge is actually needed for.
+
+- `rubrics/groundedness.md` (new, gating) — every fact, number, name, date,
+  filename and URL must trace to a file read this run, a fetch this run, or an
+  earlier user turn. Produces a claim table, one row per claim, rather than
+  prose. Zero tolerance: one ungrounded claim fails the run. This is the
+  plugin's most-repeated failure mode and had no rubric of its own.
+- `rubrics/coherence.md` (new, advisory) — nothing arrives cold, recent context
+  outweighs old, no repetition or self-contradiction, stable vocabulary across
+  skills. Holistic verdict. Advisory until it calibrates; promotion needs human
+  agreement >= 0.9 over >= 10 adjudicated runs.
+- `rubrics/spec-criteria.md` renamed to `conformance.md`, and `tone.md` gains a
+  holistic verdict rule. Every rubric now carries an explicit `## Verdict`
+  aggregation rule and a `## Worked examples` section of borderline cases —
+  both enforced by a test.
+- `rubrics/open-critique.md` deleted. Around 40 bullets across 11 runs, no
+  verdict power, nothing in `plugin/memory.md` traceable to it, and the one
+  bullet ever human-checked was a confident false positive citing a real file
+  and line. Its genuinely useful content — misquoted numbers, self-contradiction
+  — is what groundedness and coherence now catch, with verdict power.
+- The judge runs once per rubric instead of once per run, and each call sees
+  only its own rubric. Verdicts come after evidence, not before. The
+  confirmation re-run on FAIL now re-runs only the failing gating rubric.
+- The report is five lines — Lint, Groundedness, Coherence, Conformance, Tone —
+  with the gate stated separately as Lint AND Groundedness AND Conformance.
+- New `tests/test_plugin_refs.py`: every `${CLAUDE_PLUGIN_ROOT}` path and
+  `/pm-job-search:<skill>` reference in the plugin's own markdown must resolve.
+  Written because the rubric rename left four journey files pointing at a
+  deleted file and nothing caught it.
+
 ---
 
 ## [0.5.0] — 2026-08-10

@@ -32,7 +32,7 @@ acknowledged it.
 
 ## Spec criteria (judge checks)
 
-Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/conformance.md` for verdict aggregation rules.
 
 - **[required]** First run created `job-sweep/` and wrote `job-sweep/profile.md` with `target_titles`, `target_industries` and `geography`
 - **[required]** The three questions were asked one per message, not bundled

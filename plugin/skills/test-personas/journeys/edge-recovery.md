@@ -37,7 +37,7 @@ max_turns is reached, whichever comes first.
 
 ## Spec criteria (judge checks)
 
-Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/conformance.md` for verdict aggregation rules.
 
 - **[required]** `/today` ran without crashing despite missing profile sections
 - **[required]** `/today` skipped the founder-outreach line entirely (strategy has no `weekly_targets.founder_outreach`)

@@ -14,7 +14,7 @@ For each `(persona × journey)` pairing requested, runs five phases:
 1. **Snapshot reset** — `rsync` a clean snapshot into `userdata/`.
 2. **Schema validation** — verify the snapshot matches current plugin expectations.
 3. **Conversation loop** — orchestrate two sub-agents (plugin-under-test + user-simulator) until termination.
-4. **Judge** — one sub-agent reads the transcript + three rubrics, produces structured findings. Hard violations are not judged: they come from the Phase 3.5 scripts and are transcribed verbatim.
+4. **Judge** — four sub-agents, one per rubric (groundedness, coherence, conformance, tone), each seeing only its own rubric. Lint is not judged at all: Phase 3.5's scripts decide it.
 5. **Aggregate** — write a `SUMMARY.md` across all journeys in this run.
 
 ## Argument parsing
@@ -39,10 +39,11 @@ If the user's message is ambiguous, ask one clarifying question (Rule A) and sto
    ```bash
    mkdir -p userdata/test-runs/$RUN_DATE
    ```
-3. Read all three rubric files into memory (Read tool):
+3. Read all four rubric files into memory (Read tool). Each is judged by its own sub-agent call in Phase 4 — never bundled:
+   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/groundedness.md`
+   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/coherence.md`
+   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/conformance.md`
    - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/tone.md`
-   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md`
-   - `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/open-critique.md`
 4. Read `${CLAUDE_PLUGIN_ROOT}/memory.md` — the reverse-chronological log of patterns surfaced in past runs. Passed to the judge as context (not as a checklist).
 5. Read the simulator prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/simulator-prompt.md`.
 6. Read the judge prompt: `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/judge-prompt.md`.
@@ -262,29 +263,82 @@ Compose two markdown blocks:
 
 An empty or near-empty `userdata/` tree (e.g. a cold-start journey that never reached `/job-search`) is not a special case — the schema script has nothing to flag and reports `No schema drift found.` like any other clean run.
 
-Append both blocks to the judge input as the 6th and 7th labelled sections (between MEMORY and METADATA in the judge prompt's input format).
+Both blocks go into the assembled findings file in Phase 4. They are NOT sent to the rubric judges — those rules are already decided, and showing them to a judge only invites re-litigation and double-counting.
 
 ## Phase 4: Judge (per journey, unless --skip-judge)
 
-After the conversation loop terminates AND the Phase 3.5 deterministic checks have run, dispatch the judge.
+After the conversation loop terminates AND the Phase 3.5 deterministic checks have run, dispatch one judge call per rubric.
 
-1. Build the judge input by concatenating:
-   - The three rubric files (read once in Phase 0, available in memory).
-   - The journey file's own `Spec criteria` section, appended to Rubric 2 (spec-criteria).
-   - `${CLAUDE_PLUGIN_ROOT}/memory.md` contents (read once in Phase 0) as the 4th block labelled `--- MEMORY (context, not checklist) ---`.
-   - The Phase 3.5 blocks as the 5th and 6th labelled sections, `--- SCHEMA VALIDATION ---` and `--- LINT FINDINGS ---`. Both flow through to the judge as authoritative — they're provable from file contents and from the transcript's own structure, so the judge transcribes them rather than deciding them.
-   - The full transcript file contents.
-   - Metadata: `journey`, `persona`, `snapshot`, `date`.
-2. Dispatch a sub-agent via the Agent tool:
-   - `subagent_type: general-purpose`
-   - `description: "Judge for <persona>-<journey>"`
-   - `prompt:` is the `judge-prompt.md` contents + the input blocks (transcript, rubrics, memory, metadata) in the labelled format the prompt specifies.
-3. The judge returns markdown findings. Write the result to `userdata/test-runs/$RUN_DATE/$persona-$journey.judge.md`.
-4. **Parse the judge output for the verdict.** Look for the `## Verdict` header followed by `**Overall: PASS**` or `**Overall: FAIL**`. If neither is found, treat the run as malformed — note this for Phase 5 (the SUMMARY row will be marked `ERROR`).
-5. **Confirmation re-run on FAIL.** If the parsed overall verdict is FAIL, dispatch the judge sub-agent a SECOND time on the same transcript + same inputs (fresh general-purpose sub-agent, no shared context with the first call).
-   - If both runs return FAIL → rewrite the judge file's `## Verdict` line to `**Overall: FAIL (confirmed)**`.
-   - If the runs disagree (one PASS, one FAIL) → rewrite to `**Overall: FAIL (one-of-two)**` and append a `_Note: judge calls disagreed — re-run manually if FAIL is unexpected._` line.
-   - Never run the second judge call on a PASS verdict. The cost only buys insurance against false reds.
+### 4a. Four calls, one per rubric
+
+Dispatch all four via the Agent tool. They are independent — run them concurrently, in a single message with four tool uses.
+
+For each of `groundedness`, `coherence`, `conformance`, `tone`:
+
+- `subagent_type: general-purpose`
+- `description: "Judge <rubric> for <persona>-<journey>"`
+- `prompt:` is `judge-prompt.md` contents, followed by the labelled input blocks it specifies:
+  - `--- TRANSCRIPT ---` the full transcript file contents
+  - `--- RUBRIC: <NAME> ---` that one rubric file (read in Phase 0). For `conformance` only, append the journey file's own `Spec criteria` section verbatim.
+  - `--- MEMORY (context, not checklist) ---` `${CLAUDE_PLUGIN_ROOT}/memory.md` contents
+  - `--- METADATA ---` `journey`, `persona`, `snapshot`, `date`
+
+Each call returns a `## <Rubric name>` section with `### Findings` and `### Verdict`. Never send a judge more than one rubric, and never send it the deterministic blocks.
+
+### 4b. Confirmation re-run on FAIL, gating rubrics only
+
+If `groundedness` or `conformance` returns FAIL, dispatch that ONE rubric a second time — fresh sub-agent, no shared context, identical inputs.
+
+- Both FAIL → the rubric's verdict is `FAIL (confirmed)`.
+- They disagree → `FAIL (one-of-two)`, and append `_Note: judge calls disagreed — re-run manually if FAIL is unexpected._` to that rubric's section.
+
+Never re-run on PASS: the cost only buys insurance against false reds. Never re-run `coherence` or `tone` — they don't gate, so a second opinion buys nothing.
+
+### 4c. Assemble the findings file
+
+Write `userdata/test-runs/$RUN_DATE/$persona-$journey.judge.md`:
+
+```markdown
+# Findings — <persona>-<journey>
+
+**Run date:** <date>
+**Snapshot:** <snapshot>
+
+## Lint
+
+<SCHEMA VALIDATION stdout, verbatim>
+
+<LINT FINDINGS stdout, verbatim>
+
+## Groundedness
+## Coherence
+## Conformance
+## Tone
+
+<each rubric's returned section, verbatim, in that order>
+
+## Verdict
+
+    Lint:          PASS | FAIL (<n>)
+    Groundedness:  PASS | FAIL (<n>)
+    Coherence:     PASS | FAIL (<n>)
+    Conformance:   PASS | FAIL (<n>)
+    Tone:          PASS | FAIL (<n>)
+
+    Gate: Lint AND Groundedness AND Conformance
+
+**Overall: PASS** *or* **Overall: FAIL**
+```
+
+The `## Verdict` section goes last, after all the evidence — both within each rubric's own output and in the assembled file.
+
+- `Lint` is PASS when both deterministic blocks are clean, FAIL otherwise. `NOT CHECKED:` lines never affect it.
+- `Overall` is PASS only when Lint, Groundedness and Conformance all PASS. Coherence and Tone report a verdict and are never in the gate — coherence because it has not calibrated yet, tone permanently. Do not fold them in "because they failed too".
+- If a rubric call returned no parseable `### Verdict`, mark that rubric `ERROR` and the overall `ERROR`. Phase 5's SUMMARY row shows `ERROR`.
+
+### Promotion rule
+
+Coherence enters the gate only once it has calibrated: human agreement >= 0.9 over >= 10 adjudicated runs. Until then it reports and does not block. Moving it is a one-line change to the gate above — do not make that change casually, and do not make it because a run "obviously" should have failed on coherence.
 
 ## Phase 5: Aggregate (once per run)
 
@@ -293,18 +347,20 @@ After all journeys in the requested run have finished:
 1. Read each `.judge.md` file in `userdata/test-runs/$RUN_DATE/`.
 2. For each judge file: parse the `## Verdict` block.
    - Extract the overall verdict from the `**Overall: <verdict>**` line.
-   - Extract per-rubric verdicts (Hard, Spec gaps) and soft/critique counts.
+   - Extract the five per-rubric verdicts (Lint, Groundedness, Coherence, Conformance, Tone).
    - If the `## Verdict` header is missing entirely → mark the row as `ERROR — see raw judge file` and continue to the next journey. Do not silently swallow malformed output.
-3. Write `userdata/test-runs/$RUN_DATE/SUMMARY.md`:
+3. Write `userdata/test-runs/$RUN_DATE/SUMMARY.md`. Gating rubrics come first, then the two advisory ones — the column order is the reading order:
 
 ```markdown
 # Test run — <RUN_DATE>
 
-| Journey | Verdict | Hard | Spec gaps | Soft | Critiques |
-|---|---|---|---|---|---|
-| <journey1> | PASS | PASS | <m/m req> | <count> | <count> |
-| <journey2> | FAIL (confirmed) | FAIL | <m/m req> | <count> | <count> |
-| <journey3> | ERROR — see raw judge file | — | — | — | — |
+| Journey | Overall | Lint | Ground. | Conform. | Coher.* | Tone* |
+|---|---|---|---|---|---|---|
+| <journey1> | PASS | PASS | PASS | PASS | PASS | FAIL |
+| <journey2> | FAIL (confirmed) | PASS | FAIL | PASS | PASS | PASS |
+| <journey3> | ERROR — see raw judge file | — | — | — | — | — |
+
+\* advisory — reported, never in the gate.
 
 See per-journey `.judge.md` files for details.
 
@@ -345,7 +401,8 @@ After the run summary, suggest the natural next action based on the verdicts:
 - If any FAIL or FAIL (confirmed): "Open `SUMMARY.md` and the per-journey `.judge.md` files. Resolve failing journeys before tagging the next release. Review the `## Candidate memory entries` block — promote any worth keeping into `plugin/memory.md`."
 - If any FAIL (one-of-two): "Open `SUMMARY.md`. Judge disagreed on at least one journey — re-run the harness manually to confirm the FAIL is real before treating it as a release blocker."
 - If any ERROR rows: "Open `SUMMARY.md`. A judge run was malformed — inspect the raw judge file and re-run the journey."
-- If all PASS (no failures, no errors): "Clean run — all verdicts PASS. Soft issues and open critiques are advisory; review when you have time. Safe to tag the next release."
+- If the gate passed but Coherence or Tone failed: "Gate is green — safe to tag. Coherence/Tone flagged something; they're advisory, so read them when you have time rather than before the release."
+- If all PASS (no failures, no errors): "Clean run — all five verdicts PASS. Safe to tag the next release."
 
 (This nudge follows the recommended-flow convention but is harness-specific since `/test-personas` is maintainer-only and not in the main user flow.)
 
@@ -362,7 +419,7 @@ Gaps surfaced by the 2026-05-27 smoke test and the 2026-06-04 verification run. 
 - **Full 30-turn cold-start completion — confirmed (2026-06-07).** Journey terminated naturally at turn 19 (Heads-up printed + simulator acked). All four skills exercised. Resolved.
 - **Dashboard skill in sub-agent context — confirmed graceful degradation (2026-06-07).** Sub-agent acknowledged the constraint in plain prose rather than crashing or hanging. Resolved.
 - **Two other journeys untested end-to-end.** Active-loop, edge-recovery have only been validated as journey files + spec criteria. Cold-start now passes mechanism-wise; running the other two would widen coverage.
-- **Sub-agent fidelity drift.** Even with the full SKILL.md inlined + anti-leak rule + step-at-a-time discipline, the 2026-06-07 cold-start run showed sub-agents inventing field names (`role:` vs `position:`), skipping documented tail steps (/setup automation prompt), and failing to read downstream files (/today not reading meta.md `link:`). The judge catches these via spec criteria; Phase 3.5 also runs `scripts/validate_userdata.py` over the files the run wrote and surfaces schema drift — including this exact `role:`/`position:` pattern — as Rule 7 hard violations, independent of the transcript.
+- **Sub-agent fidelity drift.** Even with the full SKILL.md inlined + anti-leak rule + step-at-a-time discipline, the 2026-06-07 cold-start run showed sub-agents inventing field names (`role:` vs `position:`), skipping documented tail steps (/setup automation prompt), and failing to read downstream files (/today not reading meta.md `link:`). The conformance judge catches these; Phase 3.5 also runs `scripts/validate_userdata.py` over the files the run wrote and surfaces schema drift — including this exact `role:`/`position:` pattern — into the Lint verdict, independent of the transcript and of any judge.
 - **SendMessage continuity is not assumed.** Each plugin turn currently re-dispatches a fresh sub-agent with the SKILL.md + growing transcript inlined. If a stateful agent-continuation mechanism becomes available, switching to a continuous sub-agent session would cut cost ~5x and improve coherence. The fresh-per-turn design is the documented tradeoff but is the riskiest cost driver. Not blocking; deferred to v0.4.
 - **Journey set cut 8 → 3 + smoke (2026-08-07).** `cold-start-cv` retired. The `profile.md` schema check in `scripts/validate_userdata.py` replaces only one of its twelve spec criteria, and only partly (frontmatter keys present, `## Positioning` heading present — not YAML type-matching or content). The other eleven are conversational and now have ZERO coverage of any kind: CV auto-detection, the single-line facts confirmation, multi-select-with-evidence for target titles/industries, and "nothing invented to fill a field." Manual check 4 in `manual-checklist.md` covers this path by hand until a deterministic or journey replacement exists. `reflection` retired — this is a KNOWN GAP someone still needs to close, not a completed move: what's actually lost is `/today`'s non-first-run update prompt, the Monday-plus-prior-week reflection date gate, the founder-outreach line matching `weekly_targets`, heads-up risk quality, and the entire `career-coach` hand-off — `career-coach` now has ZERO journey coverage. The snapshot is kept as a starting fixture for whoever closes this. Both `case-practice` journeys retired (`below` could not reach its target branch — see plugin/memory.md 2026-06-11; single-skill drills are the wrong size for a journey). `sweep-smoke` kept but excluded from the default sweep until its first run validates it. As a result, `personas/diego.md` now has `journey_fit: []` — no surviving journey uses `persona: diego`. This is intentional, not rot: the `diego-reflection` snapshot and the `diego` persona file are both retained deliberately, for the deterministic snapshot-conformance tests (`tests/test_snapshots_conform.py`, now shipped) and for future single-turn checks. Do not delete either just because the list is empty. `empty-with-cv` is likewise now an orphaned snapshot — no journey references it since `cold-start-cv` retired — and is retained deliberately for the same reason: don't delete it as rot.
 

@@ -40,7 +40,7 @@ with a brief reply.
 
 ## Spec criteria (judge checks)
 
-Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/spec-criteria.md` for verdict aggregation rules.
+Each criterion is tagged `[required]` (must be exercised AND pass) or `[opportunistic]` (advisory). See `${CLAUDE_PLUGIN_ROOT}/skills/test-personas/rubrics/conformance.md` for verdict aggregation rules.
 
 - **[required]** `/setup` precreated `userdata/` (or confirmed it already existed) before the CV prompt
 - **[required]** `/setup` asked one residence question (Step 1 "city + country") and one geography question (Step 5 "where are you looking") — distinct asks, not redundant
