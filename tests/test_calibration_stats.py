@@ -4,185 +4,274 @@ import sys
 from pathlib import Path
 
 STATS = Path(__file__).resolve().parent / "judge-calibration" / "stats.py"
+RUBRICS = ("lint", "groundedness", "coherence", "conformance", "tone")
+GATING = ("lint", "groundedness", "conformance")
 
 
-def run_stats(tmp_path, labels, gate=False):
-    d = tmp_path / "labels"
+def run_stats(tmp_path, labels, gate=False, name="labels"):
+    d = tmp_path / name
     d.mkdir()
     for i, l in enumerate(labels):
         (d / f"run{i}.json").write_text(json.dumps(l))
     cmd = [sys.executable, str(STATS), str(d)] + (["--gate"] if gate else [])
     proc = subprocess.run(cmd, capture_output=True, text=True)
-    return proc.returncode, proc.stdout
+    return proc.returncode, proc.stdout + proc.stderr
 
 
-def label(hard_judge="PASS", hard_human=None, spec_judge="PASS", spec_human=None,
-          overall_judge="PASS", findings=(), blind=None,
-          soft_count=0, critique_count=0):
-    return {"run": "r",
-            "verdicts": {
-                "hard": {"judge": hard_judge, "human": hard_human},
-                "spec": {"judge": spec_judge, "human": spec_human},
-                "overall": {"judge": overall_judge, "human": None}},
-            "advisory": {"soft_count": soft_count, "critique_count": critique_count},
+def label(run="r", overall_judge="PASS", findings=(), blind=None, **verdicts):
+    """Every rubric defaults to judge PASS / human unlabelled. Override with
+    e.g. groundedness=("FAIL", "FAIL") meaning (judge, human)."""
+    v = {}
+    for r in RUBRICS:
+        judge, human = verdicts.get(r, ("PASS", None))
+        v[r] = {"judge": judge, "human": human}
+    return {"run": run, "verdicts": v, "overall": {"judge": overall_judge},
             "findings": list(findings), "blind": blind}
 
 
-def f(tier, human):
-    return {"tier": tier, "summary": "s", "human": human, "note": None}
+def f(rubric, human, turn=None):
+    return {"rubric": rubric, "turn": turn, "summary": "s", "human": human,
+            "note": None}
 
 
-def test_precision_per_tier(tmp_path):
-    labels = [label(findings=[f("hard", "agree"), f("hard", "disagree"),
-                              f("spec", "agree"), f("spec", "agree")])]
+def all_gating(human):
+    return {r: ("PASS", human) for r in GATING}
+
+
+# --- verdict agreement (the primary metric) ----------------------------------
+
+def test_verdict_agreement_per_rubric(tmp_path):
+    labels = [
+        label(groundedness=("FAIL", "FAIL"), tone=("FAIL", "PASS")),
+        label(groundedness=("FAIL", "FAIL"), tone=("FAIL", "FAIL")),
+    ]
     code, out = run_stats(tmp_path, labels)
     assert code == 0
-    assert "hard: precision 0.50 (1/2)" in out
-    assert "spec: criterion-adjudication precision 1.00 (2/2)" in out
+    assert "groundedness: 1.00 (2/2)" in out
+    assert "tone: 0.50 (1/2)" in out
 
 
-def test_borderline_excluded_but_counted(tmp_path):
-    labels = [label(findings=[f("soft", "agree"), f("soft", "borderline")])]
-    _, out = run_stats(tmp_path, labels)
-    assert "soft: precision 1.00 (1/1)" in out
+def test_unadjudicated_rubric_reports_na(tmp_path):
+    code, out = run_stats(tmp_path, [label()])
+    assert code == 0
+    assert "coherence: n/a — no adjudicated runs" in out
+
+
+def test_gating_and_advisory_are_labelled(tmp_path):
+    code, out = run_stats(tmp_path, [label()])
+    for line in out.splitlines():
+        if line.strip().startswith("groundedness:"):
+            assert "[gating]" in line
+        if line.strip().startswith("tone:"):
+            assert "[advisory]" in line
+
+
+def test_lint_is_marked_as_script_not_judge(tmp_path):
+    """A human FAIL on lint grades the rule, not a model — it must not read as
+    a judge error."""
+    code, out = run_stats(tmp_path, [label()])
+    assert "script, not judge" in out
+
+
+def test_judge_verdict_suffixes_compare_correctly(tmp_path):
+    """Judge verdicts carry suffixes: 'FAIL (confirmed)', 'FAIL (one-of-two)'."""
+    labels = [label(groundedness=("FAIL (confirmed)", "FAIL"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "groundedness: 1.00 (1/1)" in out
+
+
+def test_null_judge_verdict_is_excluded_not_counted_as_fail(tmp_path):
+    labels = [label(groundedness=(None, "PASS")),
+              label(groundedness=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 0
+    assert "groundedness: 1.00 (1/1) (1 run excluded: judge verdict unavailable)" in out
+
+
+def test_all_null_judge_verdicts_report_na_with_exclusions(tmp_path):
+    labels = [label(coherence=(None, "PASS")), label(coherence=(None, "FAIL"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "coherence: n/a — no adjudicated runs (2 runs excluded" in out
+
+
+# --- derived overall ---------------------------------------------------------
+
+def test_overall_derived_from_human_gating_verdicts(tmp_path):
+    labels = [label(overall_judge="FAIL", **all_gating("PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 0/1 (derived from human gating verdicts)" in out
+
+
+def test_overall_ignores_advisory_rubrics(tmp_path):
+    """coherence/tone FAIL must not drag the derived overall to FAIL."""
+    labels = [label(overall_judge="PASS", coherence=("FAIL", "FAIL"),
+                    tone=("FAIL", "FAIL"), **all_gating("PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 1/1" in out
+
+
+def test_overall_skipped_when_gating_only_partly_adjudicated(tmp_path):
+    labels = [label(lint=("PASS", "PASS"), groundedness=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall:" not in out
+
+
+def test_one_gating_fail_makes_derived_overall_fail(tmp_path):
+    labels = [label(overall_judge="FAIL", lint=("PASS", "PASS"),
+                    groundedness=("FAIL", "FAIL"), conformance=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 1/1" in out
+
+
+# --- self-contradiction ------------------------------------------------------
+
+def test_judge_self_contradiction_detected(tmp_path):
+    labels = [label(run="bad", overall_judge="PASS", groundedness=("FAIL", None))]
+    code, out = run_stats(tmp_path, labels)
+    assert "judge self-contradiction: 1 run(s) — bad" in out
+
+
+def test_no_self_contradiction_when_consistent(tmp_path):
+    labels = [label(overall_judge="FAIL", groundedness=("FAIL", None))]
+    code, out = run_stats(tmp_path, labels)
+    assert "self-contradiction" not in out
+
+
+def test_null_judge_verdict_skips_contradiction_check(tmp_path):
+    """Missing data must not be read as an implicit FAIL."""
+    labels = [label(overall_judge="PASS", groundedness=(None, None))]
+    code, out = run_stats(tmp_path, labels)
+    assert "self-contradiction" not in out
+
+
+# --- drill-down findings -----------------------------------------------------
+
+def test_finding_precision_reported_when_labelled(tmp_path):
+    labels = [label(findings=[f("groundedness", "agree"),
+                              f("groundedness", "disagree")])]
+    code, out = run_stats(tmp_path, labels)
+    assert "finding precision (drill-down, where labelled)" in out
+    assert "groundedness: 0.50 (1/2)" in out
+
+
+def test_no_drilldown_section_when_no_findings(tmp_path):
+    code, out = run_stats(tmp_path, [label()])
+    assert "finding precision" not in out
+
+
+def test_borderline_excluded_from_precision_but_counted(tmp_path):
+    labels = [label(findings=[f("tone", "agree"), f("tone", "borderline")])]
+    code, out = run_stats(tmp_path, labels)
+    assert "tone: 1.00 (1/1)" in out
     assert "borderline: 1" in out
 
 
-def test_unlabelled_findings_reported_not_counted(tmp_path):
-    labels = [label(findings=[f("hard", None)])]
-    _, out = run_stats(tmp_path, labels)
-    assert "unlabelled: 1" in out
+# --- validation --------------------------------------------------------------
+
+def test_unrecognised_finding_rubric_exits_2(tmp_path):
+    labels = [label(findings=[f("spec", "agree")])]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 2 and "unrecognised finding rubric" in out
 
 
-def test_recall_from_blind(tmp_path):
-    labels = [label(blind={"human_found": 5, "judge_matched": 4}),
-              label(blind={"human_found": 5, "judge_matched": 3})]
-    _, out = run_stats(tmp_path, labels)
-    assert "recall 0.70 (7/10)" in out
+def test_unrecognised_human_finding_value_exits_2(tmp_path):
+    labels = [label(findings=[f("tone", "yes")])]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 2 and "unrecognised human value" in out
 
 
-def test_gate_fails_on_low_precision(tmp_path):
-    findings = [f("spec", "agree")] * 4 + [f("spec", "disagree")] * 2  # 0.67, n=6 ≥ 5
-    code, _ = run_stats(tmp_path, [label(findings=findings)], gate=True)
-    assert code == 1
+def test_unrecognised_human_verdict_exits_2(tmp_path):
+    labels = [label(groundedness=("PASS", "pass"))]
+    code, out = run_stats(tmp_path, labels)
+    assert code == 2 and "unrecognised groundedness human verdict" in out
 
 
-def test_gate_passes_when_thin_tiers_skipped(tmp_path):
-    # only 2 hard findings adjudicated (< 5) — tier skipped by the gate
-    findings = [f("hard", "agree"), f("hard", "disagree")]
-    code, _ = run_stats(tmp_path, [label(findings=findings)], gate=True)
-    assert code == 0
+def test_hand_set_overall_human_exits_2(tmp_path):
+    """Overall is derived. Setting it by hand silently competes with the
+    derivation, so it is refused rather than ignored."""
+    l = label()
+    l["overall"]["human"] = "PASS"
+    code, out = run_stats(tmp_path, [l])
+    assert code == 2 and "overall.human must stay null" in out
 
 
-def test_off_spec_human_value_fails_loudly(tmp_path):
+def test_missing_labels_dir_exits_2(tmp_path):
+    proc = subprocess.run([sys.executable, str(STATS), str(tmp_path / "nope")],
+                          capture_output=True, text=True)
+    assert proc.returncode == 2
+
+
+def test_empty_labels_dir_is_not_an_error(tmp_path):
+    code, out = run_stats(tmp_path, [])
+    assert code == 0 and "no label files yet" in out
+
+
+def test_template_json_is_ignored(tmp_path):
     d = tmp_path / "labels"
     d.mkdir()
-    (d / "run0.json").write_text(json.dumps(label(findings=[f("hard", "maybe")])))
+    (d / "TEMPLATE.json").write_text('{"nonsense": true}')
     proc = subprocess.run([sys.executable, str(STATS), str(d)],
-                           capture_output=True, text=True)
-    assert proc.returncode == 2
-    assert "run0.json" in proc.stderr
-    assert "maybe" in proc.stderr
+                          capture_output=True, text=True)
+    assert proc.returncode == 0 and "no label files yet" in proc.stdout
 
 
-def test_off_spec_tier_value_fails_loudly(tmp_path):
-    d = tmp_path / "labels"
-    d.mkdir()
-    (d / "run0.json").write_text(json.dumps(label(findings=[f("typo", "agree")])))
-    proc = subprocess.run([sys.executable, str(STATS), str(d)],
-                           capture_output=True, text=True)
-    assert proc.returncode == 2
-    assert "run0.json" in proc.stderr
-    assert "typo" in proc.stderr
+def test_shipped_template_is_valid_json():
+    p = STATS.parent / "labels" / "TEMPLATE.json"
+    data = json.loads(p.read_text())
+    assert set(data["verdicts"]) == set(RUBRICS)
+    assert data["overall"].get("human") is None
 
 
-def test_verdict_agreement_reported_per_rubric(tmp_path):
-    labels = [label(hard_judge="PASS", hard_human="PASS", spec_judge="PASS", spec_human="FAIL"),
-              label(hard_judge="FAIL", hard_human="FAIL", spec_judge="PASS", spec_human="PASS")]
+# --- gate --------------------------------------------------------------------
+
+def test_gate_fails_on_low_verdict_agreement_at_size(tmp_path):
+    labels = [label(groundedness=("PASS", "FAIL")) for _ in range(5)]
+    code, out = run_stats(tmp_path, labels, gate=True)
+    assert code == 1 and "GATE FAIL" in out
+
+
+def test_gate_ignores_thin_rubric(tmp_path):
+    labels = [label(groundedness=("PASS", "FAIL")) for _ in range(4)]
+    code, out = run_stats(tmp_path, labels, gate=True)
+    assert code == 0 and "GATE PASS" in out
+
+
+def test_gate_fails_on_low_recall(tmp_path):
+    labels = [label(blind={"human_found": 10, "judge_matched": 3})]
+    code, out = run_stats(tmp_path, labels, gate=True)
+    assert code == 1 and "recall 0.30" in out
+
+
+def test_gate_passes_clean(tmp_path):
+    labels = [label(groundedness=("PASS", "PASS")) for _ in range(6)]
+    code, out = run_stats(tmp_path, labels, gate=True)
+    assert code == 0 and "GATE PASS" in out
+
+
+# --- coherence promotion -----------------------------------------------------
+
+def test_coherence_promotion_not_yet_below_bar(tmp_path):
+    labels = [label(coherence=("PASS", "PASS")) for _ in range(9)]
     code, out = run_stats(tmp_path, labels)
-    assert code == 0
-    assert "hard verdict agreement: 2/2" in out
-    assert "spec verdict agreement: 1/2" in out
+    assert "not yet — 9/9" in out and "Stays advisory" in out
 
 
-def test_overall_is_derived_not_read(tmp_path):
-    # hard PASS + spec FAIL must derive overall FAIL, disagreeing with a judge PASS
-    labels = [label(hard_human="PASS", spec_human="FAIL", overall_judge="PASS")]
-    _, out = run_stats(tmp_path, labels)
-    assert "overall verdict agreement: 0/1" in out
-
-
-def test_null_judge_verdict_excluded_from_agreement_not_a_crash(tmp_path):
-    # Mirrors the real corpus: 2 of 11 runs write "judges disagreed" for
-    # Hard violations, so the export has {"judge": null, "human": "PASS"} —
-    # a human call with no judge verdict to compare it to. Must not raise
-    # AttributeError from `None.startswith(...)`, and must not silently
-    # vanish from the report — it's reported as excluded.
-    labels = [label(hard_judge=None, hard_human="PASS", spec_judge="PASS", spec_human="PASS"),
-              label(hard_judge="PASS", hard_human="PASS", spec_judge="PASS", spec_human="PASS")]
+def test_coherence_promotion_eligible_at_bar(tmp_path):
+    labels = [label(coherence=("PASS", "PASS")) for _ in range(10)]
     code, out = run_stats(tmp_path, labels)
-    assert code == 0
-    assert "hard verdict agreement: 1/1 (1 run excluded: judge verdict unavailable)" in out
-    assert "spec verdict agreement: 2/2" in out
+    assert "ELIGIBLE — 10/10" in out
+    assert "deliberate one-line change" in out
 
 
-def test_null_judge_verdict_excluded_from_overall_agreement(tmp_path):
-    # Both sub-verdicts adjudicated (so a derived overall exists), but the
-    # judge's stated Overall is null — nothing to compare the derived
-    # overall against. Must not crash and must not silently drop the run.
-    labels = [label(hard_judge="PASS", hard_human="PASS",
-                     spec_judge="PASS", spec_human="PASS",
-                     overall_judge=None)]
+def test_coherence_promotion_blocked_by_agreement(tmp_path):
+    labels = ([label(coherence=("PASS", "FAIL")) for _ in range(3)]
+              + [label(coherence=("PASS", "PASS")) for _ in range(9)])
     code, out = run_stats(tmp_path, labels)
-    assert code == 0
-    assert "overall verdict agreement: n/a (1 run excluded: judge verdict unavailable)" in out
+    assert "not yet — 9/12" in out
 
 
-def test_all_null_judge_hard_verdicts_reported_as_na(tmp_path):
-    labels = [label(hard_judge=None, hard_human="PASS", spec_judge="PASS", spec_human="PASS")]
-    code, out = run_stats(tmp_path, labels)
-    assert code == 0
-    assert "hard verdict agreement: n/a (1 run excluded: judge verdict unavailable)" in out
-
-
-def test_runs_with_unset_rubric_verdicts_excluded(tmp_path):
-    labels = [label(hard_human="PASS", spec_human=None)]
-    _, out = run_stats(tmp_path, labels)
-    assert "hard verdict agreement: 1/1" in out
-    assert "spec verdict agreement:" not in out
-    assert "overall verdict agreement:" not in out
-
-
-def test_judge_self_contradiction_reported(tmp_path):
-    # judge says Overall PASS while its own Spec gaps verdict is FAIL
-    labels = [label(hard_judge="PASS", spec_judge="FAIL", overall_judge="PASS"),
-              label(hard_judge="PASS", spec_judge="PASS", overall_judge="PASS")]
-    _, out = run_stats(tmp_path, labels)
-    assert "judge self-contradiction: 1 run" in out
-
-
-def test_no_self_contradiction_line_when_none(tmp_path):
-    _, out = run_stats(tmp_path, [label()])
-    assert "self-contradiction" not in out
-
-
-def test_self_contradiction_guards_null_judge_hard_verdict(tmp_path):
-    # hard.judge is null ("judges disagreed") — there's nothing to aggregate,
-    # so this must NOT be flagged as a self-contradiction just because
-    # `None == "PASS"` is False. Missing data is not a FAIL.
-    labels = [label(hard_judge=None, spec_judge="PASS", overall_judge="PASS")]
-    code, out = run_stats(tmp_path, labels)
-    assert code == 0
-    assert "self-contradiction" not in out
-
-
-def test_advisory_counts_totalled(tmp_path):
-    labels = [label(soft_count=2, critique_count=4), label(soft_count=3, critique_count=1)]
-    _, out = run_stats(tmp_path, labels)
-    assert "advisory: 5 soft, 5 critiques" in out
-
-
-def test_off_spec_rubric_verdict_fails_loudly(tmp_path):
-    labels = [label(hard_human="MAYBE")]
-    code, out = run_stats(tmp_path, labels)
-    assert code == 2
+def test_promotion_never_gates(tmp_path):
+    """Falling short of promotion must not fail the release gate."""
+    labels = [label(coherence=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels, gate=True)
+    assert code == 0 and "GATE PASS" in out

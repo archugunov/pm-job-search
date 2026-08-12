@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-"""Judge-calibration report: per-tier precision, blind recall, per-rubric
-verdict agreement (hard, spec, derived overall), judge self-contradiction,
-advisory counts.
+"""Judge-calibration report, rubric-first.
+
+The unit is the rubric verdict, not the finding. You read five verdicts per
+run, disagree with some, and label those; findings are an optional drill-down.
+So per-rubric verdict agreement is the primary number here, and finding-level
+precision is reported only where someone actually drilled in.
 
 Usage: python3 stats.py <labels-dir> [--gate]
-Report always prints; exit 0. With --gate: exit 1 unless precision >= 0.9
-for every tier holding >= 5 adjudicated findings, and recall >= 0.8 when
-any blind data exists. Thin tiers are reported but never gate. Verdict
-agreement, self-contradiction, and advisory counts are reported only —
-never gated, at this corpus size.
+
+Report always prints; exit 0. With --gate: exit 1 unless verdict agreement
+>= 0.9 for every rubric with >= 5 adjudicated runs, finding precision >= 0.9
+for every rubric with >= 5 adjudicated findings, and recall >= 0.8 when any
+blind data exists. Thin rubrics are reported but never gate.
+
+Exit 2 on an off-spec label file. Label files are hand-edited mid-session, and
+a typo must stop the run loudly rather than silently vanish a finding or coerce
+one into a bucket that quietly shifts a number.
 """
 from __future__ import annotations
 
@@ -18,150 +25,200 @@ from collections import defaultdict
 from pathlib import Path
 
 MIN_N, P_BAR, R_BAR = 5, 0.9, 0.8
-VALID_TIERS = ("hard", "soft", "spec", "critique")
+
+RUBRICS = ("lint", "groundedness", "coherence", "conformance", "tone")
+GATING = ("lint", "groundedness", "conformance")   # these decide Overall
+ADVISORY = ("coherence", "tone")                   # reported, never in the gate
+
+# Coherence enters the gate only once it has earned it. Same bar the harness
+# states in test-personas/SKILL.md; reported here so the decision is driven by
+# a number rather than by a run that "obviously" should have failed.
+PROMOTION_BAR, PROMOTION_MIN_N = 0.9, 10
+
 VALID_HUMAN = ("agree", "disagree", "borderline", None)
-VALID_RUBRIC_VERDICT = ("PASS", "FAIL", None)
+VALID_VERDICT = ("PASS", "FAIL", None)
+
+
+def _passish(v: str) -> bool:
+    """Judge verdicts carry suffixes — 'FAIL (confirmed)', 'FAIL (one-of-two)'."""
+    return v.startswith("PASS")
+
+
+def load(labels_dir: str) -> tuple[list[Path], list[dict]]:
+    paths = [p for p in sorted(Path(labels_dir).glob("*.json"))
+             if p.name != "TEMPLATE.json"]
+    return paths, [json.loads(p.read_text()) for p in paths]
+
+
+def validate(paths: list[Path], labels: list[dict]) -> str | None:
+    """Returns an error message, or None when every file is well-formed."""
+    for p, run in zip(paths, labels):
+        for finding in run.get("findings", []):
+            rubric = finding.get("rubric")
+            if rubric not in RUBRICS:
+                return (f"{p.name}: unrecognised finding rubric {rubric!r}"
+                        f" (valid: {', '.join(RUBRICS)})")
+            if finding.get("human") not in VALID_HUMAN:
+                return (f"{p.name}: unrecognised human value"
+                        f" {finding.get('human')!r} (valid: agree, disagree,"
+                        f" borderline, null)")
+        verdicts = run.get("verdicts", {})
+        for rubric in RUBRICS:
+            for side in ("judge", "human"):
+                v = verdicts.get(rubric, {}).get(side)
+                if v is not None and not isinstance(v, str):
+                    return f"{p.name}: {rubric}.{side} must be a string or null"
+                if side == "human" and v not in VALID_VERDICT:
+                    return (f"{p.name}: unrecognised {rubric} human verdict"
+                            f" {v!r} (valid: PASS, FAIL, null)")
+        if run.get("overall", {}).get("human") is not None:
+            return (f"{p.name}: overall.human must stay null — overall is"
+                    f" derived from the gating rubrics, never set by hand")
+    return None
+
+
+def excluded_suffix(n: int) -> str:
+    if not n:
+        return ""
+    return f" ({n} run{'s' if n != 1 else ''} excluded: judge verdict unavailable)"
+
+
+def verdict_agreement(labels: list[dict], rubric: str):
+    """(hits, measurable, excluded). A null judge verdict is missing data, not
+    a FAIL — it must never be compared against a human call. Runs the human
+    adjudicated anyway are reported as excluded, not silently dropped, so the
+    denominator's shrinkage stays visible."""
+    adjudicated = [r for r in labels
+                   if r.get("verdicts", {}).get(rubric, {}).get("human")]
+    measurable = [(r["verdicts"][rubric]["judge"], r["verdicts"][rubric]["human"])
+                  for r in adjudicated
+                  if r["verdicts"][rubric].get("judge") is not None]
+    hits = sum(_passish(j) == _passish(h) for j, h in measurable)
+    return hits, len(measurable), len(adjudicated) - len(measurable)
+
+
+def derived_overall(run: dict) -> str | None:
+    """PASS iff every gating rubric's HUMAN verdict is PASS. None when the
+    human hasn't adjudicated all three — a partial label can't imply a gate."""
+    v = run.get("verdicts", {})
+    humans = [v.get(r, {}).get("human") for r in GATING]
+    if any(h is None for h in humans):
+        return None
+    return "PASS" if all(h == "PASS" for h in humans) else "FAIL"
 
 
 def main(argv: list[str]) -> int:
     args = [a for a in argv[1:] if a != "--gate"]
     gate = "--gate" in argv[1:]
-    if len(args) != 1:
+    if len(args) != 1 or not Path(args[0]).is_dir():
         print("usage: stats.py <labels-dir> [--gate]", file=sys.stderr)
         return 2
-    paths = [p for p in sorted(Path(args[0]).glob("*.json")) if p.name != "TEMPLATE.json"]
-    labels = [json.loads(p.read_text()) for p in paths]
 
-    # Label files are hand-edited by a human mid-labelling-session (per the
-    # protocol README). A typo in `tier` or `human` must stop the run loudly
-    # rather than silently vanish a finding or coerce it into a bucket that
-    # quietly shifts a precision number.
-    for p, run in zip(paths, labels):
-        for finding in run.get("findings", []):
-            tier = finding.get("tier")
-            if tier not in VALID_TIERS:
-                print(f"error: {p.name}: unrecognised tier {tier!r}"
-                      f" (valid: {', '.join(VALID_TIERS)})", file=sys.stderr)
-                return 2
-            human = finding.get("human")
-            if human not in VALID_HUMAN:
-                print(f"error: {p.name}: unrecognised human value {human!r}"
-                      f" (valid: agree, disagree, borderline, null)", file=sys.stderr)
-                return 2
-        verdicts = run.get("verdicts", {})
-        for rubric in ("hard", "spec"):
-            rubric_human = verdicts.get(rubric, {}).get("human")
-            if rubric_human not in VALID_RUBRIC_VERDICT:
-                print(f"error: {p.name}: unrecognised {rubric} verdict {rubric_human!r}"
-                      f" (valid: PASS, FAIL, null)", file=sys.stderr)
-                return 2
+    paths, labels = load(args[0])
+    err = validate(paths, labels)
+    if err:
+        print(f"error: {err}", file=sys.stderr)
+        return 2
+    if not labels:
+        print("no label files yet — nothing to report.")
+        return 0
 
+    gate_ok = True
+
+    print(f"== verdict agreement (primary) — {len(labels)} label file(s)")
+    for rubric in RUBRICS:
+        hits, n, excluded = verdict_agreement(labels, rubric)
+        tag = "  [gating]" if rubric in GATING else "  [advisory]"
+        if rubric == "lint":
+            tag += " script, not judge — a FAIL here grades the rule"
+        if n:
+            agreement = hits / n
+            print(f"{rubric:>13}: {agreement:.2f} ({hits}/{n})"
+                  f"{excluded_suffix(excluded)}{tag}")
+            if gate and n >= MIN_N and agreement < P_BAR:
+                gate_ok = False
+        else:
+            print(f"{rubric:>13}: n/a — no adjudicated runs"
+                  f"{excluded_suffix(excluded)}{tag}")
+
+    # Overall is never taken from a human. It is derived from the human's
+    # gating verdicts and compared against what the judge asserted.
+    pairs, overall_excluded = [], 0
+    for r in labels:
+        dh = derived_overall(r)
+        if dh is None:
+            continue
+        oj = r.get("overall", {}).get("judge")
+        if oj is None:
+            overall_excluded += 1
+            continue
+        pairs.append((oj, dh))
+    if pairs:
+        hits = sum(_passish(j) == _passish(h) for j, h in pairs)
+        print(f"{'overall':>13}: {hits}/{len(pairs)} (derived from human gating"
+              f" verdicts){excluded_suffix(overall_excluded)}")
+    elif overall_excluded:
+        print(f"{'overall':>13}: n/a{excluded_suffix(overall_excluded)}")
+
+    # The judge's own stated overall disagreeing with the aggregation of its
+    # own gating verdicts. A defect in the judge's output contract, independent
+    # of any human labelling — reported, never corrected.
+    contradictions = []
+    for r in labels:
+        v = r.get("verdicts", {})
+        judges = [v.get(x, {}).get("judge") for x in GATING]
+        oj = r.get("overall", {}).get("judge")
+        if oj is None or any(j is None for j in judges):
+            continue
+        if _passish(oj) != all(_passish(j) for j in judges):
+            contradictions.append(r.get("run", "?"))
+    if contradictions:
+        print(f"\njudge self-contradiction: {len(contradictions)} run(s)"
+              f" — {', '.join(contradictions)}")
+
+    # Drill-down. Absent by design on most runs: you only open a rubric's
+    # findings when you disagree with its verdict, or on a spot-check.
     tally = defaultdict(lambda: {"agree": 0, "disagree": 0, "borderline": 0, None: 0})
     for run in labels:
         for finding in run.get("findings", []):
-            tally[finding["tier"]][finding.get("human")] += 1
-
-    gate_ok = True
-    for tier in ("hard", "soft", "spec", "critique"):
-        t = tally[tier]
-        n = t["agree"] + t["disagree"]
-        # "spec" measures something narrower than the other three tiers: whether
-        # the judge's own PASS/FAIL call on a spec-criteria bullet was correct,
-        # not whether a reported violation was real. Label it so the two
-        # questions aren't mistaken for each other at a glance (see README).
-        label = "spec: criterion-adjudication precision" if tier == "spec" else f"{tier}: precision"
-        noun = "spec: criterion-adjudication" if tier == "spec" else tier
-        if n:
-            precision = t["agree"] / n
-            print(f"{label} {precision:.2f} ({t['agree']}/{n})"
-                  f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
-            if gate and n >= MIN_N and precision < P_BAR:
-                gate_ok = False
-        elif t["borderline"] or t[None]:
-            print(f"{noun}: no adjudicated findings"
-                  f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
+            tally[finding["rubric"]][finding.get("human")] += 1
+    if tally:
+        print("\n== finding precision (drill-down, where labelled)")
+        for rubric in RUBRICS:
+            t = tally[rubric]
+            n = t["agree"] + t["disagree"]
+            if n:
+                precision = t["agree"] / n
+                print(f"{rubric:>13}: {precision:.2f} ({t['agree']}/{n})"
+                      f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
+                if gate and n >= MIN_N and precision < P_BAR:
+                    gate_ok = False
+            elif t["borderline"] or t[None]:
+                print(f"{rubric:>13}: no adjudicated findings"
+                      f"  borderline: {t['borderline']}  unlabelled: {t[None]}")
 
     found = sum(r["blind"]["human_found"] for r in labels if r.get("blind"))
     matched = sum(r["blind"]["judge_matched"] for r in labels if r.get("blind"))
     if found:
         recall = matched / found
-        print(f"recall {recall:.2f} ({matched}/{found}) over blind-labelled runs")
+        print(f"\nrecall {recall:.2f} ({matched}/{found}) over blind-labelled runs")
         if gate and recall < R_BAR:
             gate_ok = False
 
-    def excluded_suffix(n):
-        if not n:
-            return ""
-        return f" ({n} run{'s' if n != 1 else ''} excluded: judge verdict unavailable)"
-
-    # A null judge verdict (e.g. "Hard violations: judges disagreed — ...")
-    # is missing data, not a FAIL — it must not be compared against a human
-    # call. Pairs are only "measurable" when both sides are set; runs the
-    # human adjudicated anyway are reported as excluded, not silently
-    # dropped, so the denominator's shrinkage is visible.
-    for rubric in ("hard", "spec"):
-        adjudicated = [r for r in labels
-                       if r.get("verdicts", {}).get(rubric, {}).get("human")]
-        measurable = [(r["verdicts"][rubric]["judge"], r["verdicts"][rubric]["human"])
-                      for r in adjudicated if r["verdicts"][rubric]["judge"] is not None]
-        excluded = len(adjudicated) - len(measurable)
-        if measurable:
-            hits = sum(j.startswith("PASS") == h.startswith("PASS") for j, h in measurable)
-            print(f"{rubric} verdict agreement: {hits}/{len(measurable)}"
-                  f"{excluded_suffix(excluded)}")
-        elif excluded:
-            print(f"{rubric} verdict agreement: n/a{excluded_suffix(excluded)}")
-
-    # Overall is never read from the judge's own overall verdict for
-    # agreement purposes — it's derived from the two human sub-verdicts
-    # (PASS iff both PASS) and compared against what the judge asserted.
-    overall_pairs = []
-    overall_excluded = 0
-    for r in labels:
-        v = r.get("verdicts", {})
-        hard_h = v.get("hard", {}).get("human")
-        spec_h = v.get("spec", {}).get("human")
-        if hard_h is not None and spec_h is not None:
-            derived_human = "PASS" if hard_h == "PASS" and spec_h == "PASS" else "FAIL"
-            overall_j = v.get("overall", {}).get("judge")
-            if overall_j is None:
-                overall_excluded += 1
-                continue
-            overall_pairs.append((overall_j, derived_human))
-    if overall_pairs:
-        hits = sum(j.startswith("PASS") == h.startswith("PASS") for j, h in overall_pairs)
-        print(f"overall verdict agreement: {hits}/{len(overall_pairs)}"
-              f"{excluded_suffix(overall_excluded)}")
-    elif overall_excluded:
-        print(f"overall verdict agreement: n/a{excluded_suffix(overall_excluded)}")
-
-    # Self-contradiction: the judge's own overall verdict disagreeing with
-    # the aggregation of its own hard/spec verdicts. This is a defect in
-    # the judge's output contract, independent of any human labelling —
-    # never corrected, only reported. A null hard/spec/overall judge verdict
-    # means there's nothing to aggregate — skip rather than treat missing
-    # data as an implicit FAIL.
-    contradictions = []
-    for r in labels:
-        v = r.get("verdicts", {})
-        hard_j = v.get("hard", {}).get("judge")
-        spec_j = v.get("spec", {}).get("judge")
-        overall_j = v.get("overall", {}).get("judge")
-        if hard_j is None or spec_j is None or overall_j is None:
-            continue
-        derived_pass = hard_j == "PASS" and spec_j == "PASS"
-        if (overall_j.startswith("PASS")) != derived_pass:
-            contradictions.append(r.get("run", "?"))
-    if contradictions:
-        print(f"judge self-contradiction: {len(contradictions)} run(s)"
-              f" — {', '.join(contradictions)}")
-
-    soft_total = sum(r.get("advisory", {}).get("soft_count", 0) for r in labels)
-    critique_total = sum(r.get("advisory", {}).get("critique_count", 0) for r in labels)
-    print(f"advisory: {soft_total} soft, {critique_total} critiques")
+    # Promotion check for coherence: does it now clear the bar to enter the gate?
+    hits, n, _ = verdict_agreement(labels, "coherence")
+    print("\n== coherence promotion")
+    if n >= PROMOTION_MIN_N and hits / n >= PROMOTION_BAR:
+        print(f"  ELIGIBLE — {hits}/{n} = {hits/n:.2f} over {n} runs"
+              f" (bar: {PROMOTION_BAR} over {PROMOTION_MIN_N}). Promoting is a"
+              f" deliberate one-line change to the gate, not automatic.")
+    else:
+        shortfall = (f"{hits}/{n} = {hits/n:.2f}" if n else "no adjudicated runs")
+        print(f"  not yet — {shortfall}; bar is {PROMOTION_BAR} over"
+              f" {PROMOTION_MIN_N} runs. Stays advisory.")
 
     if gate:
-        print("GATE " + ("PASS" if gate_ok else "FAIL"))
+        print("\nGATE " + ("PASS" if gate_ok else "FAIL"))
         return 0 if gate_ok else 1
     return 0
 

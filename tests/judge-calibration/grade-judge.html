@@ -3,1811 +3,793 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Judge Calibration — grade-judge</title>
+<title>Grade the judge</title>
 <style>
   :root {
-    --ground: #f4f5f7;
-    --surface: #ffffff;
-    --ink: #1a1f26;
-    --muted: #646d7a;
-    --rule: #dfe3e9;
-    --accent: #b4530f;
-    --agree: #1e7f4f;
-    --agree-bg: #e4f1e9;
-    --disagree: #b3403a;
-    --disagree-bg: #f8e6e4;
-    --borderline: #96660f;
-    --borderline-bg: #f6edd8;
-    --mono-bg: #eff1f4;
-    --highlight-bg: #d8e8fb;
-    --highlight-ink: #1a1f26;
+    --bg: #f6f7f9; --panel: #fff; --ink: #16181d; --muted: #626873;
+    --line: #d9dde3; --accent: #2b6cb0; --pass: #1a7f4b; --fail: #b3261e;
+    --warn: #8a6100; --chip: #eef1f5;
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ground: #15181d;
-      --surface: #1d2128;
-      --ink: #e6e9ed;
-      --muted: #959daa;
-      --rule: #2d333d;
-      --accent: #e8935a;
-      --agree: #5cc78f;
-      --agree-bg: #1a3226;
-      --disagree: #e58a84;
-      --disagree-bg: #3a2321;
-      --borderline: #dcae55;
-      --borderline-bg: #372f1b;
-      --mono-bg: #242932;
-      --highlight-bg: #1f3a54;
-      --highlight-ink: #e6e9ed;
-    }
-  }
-
-  :root[data-theme="dark"] {
-    --ground: #15181d;
-    --surface: #1d2128;
-    --ink: #e6e9ed;
-    --muted: #959daa;
-    --rule: #2d333d;
-    --accent: #e8935a;
-    --agree: #5cc78f;
-    --agree-bg: #1a3226;
-    --disagree: #e58a84;
-    --disagree-bg: #3a2321;
-    --borderline: #dcae55;
-    --borderline-bg: #372f1b;
-    --mono-bg: #242932;
-    --highlight-bg: #1f3a54;
-    --highlight-ink: #e6e9ed;
-  }
-
   * { box-sizing: border-box; }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-
-  body {
-    background: var(--ground);
-    color: var(--ink);
-    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-    padding: 1.25rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; animation: none !important; }
-  }
-
-  a { color: var(--accent); }
-
-  h1, h2, h3 { line-height: 1.25; margin: 0 0 0.5rem; }
-  h1 { font-size: 1.15rem; }
-  h2 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--muted); }
-  h3 { font-size: 0.95rem; }
-
-  button, input, textarea, select {
-    font-family: inherit;
-    font-size: inherit;
-    color: inherit;
-  }
-
-  button {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    color: var(--ink);
-    border-radius: 0.4rem;
-    padding: 0.4rem 0.7rem;
-    cursor: pointer;
-  }
+  body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         background: var(--bg); color: var(--ink); }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  header { padding: 12px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+           display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  header h1 { font-size: 16px; margin: 0; }
+  header .hint { color: var(--muted); font-size: 12.5px; }
+  #layout { display: grid; grid-template-columns: 280px minmax(420px, 1fr) minmax(360px, 1fr);
+            gap: 12px; padding: 12px; align-items: start; }
+  @media (max-width: 1100px) { #layout { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  .panel h2 { font-size: 13px; margin: 0 0 8px; text-transform: uppercase;
+              letter-spacing: .04em; color: var(--muted); }
+  #dropzone { border: 2px dashed var(--line); border-radius: 8px; padding: 20px; text-align: center;
+              color: var(--muted); background: var(--panel); margin: 12px; }
+  #dropzone.over { border-color: var(--accent); color: var(--accent); }
+  button { font: inherit; padding: 3px 10px; border: 1px solid var(--line); background: #fff;
+           border-radius: 5px; cursor: pointer; }
   button:hover { border-color: var(--accent); }
-  button.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-  button.link {
-    background: none;
-    border: none;
-    color: var(--accent);
-    text-decoration: underline;
-    padding: 0;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  input[type="text"], input[type="number"], textarea, select {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 0.35rem;
-    padding: 0.35rem 0.5rem;
-    width: 100%;
-  }
-
-  textarea { resize: vertical; min-height: 5rem; }
-
-  .mono, code, pre {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  }
-
-  .tabular-nums { font-variant-numeric: tabular-nums; }
-
-  .app {
-    display: grid;
-    grid-template-columns: 19rem 1fr 24rem;
-    grid-template-areas: "sidebar findings context";
-    gap: 1.5rem;
-    align-items: start;
-    max-width: 104rem;
-    margin: 0 auto;
-  }
-
-  @media (max-width: 1200px) {
-    .app {
-      grid-template-columns: 19rem 1fr;
-      grid-template-areas:
-        "sidebar findings"
-        "sidebar context";
-    }
-  }
-
-  @media (max-width: 900px) {
-    .app {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "sidebar"
-        "findings"
-        "context";
-    }
-    .sidebar, .context-pane { position: static !important; max-height: none !important; }
-  }
-
-  .sidebar {
-    grid-area: sidebar;
-    position: sticky;
-    top: 1.25rem;
-    max-height: calc(100vh - 2.5rem);
-    overflow-y: auto;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 0.6rem;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .runs {
-    grid-area: findings;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    min-width: 0;
-  }
-
-  .context-pane {
-    grid-area: context;
-    position: sticky;
-    top: 1.25rem;
-    max-height: calc(100vh - 2.5rem);
-    overflow-y: auto;
-    overflow-x: hidden;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 0.6rem;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-
-  .context-header { display: flex; flex-direction: column; gap: 0.5rem; }
-  .context-run-select { font-size: 0.82rem; }
-
-  .tab-row { display: flex; gap: 0.4rem; }
-  .tab-btn {
-    flex: 1;
-    font-size: 0.82rem;
-    padding: 0.35rem 0.5rem;
-  }
-  .tab-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .context-body { font-size: 0.82rem; min-width: 0; }
-  .context-empty {
-    color: var(--muted);
-    font-size: 0.85rem;
-    padding: 1rem 0;
-  }
-
-  .transcript-preamble, .rubric-text {
-    white-space: pre-wrap;
-    word-break: break-word;
-    color: var(--muted);
-    font-size: 0.8rem;
-    margin-bottom: 0.75rem;
-  }
-  .rubric-text { color: var(--ink); }
-
-  .turn-block {
-    border-radius: 0.4rem;
-    padding: 0.4rem 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .turn-block.turn-highlight {
-    background: var(--highlight-bg);
-    color: var(--highlight-ink);
-  }
-  .turn-heading {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--accent);
-    margin: 0.6rem 0 0.2rem;
-    scroll-margin-top: 1rem;
-  }
-  .turn-body {
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-size: 0.8rem;
-    margin: 0;
-  }
-
-  .tier-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
-  .tier-picker button { font-size: 0.78rem; padding: 0.3rem 0.5rem; }
-  .tier-picker button.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .dropzone {
-    border: 2px dashed var(--rule);
-    border-radius: 0.5rem;
-    padding: 1rem;
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-  .dropzone.dragover {
-    border-color: var(--accent);
-    color: var(--ink);
-  }
-
-  .picker-row { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; }
-  .picker-row label { font-size: 0.78rem; color: var(--muted); }
-
-  .readout { font-size: 0.85rem; }
-  .readout .tier-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.25rem 0;
-    border-bottom: 1px solid var(--rule);
-  }
-  .readout .tier-row.thin { opacity: 0.55; }
-  .readout .thin-note { font-size: 0.72rem; color: var(--muted); }
-  .readout .contradiction-line { font-size: 0.78rem; color: var(--borderline); padding: 0.2rem 0; }
-  .readout .gate-line {
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
-  }
-  .gate-pass { background: var(--agree-bg); color: var(--agree); }
-  .gate-fail { background: var(--disagree-bg); color: var(--disagree); }
-
-  .global-actions { display: flex; flex-direction: column; gap: 0.4rem; }
-
-  .run {
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: 0.6rem;
-    padding: 1rem;
-    overflow-x: auto;
-  }
-  .run-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 0.75rem;
-  }
-  .run-header .run-id-input { max-width: 20rem; }
-  .run-header .filename { font-size: 0.78rem; color: var(--muted); word-break: break-all; }
-  .badge {
-    display: inline-block;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    background: var(--borderline-bg);
-    color: var(--borderline);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
-  .verdict-block {
-    border: 1px solid var(--rule);
-    border-radius: 0.5rem;
-    padding: 0.7rem 0.8rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .verdict-control-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; font-size: 0.85rem; }
-  .verdict-label { min-width: 7.5rem; font-weight: 600; }
-  .pf-group { display: flex; gap: 0.3rem; }
-  .pf-btn { font-size: 0.8rem; padding: 0.25rem 0.6rem; }
-  .pf-btn.active-pass { background: var(--agree-bg); color: var(--agree); border-color: var(--agree); }
-  .pf-btn.active-fail { background: var(--disagree-bg); color: var(--disagree); border-color: var(--disagree); }
-  .verdict-chip {
-    display: inline-block;
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-    background: var(--mono-bg);
-    font-size: 0.78rem;
-  }
-  .derived-overall {
-    font-weight: 600;
-    padding: 0.3rem 0.5rem;
-    border-radius: 0.35rem;
-    background: var(--mono-bg);
-    font-size: 0.85rem;
-    width: fit-content;
-  }
-  .derived-overall.gate-pass, .derived-overall.gate-fail { width: fit-content; }
-  .contradiction-note {
-    font-size: 0.78rem;
-    color: var(--borderline);
-    background: var(--borderline-bg);
-    border-radius: 0.35rem;
-    padding: 0.4rem 0.5rem;
-  }
-  .advisory-note { margin: 0; }
-
-  .blind-gate {
-    border: 1px dashed var(--rule);
-    border-radius: 0.5rem;
-    padding: 0.9rem;
-    background: var(--mono-bg);
-  }
-  .blind-gate p.title { font-weight: 600; margin: 0 0 0.5rem; }
-  .blind-actions { display: flex; align-items: center; gap: 0.9rem; margin-top: 0.6rem; }
-
-  .blind-summary {
-    font-size: 0.82rem;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .blind-summary input[type="number"] { width: 5rem; }
-
-  .no-judge-note {
-    color: var(--muted);
-    font-size: 0.85rem;
-    border: 1px dashed var(--rule);
-    border-radius: 0.5rem;
-    padding: 0.8rem;
-  }
-
-  .tier-group { margin-bottom: 1rem; }
-  .tier-group-heading {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-bottom: 0.4rem;
-  }
-  .tier-chip {
-    text-transform: uppercase;
-    font-size: 0.68rem;
-    letter-spacing: 0.04em;
-    padding: 0.1rem 0.4rem;
-    border-radius: 0.3rem;
-    background: var(--mono-bg);
-    color: var(--ink);
-  }
-
-  .criterion-chip {
-    display: inline-block;
-    text-transform: uppercase;
-    font-size: 0.68rem;
-    letter-spacing: 0.03em;
-    padding: 0.1rem 0.4rem;
-    border-radius: 0.3rem;
-    margin-left: 0.3rem;
-  }
-  .criterion-chip.agree { background: var(--agree-bg); color: var(--agree); }
-  .criterion-chip.disagree { background: var(--disagree-bg); color: var(--disagree); }
-  .criterion-chip.borderline { background: var(--borderline-bg); color: var(--borderline); }
-
-  .spec-group-hint { margin: 0 0 0.5rem; }
-
-  .finding-card {
-    border-left: 3px dashed var(--muted);
-    background: var(--mono-bg);
-    border-radius: 0.35rem;
-    padding: 0.6rem 0.75rem;
-    margin-bottom: 0.6rem;
-  }
-  .finding-card.state-agree { border-left-style: solid; border-left-color: var(--agree); }
-  .finding-card.state-disagree { border-left-style: solid; border-left-color: var(--disagree); }
-  .finding-card.state-borderline { border-left-style: solid; border-left-color: var(--borderline); }
-
-  .finding-summary {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    background: var(--mono-bg);
-    white-space: pre-wrap;
-    word-break: break-word;
-    font-size: 0.82rem;
-    padding: 0.4rem 0.5rem;
-    border-radius: 0.3rem;
-    margin: 0.3rem 0 0.5rem;
-  }
-
-  .turn-link {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.45rem;
-    margin: 0 0 0.4rem;
-  }
-
-  .label-row { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
-  .label-btn {
-    border-radius: 0.3rem;
-    padding: 0.25rem 0.6rem;
-    font-size: 0.8rem;
-    border: 1px solid var(--rule);
-    background: var(--surface);
-  }
-  .label-btn[data-choice="agree"].active { background: var(--agree-bg); color: var(--agree); border-color: var(--agree); }
-  .label-btn[data-choice="disagree"].active { background: var(--disagree-bg); color: var(--disagree); border-color: var(--disagree); }
-  .label-btn[data-choice="borderline"].active { background: var(--borderline-bg); color: var(--borderline); border-color: var(--borderline); }
-  .note-input { flex: 1 1 10rem; min-width: 8rem; }
-
-  .run-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.75rem;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .empty-state {
-    color: var(--muted);
-    font-size: 0.9rem;
-    border: 1px dashed var(--rule);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    text-align: center;
-  }
-
-  .hint { font-size: 0.75rem; color: var(--muted); }
+  button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.pass.active { background: var(--pass); border-color: var(--pass); }
+  button.fail.active { background: var(--fail); border-color: var(--fail); }
+  .runcard { margin-bottom: 12px; }
+  .runcard > h3 { margin: 0 0 2px; font-size: 15px; }
+  .runmeta { color: var(--muted); font-size: 12.5px; margin-bottom: 10px; }
+  table.verdicts { width: 100%; border-collapse: collapse; }
+  table.verdicts td { padding: 5px 4px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  table.verdicts tr:last-child td { border-bottom: 0; }
+  td.rname { font-weight: 600; white-space: nowrap; }
+  td.rname .tag { font-weight: 400; color: var(--muted); font-size: 11.5px; display: block; }
+  .judgecall { font-size: 12.5px; color: var(--muted); white-space: nowrap; }
+  .v-PASS { color: var(--pass); font-weight: 600; }
+  .v-FAIL { color: var(--fail); font-weight: 600; }
+  .agree-yes { color: var(--pass); } .agree-no { color: var(--fail); font-weight: 600; }
+  details.findings { margin-top: 8px; border-top: 1px solid var(--line); padding-top: 8px; }
+  details.findings summary { cursor: pointer; color: var(--muted); font-size: 12.5px; }
+  .finding { border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin: 8px 0; }
+  .finding .txt { margin-bottom: 6px; }
+  .finding .ctrls { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .chip { background: var(--chip); border-radius: 10px; padding: 1px 7px; font-size: 11.5px;
+          color: var(--muted); }
+  .turnlink { background: none; border: 0; color: var(--accent); cursor: pointer; padding: 0;
+              text-decoration: underline; font-size: 12.5px; }
+  .blindgate { background: #fffdf3; border: 1px solid #e6d9a8; border-radius: 6px; padding: 10px;
+               margin-bottom: 10px; }
+  .blindgate textarea { width: 100%; min-height: 90px; font-family: ui-monospace, monospace;
+                        font-size: 12.5px; padding: 6px; border: 1px solid var(--line);
+                        border-radius: 4px; }
+  pre.ctx { white-space: pre-wrap; word-wrap: break-word; margin: 0; max-height: 72vh;
+            overflow: auto; }
+  pre.ctx mark { background: #ffe9a8; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .readout div { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
+  .readout .k { color: var(--muted); }
+  .note { width: 100%; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px;
+          margin-top: 6px; font: inherit; font-size: 12.5px; }
+  .empty { color: var(--muted); font-style: italic; }
+  .warn { color: var(--warn); }
+  .sidebar-run { display: block; width: 100%; text-align: left; margin-bottom: 4px; }
 </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <h1>Judge calibration</h1>
-    <p class="hint">Drop the <code>runs/</code> folder (judge output + transcripts) and the <code>rubrics/</code> folder. Everything stays in this browser tab — no network calls.</p>
+<header>
+  <h1>Grade the judge</h1>
+  <span class="hint">Rubric-first: read five verdicts, set your own, open findings only where you disagree. Nothing leaves this tab; progress is checkpointed to localStorage.</span>
+</header>
 
-    <div id="dropzone" class="dropzone">Drop the <code>runs/</code> folder and the <code>rubrics/</code> folder here</div>
+<div id="dropzone">
+  Drop the <code>runs/</code> folder here (and optionally <code>plugin/skills/test-personas/rubrics/</code>).
+  <div style="margin-top:8px">
+    <input type="file" id="picker" webkitdirectory directory multiple>
+  </div>
+  <div style="margin-top:6px;font-size:12.5px">Use the folder picker or drag-and-drop — a flat file picker loses directory names, and four runs share the filename <code>maya-cold-start.judge.md</code>.</div>
+</div>
 
-    <div class="picker-row">
-      <label for="filePicker">Choose files</label>
-      <input type="file" id="filePicker" multiple accept=".md">
-    </div>
-    <div class="picker-row">
-      <label for="dirPicker">Choose a folder</label>
-      <input type="file" id="dirPicker" webkitdirectory multiple>
-    </div>
-
-    <section>
-      <h2>Readout</h2>
-      <div id="readout" class="readout tabular-nums"></div>
-    </section>
-
-    <section class="global-actions">
-      <h2>Export</h2>
-      <button id="downloadAllBtn">Download all</button>
-      <button id="copyAllBtn">Copy all as JSON</button>
-      <button id="clearAllBtn">Clear everything</button>
-    </section>
-  </aside>
-
-  <main class="runs" id="runsContainer">
-    <div class="empty-state" id="emptyState">No runs loaded yet.</div>
-  </main>
-
-  <aside class="context-pane" id="contextPane"></aside>
+<div id="layout" hidden>
+  <div class="panel" id="sidebar"></div>
+  <div id="runs"></div>
+  <div class="panel" id="context"></div>
 </div>
 
 <script>
 (function () {
   "use strict";
 
-  // ---------------------------------------------------------------------
-  // Parsing — standalone, no DOM references. Copy-pasteable for testing.
-  // ---------------------------------------------------------------------
-  function parseJudgeFile(text, filename) {
-    var norm = String(text).replace(/\r\n/g, "\n");
+  // ---------------------------------------------------------------- constants
+  var RUBRICS = ["lint", "groundedness", "coherence", "conformance", "tone"];
+  var GATING = ["lint", "groundedness", "conformance"];
+  var LABEL = { lint: "Lint", groundedness: "Groundedness", coherence: "Coherence",
+                conformance: "Conformance", tone: "Tone" };
+  var TAG = { lint: "script, not judge", groundedness: "gating, zero-tolerance",
+              coherence: "advisory, holistic", conformance: "gating, zero-tolerance",
+              tone: "advisory, holistic" };
+  var RUBRIC_FILE = { groundedness: "groundedness.md", coherence: "coherence.md",
+                      conformance: "conformance.md", tone: "tone.md" };
+  var STORAGE_PREFIX = "grade-judge/v2/";
 
-    var parts = String(filename).split("/");
-    var base = parts[parts.length - 1];
-    var stem = base.replace(/\.judge\.md$/i, "").replace(/\.md$/i, "");
-    var id = parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
+  // ------------------------------------------------------------------ parsing
+  // Judge files are markdown assembled from four independent sub-agent calls,
+  // so formatting drifts between runs. Parse structurally and forgivingly: a
+  // section that fails to yield a verdict reports null rather than guessing,
+  // because a guessed verdict is indistinguishable from a real one once it is
+  // in a label file.
 
-    var verdictMatch = norm.match(/^\*\*Overall:\s*(.+?)\*\*/m);
-    var overall = verdictMatch ? verdictMatch[1].trim() : null;
-
-    var hardMatch = norm.match(/^-\s*Hard violations:\s*(PASS|FAIL)\b/im);
-    var specMatch = norm.match(/^-\s*Spec gaps:\s*(PASS|FAIL)\b/im);
-    var softMatch = norm.match(/^-\s*Soft issues:\s*(\d+)/im);
-    var critiqueMatch = norm.match(/^-\s*Open critiques:\s*(\d+)/im);
-
-    var verdicts = {
-      hard: { judge: hardMatch ? hardMatch[1] : null, human: null },
-      spec: { judge: specMatch ? specMatch[1] : null, human: null },
-      overall: { judge: overall, human: null }
-    };
-    var advisory = {
-      soft_count: softMatch ? parseInt(softMatch[1], 10) : 0,
-      critique_count: critiqueMatch ? parseInt(critiqueMatch[1], 10) : 0
-    };
-
-    var tierMap = [
-      ["Hard violations", "hard"],
-      ["Soft issues", "soft"],
-      ["Spec gaps", "spec"],
-      ["Open critique", "critique"]
-    ];
-
-    var headingRe = /^## (.+)$/gm;
-    var headings = [];
-    var m;
-    while ((m = headingRe.exec(norm)) !== null) {
-      headings.push({
-        title: m[1].trim(),
-        start: m.index,
-        contentStart: m.index + m[0].length
-      });
-    }
-
-    var findings = [];
-    var ignored = {};
-    var sectionsSeen = 0;
-
-    // Accepts both markdown bullet styles the corpus actually uses: dash
-    // bullets ("- ...") and numbered-list bullets ("1. ...", "2. ..." —
-    // e.g. 2026-06-07/diego-reflection.judge.md's Open critique section).
-    // Group 1 is the bullet's content with the marker stripped.
-    var bulletRe = /^(?:-|\d+\.)\s+(.*)$/;
-    // A bullet whose entire content is a "None ..." statement (e.g.
-    // "None applicable.", "None flagged.") is the judge saying this
-    // sub-list is empty, not a finding — must not be counted as one.
-    var noneBulletRe = /^None\b.*$/i;
-
-    for (var i = 0; i < headings.length; i++) {
-      var h = headings[i];
-      var tier = null;
-      for (var j = 0; j < tierMap.length; j++) {
-        if (h.title.indexOf(tierMap[j][0]) !== -1) {
-          tier = tierMap[j][1];
-          break;
-        }
+  function splitSections(text) {
+    var out = {}, current = null, buf = [];
+    text.split(/\r?\n/).forEach(function (line) {
+      var m = /^##\s+(.+?)\s*$/.exec(line);
+      if (m) {
+        if (current) out[current] = buf.join("\n");
+        current = m[1].toLowerCase().trim();
+        buf = [];
+      } else if (current) {
+        buf.push(line);
       }
-      if (!tier) continue;
-      sectionsSeen++;
+    });
+    if (current) out[current] = buf.join("\n");
+    return out;
+  }
 
-      var end = (i + 1 < headings.length) ? headings[i + 1].start : norm.length;
-      var body = norm.slice(h.contentStart, end);
-      var lines = body.split("\n");
+  function subSection(body, name) {
+    var re = new RegExp("^###\\s+" + name + "\\s*$", "im");
+    var m = re.exec(body || "");
+    if (!m) return null;
+    var rest = body.slice(m.index + m[0].length);
+    var next = /^###\s+/m.exec(rest);
+    return (next ? rest.slice(0, next.index) : rest).trim();
+  }
 
-      var bulletLines = [];
-      var hasNoneMarker = false;
-      var noneBulletCount = 0;
-      for (var k = 0; k < lines.length; k++) {
-        var line = lines[k];
-        var bulletMatch = line.match(bulletRe);
-        if (bulletMatch) {
-          if (noneBulletRe.test(bulletMatch[1].trim())) {
-            noneBulletCount++;
-          } else {
-            bulletLines.push(bulletMatch[1]);
-          }
-        } else if (/^No .*(found|critiques)\.?$/i.test(line.trim())) {
-          hasNoneMarker = true;
-        }
+  function verdictFrom(body) {
+    if (body == null) return null;
+    var m = /\*\*(PASS|FAIL)\*\*/.exec(body);
+    return m ? m[1] : null;
+  }
+
+  // A finding is a top-level "- **" bullet. Continuation lines are folded in so
+  // a wrapped bullet stays one finding.
+  function findingsFrom(body) {
+    if (!body) return [];
+    if (/^\s*No findings\.?\s*$/im.test(body)) return [];
+    var out = [], cur = null;
+    body.split(/\r?\n/).forEach(function (line) {
+      if (/^\s*-\s+\*\*/.test(line)) {
+        if (cur) out.push(cur);
+        cur = line.replace(/^\s*-\s+/, "").trim();
+      } else if (cur && line.trim()) {
+        cur += " " + line.trim();
       }
+    });
+    if (cur) out.push(cur);
+    return out.map(function (t, i) {
+      var turn = null;
+      var m = /turn\s+(\d+)/i.exec(t);
+      if (m) turn = parseInt(m[1], 10);
+      return { idx: i, text: t.replace(/\*\*/g, ""), turn: turn };
+    });
+  }
 
-      // A section-level "No hard violations found." (or similar) narrative
-      // line means every bullet underneath it is a confirmation, not a
-      // finding — the whole section's bullets are ignored (existing
-      // behaviour, unchanged). A "None ..." *bullet* is narrower: it only
-      // says its own sub-list (e.g. "### Opportunistic") is empty, so only
-      // that bullet is excluded — real findings elsewhere in the same
-      // section (e.g. "### Required") must still parse.
-      if (hasNoneMarker) {
-        ignored[tier] = (ignored[tier] || 0) + bulletLines.length + noneBulletCount;
-        continue;
+  function parseJudgeFile(text) {
+    var secs = splitSections(text);
+    var run = { rubrics: {}, overallJudge: null, meta: {}, notes: [] };
+
+    var dm = /^\*\*Run date:\*\*\s*(.+)$/m.exec(text);
+    var sm = /^\*\*Snapshot:\*\*\s*(.+)$/m.exec(text);
+    if (dm) run.meta.date = dm[1].trim();
+    if (sm) run.meta.snapshot = sm[1].trim();
+
+    RUBRICS.forEach(function (r) {
+      var body = secs[r];
+      if (body == null) {
+        run.rubrics[r] = { present: false, verdict: null, findings: [], evidence: null };
+        return;
       }
-      if (noneBulletCount) {
-        ignored[tier] = (ignored[tier] || 0) + noneBulletCount;
+      if (r === "lint") {
+        // Deterministic script output, not a judged section: every "turn N:"
+        // line is a finding, and the verdict follows from whether any exist.
+        var lines = body.split(/\r?\n/).map(function (l) { return l.trim(); });
+        var hits = lines.filter(function (l) { return /^turn\s+\d+:/.test(l); });
+        var skipped = lines.filter(function (l) { return /^NOT CHECKED:/.test(l); });
+        run.rubrics.lint = {
+          present: true,
+          verdict: hits.length ? "FAIL" : "PASS",
+          findings: hits.map(function (t, i) {
+            var m = /^turn\s+(\d+):/.exec(t);
+            return { idx: i, text: t, turn: m ? parseInt(m[1], 10) : null };
+          }),
+          evidence: null,
+          skipped: skipped
+        };
+        return;
       }
+      var f = subSection(body, "Findings");
+      var v = subSection(body, "Verdict");
+      var bullets = findingsFrom(f != null ? f : body);
+      // Conformance is the odd one out: its bullets are per-criterion
+      // assessments, not violations, and judges have written them three
+      // different ways (every criterion listed; failures only; verdict stated
+      // mid-sentence). Counting bullets there would count PASSes as findings —
+      // which is how a zero-tolerance rubric ended up showing PASS alongside
+      // "13 findings". Only FAIL bullets are findings; the rest stay available
+      // as `criteria` for the drill-down.
+      var findings = r === "conformance"
+        ? bullets.filter(function (b) { return /\bFAIL\b/.test(b.text); })
+        : bullets;
+      run.rubrics[r] = {
+        present: true,
+        verdict: verdictFrom(v != null ? v : body),
+        verdictText: v || "",
+        findings: findings,
+        criteria: r === "conformance" ? bullets : null,
+        evidence: subSection(body, "Evidence")
+      };
+    });
 
-      for (var b = 0; b < bulletLines.length; b++) {
-        var summary = bulletLines[b];
-        var turnMatch = summary.match(/turn\s+(\d+)/i);
-        // Spec-gaps bullets carry the judge's own per-criterion verdict,
-        // in one of the forms the corpus actually uses:
-        //   **End-of-run nudge:** PASS — Turn 8 ends with...
-        //   **heads-up surfaced non-obvious risks:** **FAIL** — ...
-        //   One-line mix statement, no preamble: PASS. Turn 2 opens...
-        // i.e. the bold around the criterion label is optional, and the
-        // verdict token itself may also be bolded. Surfaced as a
-        // read-only chip in the UI so a human adjudicating "is this PASS
-        // call right" isn't staring at an unlabelled wall of bullets. Not
-        // exported — it's a presentation aid over data already in
-        // `summary`.
-        var criterionMatch = summary.match(/^\*{0,2}([^:\n]+?):\*{0,2}\s*\*{0,2}(PASS|FAIL|NOT EXERCISED|NOT APPLICABLE)\*{0,2}\b/);
-        findings.push({
-          tier: tier,
-          summary: summary,
-          human: null,
-          note: null,
-          turn: turnMatch ? parseInt(turnMatch[1], 10) : null,
-          criterionVerdict: criterionMatch ? criterionMatch[2] : null
-        });
-      }
+    var ov = secs["verdict"];
+    if (ov) {
+      var om = /\*\*Overall:\s*(PASS|FAIL[^*]*)\*\*/i.exec(ov);
+      if (om) run.overallJudge = om[1].trim();
     }
 
-    return {
-      id: id,
-      filename: filename,
-      verdicts: verdicts,
-      advisory: advisory,
-      findings: findings,
-      ignored: ignored,
-      sectionsSeen: sectionsSeen
-    };
+    RUBRICS.forEach(function (r) {
+      if (!run.rubrics[r].present) run.notes.push("no `## " + LABEL[r] + "` section");
+      else if (run.rubrics[r].verdict === null) run.notes.push(LABEL[r] + ": no parseable verdict");
+    });
+    return run;
   }
 
-  // Splits a transcript into its preamble plus `## Turn N — ROLE` blocks.
-  // No DOM references — rendering builds elements from this structure.
-  function parseTranscript(text, filename) {
-    var norm = String(text).replace(/\r\n/g, "\n");
-    var headingRe = /^## Turn\s+(\d+)\s*[-–—]\s*(USER|ASSISTANT)\s*$/gim;
-    var matches = [];
-    var m;
-    while ((m = headingRe.exec(norm)) !== null) {
-      matches.push({
-        n: parseInt(m[1], 10),
-        role: m[2].toUpperCase(),
-        headingText: m[0].replace(/^##\s*/, "").trim(),
-        start: m.index,
-        contentStart: m.index + m[0].length
-      });
-    }
-
-    var preamble = matches.length ? norm.slice(0, matches[0].start).trim() : norm.trim();
-    var turns = [];
-    for (var i = 0; i < matches.length; i++) {
-      var end = (i + 1 < matches.length) ? matches[i + 1].start : norm.length;
-      var body = norm.slice(matches[i].contentStart, end).replace(/^\n+/, "").replace(/\n+$/, "");
-      turns.push({
-        n: matches[i].n,
-        role: matches[i].role,
-        id: "turn-" + matches[i].n + "-" + matches[i].role.toLowerCase(),
-        heading: matches[i].headingText,
-        body: body
-      });
-    }
-
-    return { filename: filename, preamble: preamble, turns: turns };
+  function parseTranscript(text) {
+    var turns = [], re = /^##\s+Turn\s+(\d+)\s+—\s+(USER|ASSISTANT)\s*$/gim, m, marks = [];
+    while ((m = re.exec(text)) !== null) marks.push({ n: +m[1], role: m[2], at: m.index, end: re.lastIndex });
+    marks.forEach(function (mk, i) {
+      turns.push({ n: mk.n, role: mk.role,
+                   body: text.slice(mk.end, i + 1 < marks.length ? marks[i + 1].at : text.length).trim() });
+    });
+    return turns;
   }
 
-  // Classifies a dropped file by its path per the corpus layout:
-  // runs/<date>/<persona-journey>.judge.md + .md (transcript), plus the
-  // three fixed rubric filenames, wherever they land. SUMMARY.md is inert.
-  // The hard tier deliberately has no rubric file: those rules moved into
-  // scripts/validate_userdata.py and scripts/lint_transcript.py, and the judge
-  // transcribes their output rather than deciding it. Historical judge files in
-  // runs/ still carry hard findings that were judged under the old
-  // rubrics/lint-checklist.md — they render fine, there is just no rubric to
-  // show alongside them.
-  var RUBRIC_TIER_BY_FILENAME = {
-    "tone.md": "soft",
-    "spec-criteria.md": "spec",
-    "open-critique.md": "critique"
-  };
-  var RUBRIC_FILENAME_BY_TIER = {
-    soft: "tone.md",
-    spec: "spec-criteria.md",
-    critique: "open-critique.md"
-  };
-  var DETERMINISTIC_TIER_NOTE = "Hard violations are decided by scripts, not by a rubric — "
-    + "scripts/validate_userdata.py (schema drift) and scripts/lint_transcript.py "
-    + "(fenced summaries, unresolved references, banned jargon, prior-state prompts, "
-    + "untraceable cadence numbers). The judge transcribes their output verbatim. "
-    + "Findings here from runs before that change were judged under the retired "
-    + "rubrics/lint-checklist.md.";
+  // -------------------------------------------------------------------- state
+  var runs = [];        // {key, id, judge, transcript, human:{}, findingLabels:{}, blind, revealed}
+  var rubricTexts = {};
+  var context = { runKey: null, tab: "transcript", rubric: null, scrollTurn: null };
 
-  function idFromParts(parts, stem) {
-    return parts.length > 1 ? parts[parts.length - 2] + "/" + stem : stem;
+  function emptyHuman() {
+    var h = {}; RUBRICS.forEach(function (r) { h[r] = null; }); return h;
   }
 
-  function classifyPath(path) {
-    var parts = String(path).split("/");
-    var base = parts[parts.length - 1];
-
-    if (base === "SUMMARY.md") return { kind: "ignore" };
-    if (RUBRIC_TIER_BY_FILENAME.hasOwnProperty(base)) {
-      return { kind: "rubric", tier: RUBRIC_TIER_BY_FILENAME[base] };
-    }
-    if (/\.judge\.md$/i.test(base)) {
-      var jstem = base.replace(/\.judge\.md$/i, "");
-      return { kind: "judge", id: idFromParts(parts, jstem) };
-    }
-    if (/\.md$/i.test(base)) {
-      var tstem = base.replace(/\.md$/i, "");
-      return { kind: "transcript", id: idFromParts(parts, tstem) };
-    }
-    return { kind: "ignore" };
+  function derivedOverall(human) {
+    for (var i = 0; i < GATING.length; i++) if (!human[GATING[i]]) return null;
+    return GATING.every(function (r) { return human[r] === "PASS"; }) ? "PASS" : "FAIL";
   }
 
-  // ---------------------------------------------------------------------
-  // State
-  // ---------------------------------------------------------------------
-  var TIERS = ["hard", "soft", "spec", "critique"];
-  var TIER_LABEL = { hard: "Hard", soft: "Soft", spec: "Spec", critique: "Critique" };
-  var STORAGE_PREFIX = "judge-calibration/";
-
-  var runs = []; // ordered array of run state objects
-  var rubrics = { hard: null, soft: null, spec: null, critique: null }; // {text, filename}
-
-  // Context pane selection — independent of any single run's DOM node so
-  // it survives the findings list re-rendering underneath it.
-  var contextState = { runKey: null, tab: "transcript", turn: null, tier: null };
-
-  function isValidPF(v) { return v === "PASS" || v === "FAIL" || v === null || v === undefined; }
-
-  function emptyVerdicts() {
-    return {
-      hard: { judge: null, human: null },
-      spec: { judge: null, human: null },
-      overall: { judge: null, human: null }
-    };
-  }
-
-  // Mirrors tests/judge-calibration/stats.py: the derived overall requires
-  // BOTH sub-verdicts to be set before it means anything. A half-labelled
-  // run (only Hard adjudicated, say) must not resolve to FAIL just because
-  // one side happens to be FAIL — that short-circuit would let the browser
-  // count a run in "Overall verdict agreement" that the CLI excludes.
-  function deriveOverall(hardHuman, specHuman) {
-    if (hardHuman == null || specHuman == null) return null;
-    return (hardHuman === "PASS" && specHuman === "PASS") ? "PASS" : "FAIL";
-  }
+  function passish(v) { return typeof v === "string" && v.indexOf("PASS") === 0; }
 
   function selfContradiction(run) {
-    var v = run.verdicts;
-    if (v.hard.judge == null || v.spec.judge == null || v.overall.judge == null) return null;
-    var derivedPass = v.hard.judge === "PASS" && v.spec.judge === "PASS";
-    var statesPass = v.overall.judge.indexOf("PASS") === 0;
-    if (statesPass === derivedPass) return null;
-    return "judge self-contradiction: states " + v.overall.judge + " but its own sub-verdicts give " + (derivedPass ? "PASS" : "FAIL");
+    var j = run.judge;
+    if (!j.overallJudge) return false;
+    for (var i = 0; i < GATING.length; i++) if (!j.rubrics[GATING[i]].verdict) return false;
+    var impliedPass = GATING.every(function (r) { return j.rubrics[r].verdict === "PASS"; });
+    return passish(j.overallJudge) !== impliedPass;
   }
 
-  // Storage keys are derived from `run.key` — the id parsed from the file
-  // path/stem at drop time. `run.id` is the user-editable display/export
-  // value. Keeping these separate means renaming a run in the UI never
-  // orphans its localStorage entry: the key that labels are saved under
-  // never changes just because the display id did.
-  function storageKey(key) { return STORAGE_PREFIX + key; }
-
+  // ------------------------------------------------------------------ storage
   function saveRun(run) {
-    var payload = {
-      id: run.id,
-      verdicts: {
-        hard: { human: run.verdicts.hard.human },
-        spec: { human: run.verdicts.spec.human }
-      },
-      findings: run.findings.map(function (f) { return { human: f.human, note: f.note }; }),
-      blind: run.blind,
-      revealed: run.revealed,
-      blindSkipped: run.blindSkipped,
-      blindText: run.blindText
-    };
     try {
-      localStorage.setItem(storageKey(run.key), JSON.stringify(payload));
-    } catch (e) { /* storage unavailable — ignore, tool still works in-memory */ }
+      localStorage.setItem(STORAGE_PREFIX + run.key, JSON.stringify({
+        human: run.human, findingLabels: run.findingLabels,
+        blind: run.blind, revealed: run.revealed
+      }));
+    } catch (e) { /* private mode / quota — labelling still works in-tab */ }
   }
-
-  function loadRunLabels(key) {
+  function loadRun(run) {
     try {
-      var raw = localStorage.getItem(storageKey(key));
-      return raw ? JSON.parse(raw) : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function applyStoredLabels(run) {
-    var stored = loadRunLabels(run.key);
-    if (!stored) return;
-    if (typeof stored.id === "string" && stored.id) run.id = stored.id;
-    if (stored.verdicts) {
-      var sh = stored.verdicts.hard && stored.verdicts.hard.human;
-      var ss = stored.verdicts.spec && stored.verdicts.spec.human;
-      if (isValidPF(sh)) run.verdicts.hard.human = sh || null;
-      if (isValidPF(ss)) run.verdicts.spec.human = ss || null;
-    }
-    if (stored.blind !== undefined) run.blind = stored.blind;
-    if (stored.revealed) run.revealed = true;
-    if (stored.blindSkipped) run.blindSkipped = true;
-    if (typeof stored.blindText === "string") run.blindText = stored.blindText;
-    if (Array.isArray(stored.findings)) {
-      for (var i = 0; i < run.findings.length && i < stored.findings.length; i++) {
-        var h = stored.findings[i].human;
-        run.findings[i].human = (h === "agree" || h === "disagree" || h === "borderline") ? h : null;
-        run.findings[i].note = stored.findings[i].note || null;
-      }
-    }
-  }
-
-  function findRunIndex(key) {
-    for (var i = 0; i < runs.length; i++) {
-      if (runs[i].key === key) return i;
-    }
-    return -1;
-  }
-
-  function upsertRun(id, filename, payload) {
-    var idx = findRunIndex(id);
-    var run = idx >= 0 ? runs[idx] : {
-      key: id,
-      id: id,
-      judgeFilename: null,
-      transcriptFilename: null,
-      transcriptOnly: true,
-      verdicts: emptyVerdicts(),
-      advisory: { soft_count: 0, critique_count: 0 },
-      findings: [],
-      ignored: {},
-      sectionsSeen: 0,
-      transcript: null,
-      blind: null,
-      revealed: false,
-      blindSkipped: false,
-      blindText: ""
-    };
-
-    if (payload.judge) {
-      run.judgeFilename = filename;
-      run.transcriptOnly = false;
-      run.verdicts = payload.judge.verdicts;
-      run.advisory = payload.judge.advisory;
-      run.findings = payload.judge.findings;
-      run.ignored = payload.judge.ignored;
-      run.sectionsSeen = payload.judge.sectionsSeen || 0;
-    }
-    if (payload.transcript) {
-      run.transcriptFilename = filename;
-      run.transcript = payload.transcript;
-    }
-
-    applyStoredLabels(run);
-    if (idx >= 0) runs[idx] = run; else runs.push(run);
-    if (!contextState.runKey) contextState.runKey = run.key;
-  }
-
-  // ---------------------------------------------------------------------
-  // Readout math (mirrors tests/judge-calibration/stats.py)
-  // ---------------------------------------------------------------------
-  function computeStats() {
-    var perTier = {};
-    TIERS.forEach(function (t) { perTier[t] = { agree: 0, disagree: 0, borderline: 0, unlabelled: 0 }; });
-
-    runs.forEach(function (run) {
-      run.findings.forEach(function (f) {
-        if (!perTier[f.tier]) perTier[f.tier] = { agree: 0, disagree: 0, borderline: 0, unlabelled: 0 };
-        var t = perTier[f.tier];
-        if (f.human === "agree") t.agree++;
-        else if (f.human === "disagree") t.disagree++;
-        else if (f.human === "borderline") t.borderline++;
-        else t.unlabelled++;
+      var raw = localStorage.getItem(STORAGE_PREFIX + run.key);
+      if (!raw) return;
+      var d = JSON.parse(raw);
+      if (d.human) RUBRICS.forEach(function (r) {
+        if (d.human[r] === "PASS" || d.human[r] === "FAIL") run.human[r] = d.human[r];
       });
-    });
+      run.findingLabels = d.findingLabels || {};
+      run.blind = d.blind || null;
+      run.revealed = !!d.revealed;
+    } catch (e) { /* corrupt entry — start this run clean rather than throwing */ }
+  }
 
-    var recallNum = 0, recallDen = 0, hasBlind = false;
-    runs.forEach(function (run) {
-      if (run.blind) {
-        hasBlind = true;
-        recallNum += Number(run.blind.judge_matched) || 0;
-        recallDen += Number(run.blind.human_found) || 0;
-      }
-    });
-    var recall = (hasBlind && recallDen > 0) ? (recallNum / recallDen) : null;
+  // ------------------------------------------------------------------ ingest
+  function stemOf(name) { return name.replace(/\.judge\.md$/i, "").replace(/\.md$/i, ""); }
 
-    var hardAgreement = { hits: 0, total: 0, excluded: 0 };
-    var specAgreement = { hits: 0, total: 0, excluded: 0 };
-    var overallAgreement = { hits: 0, total: 0, excluded: 0 };
-    var contradictions = [];
-    var softTotal = 0, critiqueTotal = 0;
+  function classify(path, name) {
+    if (/^TEMPLATE\.json$/i.test(name)) return null;
+    if (/\.judge\.md$/i.test(name)) return "judge";
+    if (/^SUMMARY\.md$/i.test(name)) return null;
+    for (var r in RUBRIC_FILE) if (RUBRIC_FILE[r] === name) return "rubric:" + r;
+    if (/\.md$/i.test(name)) return "transcript";
+    return null;
+  }
 
-    runs.forEach(function (run) {
-      // Judge-derived fields (verdicts.*.judge, advisory counts,
-      // self-contradiction) exist in memory the moment a judge file is
-      // parsed — independent of this run's blind-pass reveal. Excluding
-      // unrevealed runs here keeps the sidebar readout from leaking a
-      // count or verdict for a run whose blind pass is still in progress.
-      if (!run.revealed) return;
-      var v = run.verdicts;
-      // A human verdict with no judge verdict to compare it to (the judge
-      // wrote e.g. "Hard violations: judges disagreed — ..." so nothing
-      // parsed) is missing data, not a disagreement — count it as excluded
-      // so the denominator's shrinkage stays visible, matching stats.py.
-      if (v.hard.human != null) {
-        if (v.hard.judge != null) {
-          hardAgreement.total++;
-          if ((v.hard.judge.indexOf("PASS") === 0) === (v.hard.human.indexOf("PASS") === 0)) hardAgreement.hits++;
-        } else {
-          hardAgreement.excluded++;
-        }
-      }
-      if (v.spec.human != null) {
-        if (v.spec.judge != null) {
-          specAgreement.total++;
-          if ((v.spec.judge.indexOf("PASS") === 0) === (v.spec.human.indexOf("PASS") === 0)) specAgreement.hits++;
-        } else {
-          specAgreement.excluded++;
-        }
-      }
-      var derivedHuman = deriveOverall(v.hard.human, v.spec.human);
-      if (derivedHuman != null) {
-        if (v.overall.judge != null) {
-          overallAgreement.total++;
-          if ((v.overall.judge.indexOf("PASS") === 0) === (derivedHuman === "PASS")) overallAgreement.hits++;
-        } else {
-          overallAgreement.excluded++;
-        }
-      }
-      if (selfContradiction(run)) contradictions.push(run.id);
+  function keyFor(path, name) {
+    var parts = path.split("/").filter(Boolean);
+    var dir = parts.length > 1 ? parts[parts.length - 2] : "";
+    return (dir ? dir + "/" : "") + stemOf(name);
+  }
 
-      softTotal += run.advisory.soft_count || 0;
-      critiqueTotal += run.advisory.critique_count || 0;
-    });
-
-    var gatePass = true;
-    var gateReasons = [];
-    TIERS.forEach(function (t) {
-      var s = perTier[t];
-      var n = s.agree + s.disagree;
-      if (n >= 5) {
-        var p = s.agree / n;
-        if (p < 0.9) {
-          gatePass = false;
-          gateReasons.push(TIER_LABEL[t] + " precision " + p.toFixed(2) + " < 0.9");
-        }
-      }
-    });
-    if (hasBlind && recall !== null && recall < 0.8) {
-      gatePass = false;
-      gateReasons.push("recall " + recall.toFixed(2) + " < 0.8");
+  function ingest(path, name, text) {
+    var kind = classify(path, name);
+    if (!kind) return;
+    if (kind.indexOf("rubric:") === 0) { rubricTexts[kind.slice(7)] = text; return; }
+    var key = keyFor(path, name);
+    var run = runs.filter(function (r) { return r.key === key; })[0];
+    if (!run) {
+      run = { key: key, id: key, judge: null, transcript: null, human: emptyHuman(),
+              findingLabels: {}, blind: null, revealed: false };
+      runs.push(run);
     }
-
-    return {
-      perTier: perTier,
-      recall: recall,
-      hasBlind: hasBlind,
-      hardAgreement: hardAgreement,
-      specAgreement: specAgreement,
-      overallAgreement: overallAgreement,
-      contradictions: contradictions,
-      softTotal: softTotal,
-      critiqueTotal: critiqueTotal,
-      gatePass: gatePass,
-      gateReasons: gateReasons
-    };
+    if (kind === "judge") run.judge = parseJudgeFile(text);
+    else run.transcript = parseTranscript(text);
   }
 
-  function fmtPrecision(agree, disagree) {
-    var n = agree + disagree;
-    if (n === 0) return "no adjudicated findings";
-    return (agree / n).toFixed(2) + " (" + agree + "/" + n + ")";
+  function finalizeIngest() {
+    runs = runs.filter(function (r) { return r.judge; });
+    runs.sort(function (a, b) { return a.key < b.key ? -1 : a.key > b.key ? 1 : 0; });
+    runs.forEach(loadRun);
+    if (runs.length) {
+      document.getElementById("dropzone").hidden = true;
+      document.getElementById("layout").hidden = false;
+      context.runKey = context.runKey || runs[0].key;
+    }
+    renderAll();
   }
 
-  // ---------------------------------------------------------------------
-  // Rendering
-  // ---------------------------------------------------------------------
-  var runsContainer = document.getElementById("runsContainer");
-  var emptyState = document.getElementById("emptyState");
-  var readoutEl = document.getElementById("readout");
-  var contextPane = document.getElementById("contextPane");
-
-  function el(tag, attrs, children) {
-    var node = document.createElement(tag);
+  // ------------------------------------------------------------------- render
+  function el(tag, attrs, kids) {
+    var n = document.createElement(tag);
     attrs = attrs || {};
     Object.keys(attrs).forEach(function (k) {
-      if (k === "text") node.textContent = attrs[k];
-      else if (k === "html") node.innerHTML = attrs[k];
-      else if (k.indexOf("on") === 0 && typeof attrs[k] === "function") node.addEventListener(k.slice(2), attrs[k]);
-      else if (k === "class") node.className = attrs[k];
-      else node.setAttribute(k, attrs[k]);
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "html") n.innerHTML = attrs[k];
+      else if (k.indexOf("on") === 0) n.addEventListener(k.slice(2), attrs[k]);
+      else if (attrs[k] !== null && attrs[k] !== undefined && attrs[k] !== false) n.setAttribute(k, attrs[k]);
     });
-    (children || []).forEach(function (c) { if (c) node.appendChild(c); });
-    return node;
-  }
-
-  function renderReadout() {
-    var stats = computeStats();
-    readoutEl.innerHTML = "";
-
-    TIERS.forEach(function (t) {
-      var s = stats.perTier[t];
-      var n = s.agree + s.disagree;
-      var row = el("div", { class: "tier-row" + (n < 5 ? " thin" : "") });
-      var label = TIER_LABEL[t] + ": " + fmtPrecision(s.agree, s.disagree);
-      var right = "borderline " + s.borderline + " · unlabelled " + s.unlabelled;
-      row.appendChild(el("span", { text: label }));
-      row.appendChild(el("span", { text: right }));
-      readoutEl.appendChild(row);
-      if (n > 0 && n < 5) {
-        readoutEl.appendChild(el("div", { class: "thin-note", text: "(thin — does not gate)" }));
-      }
-    });
-
-    if (stats.hasBlind) {
-      var recallRow = el("div", { class: "tier-row" });
-      recallRow.appendChild(el("span", { text: "Recall" }));
-      recallRow.appendChild(el("span", { text: stats.recall === null ? "n/a" : stats.recall.toFixed(2) }));
-      readoutEl.appendChild(recallRow);
-    }
-
-    // Wording matches stats.py's excluded_suffix() exactly, so a maintainer
-    // reading the browser sidebar and the CLI report side by side sees the
-    // same sentence for the same condition.
-    function excludedSuffix(n) {
-      if (!n) return "";
-      return " (" + n + " run" + (n !== 1 ? "s" : "") + " excluded: judge verdict unavailable)";
-    }
-
-    [["Hard verdict agreement", stats.hardAgreement], ["Spec verdict agreement", stats.specAgreement], ["Overall verdict agreement", stats.overallAgreement]].forEach(function (pair) {
-      var agg = pair[1];
-      if (agg.total > 0 || agg.excluded > 0) {
-        var row = el("div", { class: "tier-row" });
-        row.appendChild(el("span", { text: pair[0] }));
-        var value = agg.total > 0 ? (agg.hits + "/" + agg.total) : "n/a";
-        row.appendChild(el("span", { text: value + excludedSuffix(agg.excluded) }));
-        readoutEl.appendChild(row);
-      }
-    });
-
-    if (stats.contradictions.length > 0) {
-      readoutEl.appendChild(el("div", {
-        class: "contradiction-line",
-        text: "judge self-contradiction: " + stats.contradictions.length + " run(s) — " + stats.contradictions.join(", ")
-      }));
-    }
-
-    if (stats.softTotal > 0 || stats.critiqueTotal > 0) {
-      var advRow = el("div", { class: "tier-row" });
-      advRow.appendChild(el("span", { text: "Advisory" }));
-      advRow.appendChild(el("span", { text: stats.softTotal + " soft, " + stats.critiqueTotal + " critiques" }));
-      readoutEl.appendChild(advRow);
-    }
-
-    var gate = el("div", {
-      class: "gate-line " + (stats.gatePass ? "gate-pass" : "gate-fail"),
-      text: stats.gatePass ? "Gate: PASS" : "Gate: FAIL — " + stats.gateReasons.join("; ")
-    });
-    readoutEl.appendChild(gate);
-  }
-
-  function labelButton(run, finding, choice, labelText) {
-    return el("button", {
-      class: "label-btn" + (finding.human === choice ? " active" : ""),
-      "data-choice": choice,
-      type: "button",
-      text: labelText,
-      onclick: function () {
-        finding.human = (finding.human === choice) ? null : choice;
-        saveRun(run);
-        renderAll();
-      }
-    });
-  }
-
-  function selectFindingContext(run, finding) {
-    contextState.runKey = run.key;
-    contextState.tab = "transcript";
-    contextState.turn = finding.turn;
-    contextState.tier = finding.tier;
-    renderContextPane({ scroll: true });
-  }
-
-  function criterionChipClass(token) {
-    if (token === "PASS") return "agree";
-    if (token === "FAIL") return "disagree";
-    return "borderline"; // NOT EXERCISED / NOT APPLICABLE
-  }
-
-  function renderFindingCard(run, finding) {
-    var stateClass = finding.human ? " state-" + finding.human : "";
-    var card = el("div", { class: "finding-card" + stateClass });
-    card.appendChild(el("span", { class: "tier-chip", text: TIER_LABEL[finding.tier] || finding.tier }));
-    if (finding.criterionVerdict) {
-      card.appendChild(el("span", {
-        class: "criterion-chip " + criterionChipClass(finding.criterionVerdict),
-        text: finding.criterionVerdict
-      }));
-    }
-    card.appendChild(el("div", { class: "finding-summary mono", text: finding.summary }));
-
-    if (finding.turn != null) {
-      card.appendChild(el("button", {
-        class: "turn-link",
-        type: "button",
-        text: "turn " + finding.turn + " →",
-        onclick: function () { selectFindingContext(run, finding); }
-      }));
-    }
-
-    var labelRow = el("div", { class: "label-row" });
-    labelRow.appendChild(labelButton(run, finding, "agree", "Agree"));
-    labelRow.appendChild(labelButton(run, finding, "disagree", "Disagree"));
-    labelRow.appendChild(labelButton(run, finding, "borderline", "Borderline"));
-
-    var noteInput = el("input", {
-      type: "text",
-      class: "note-input",
-      placeholder: "note",
-      value: finding.note || "",
-      oninput: function (e) {
-        finding.note = e.target.value || null;
-        saveRun(run);
-      }
-    });
-    noteInput.value = finding.note || "";
-    labelRow.appendChild(noteInput);
-
-    card.appendChild(labelRow);
-    return card;
-  }
-
-  function renderBlindGate(run, container) {
-    var gate = el("div", { class: "blind-gate" });
-    gate.appendChild(el("p", { class: "title", text: "Findings hidden — blind pass first" }));
-    var textarea = el("textarea", {
-      placeholder: "Your own findings, one per line",
-      oninput: function (e) { run.blindText = e.target.value; }
-    });
-    textarea.value = run.blindText || "";
-    gate.appendChild(textarea);
-
-    var actions = el("div", { class: "blind-actions" });
-    actions.appendChild(el("button", {
-      class: "primary",
-      text: "Reveal judge findings",
-      onclick: function () {
-        var lines = (textarea.value || "").split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
-        run.blind = { human_found: lines.length, judge_matched: 0 };
-        run.revealed = true;
-        saveRun(run);
-        renderAll();
-      }
-    }));
-    actions.appendChild(el("a", {
-      href: "#",
-      class: "link",
-      text: "Skip blind pass",
-      onclick: function (e) {
-        e.preventDefault();
-        run.blind = null;
-        run.blindSkipped = true;
-        run.revealed = true;
-        saveRun(run);
-        renderAll();
-      }
-    }));
-    gate.appendChild(actions);
-    container.appendChild(gate);
-  }
-
-  function renderBlindSummary(run, container) {
-    if (!run.blind) return;
-    var wrap = el("div", { class: "blind-summary" });
-    wrap.appendChild(el("span", { text: "You found " + run.blind.human_found + ". Judge also found:" }));
-    var input = el("input", {
-      type: "number",
-      min: "0",
-      value: String(run.blind.judge_matched || 0),
-      oninput: function (e) {
-        run.blind.judge_matched = Number(e.target.value) || 0;
-        saveRun(run);
-        renderReadout();
-      }
-    });
-    wrap.appendChild(input);
-    container.appendChild(wrap);
-  }
-
-  function groupFindings(run) {
-    var groups = {};
-    TIERS.forEach(function (t) { groups[t] = []; });
-    run.findings.forEach(function (f) {
-      if (!groups[f.tier]) groups[f.tier] = [];
-      groups[f.tier].push(f);
-    });
-    return groups;
-  }
-
-  function renderFindingsList(run, container) {
-    var groups = groupFindings(run);
-    TIERS.forEach(function (t) {
-      var list = groups[t];
-      var ignoredCount = run.ignored && run.ignored[t];
-      if (list.length === 0 && !ignoredCount) return;
-      var group = el("div", { class: "tier-group" });
-      var countText = list.length === 0 && ignoredCount
-        ? "0 (" + ignoredCount + " confirmation bullets ignored)"
-        : String(list.length);
-      group.appendChild(el("div", { class: "tier-group-heading", text: TIER_LABEL[t] + " — " + countText }));
-      if (t === "spec" && list.length > 0) {
-        group.appendChild(el("p", {
-          class: "hint spec-group-hint",
-          text: "Each bullet is the judge's own per-criterion verdict (chip on the left). You're grading whether that PASS / FAIL / NOT EXERCISED call is right — not only whether something is a violation."
-        }));
-      }
-      list.forEach(function (f) { group.appendChild(renderFindingCard(run, f)); });
-      container.appendChild(group);
-    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
   }
 
   function pfButton(run, rubric, choice) {
-    var active = run.verdicts[rubric].human === choice;
     return el("button", {
-      class: "pf-btn" + (active ? " active-" + choice.toLowerCase() : ""),
-      type: "button",
-      text: choice,
+      class: (choice === "PASS" ? "pass" : "fail") + (run.human[rubric] === choice ? " active" : ""),
+      type: "button", text: choice,
       onclick: function () {
-        run.verdicts[rubric].human = active ? null : choice;
-        saveRun(run);
-        renderAll();
+        run.human[rubric] = run.human[rubric] === choice ? null : choice;
+        saveRun(run); renderAll();
       }
     });
   }
 
-  function renderVerdictBlock(run) {
-    var wrap = el("div", { class: "verdict-block" });
+  function findingKey(rubric, idx) { return rubric + ":" + idx; }
 
-    [["hard", "Hard violations"], ["spec", "Spec gaps"]].forEach(function (pair) {
-      var rubric = pair[0], label = pair[1];
-      var row = el("div", { class: "verdict-control-row" });
-      row.appendChild(el("span", { class: "verdict-label", text: label }));
-      var group = el("div", { class: "pf-group" });
-      group.appendChild(pfButton(run, rubric, "PASS"));
-      group.appendChild(pfButton(run, rubric, "FAIL"));
-      row.appendChild(group);
-      row.appendChild(el("span", { class: "verdict-chip", text: "judge: " + (run.verdicts[rubric].judge || "—") }));
-      wrap.appendChild(row);
+  function findingCard(run, rubric, f) {
+    var k = findingKey(rubric, f.idx);
+    var cur = (run.findingLabels[k] || {}).human || null;
+    var ctrls = el("div", { class: "ctrls" });
+    ["agree", "disagree", "borderline"].forEach(function (c) {
+      ctrls.appendChild(el("button", {
+        class: cur === c ? "active" : "", type: "button", text: c,
+        onclick: function () {
+          run.findingLabels[k] = run.findingLabels[k] || {};
+          run.findingLabels[k].human = cur === c ? null : c;
+          saveRun(run); renderAll();
+        }
+      }));
     });
-
-    var derived = deriveOverall(run.verdicts.hard.human, run.verdicts.spec.human);
-    var derivedClass = derived === "PASS" ? " gate-pass" : derived === "FAIL" ? " gate-fail" : "";
-    wrap.appendChild(el("div", {
-      class: "derived-overall" + derivedClass,
-      text: "Derived overall: " + (derived === null ? "not yet set" : derived) + " (judge stated: " + (run.verdicts.overall.judge || "—") + ")"
-    }));
-
-    var contradiction = selfContradiction(run);
-    if (contradiction) {
-      wrap.appendChild(el("div", { class: "contradiction-note", text: contradiction }));
+    if (f.turn !== null && run.transcript) {
+      ctrls.appendChild(el("button", {
+        class: "turnlink", type: "button", text: "turn " + f.turn + " →",
+        onclick: function () {
+          context.runKey = run.key; context.tab = "transcript"; context.scrollTurn = f.turn;
+          renderAll();
+        }
+      }));
     }
+    var note = el("input", { class: "note", type: "text", placeholder: "note (optional)",
+                             value: (run.findingLabels[k] || {}).note || "" });
+    note.addEventListener("change", function () {
+      run.findingLabels[k] = run.findingLabels[k] || {};
+      run.findingLabels[k].note = note.value || null;
+      saveRun(run);
+    });
+    return el("div", { class: "finding" }, [
+      el("div", { class: "txt", text: f.text }), ctrls, note
+    ]);
+  }
 
-    wrap.appendChild(el("p", {
-      class: "advisory-note hint",
-      text: "Advisory — soft issues: " + (run.advisory.soft_count || 0) + ", open critiques: " + (run.advisory.critique_count || 0)
+  function verdictRow(run, rubric) {
+    var jr = run.judge.rubrics[rubric];
+    var judgeV = jr.verdict;
+    var humanV = run.human[rubric];
+    var agreeCell = el("td", {});
+    if (humanV && judgeV) {
+      var same = humanV === judgeV;
+      agreeCell.appendChild(el("span", {
+        class: same ? "agree-yes" : "agree-no", text: same ? "✓" : "✗ disagree"
+      }));
+    }
+    var btns = el("td", {}, [pfButton(run, rubric, "PASS"), pfButton(run, rubric, "FAIL")]);
+    var judgeCell = el("td", { class: "judgecall" });
+    if (!jr.present) judgeCell.appendChild(el("span", { class: "warn", text: "section missing" }));
+    else if (judgeV === null) judgeCell.appendChild(el("span", { class: "warn", text: "unparseable" }));
+    else {
+      judgeCell.appendChild(el("span", { class: "v-" + judgeV, text: judgeV }));
+      if (jr.findings.length) judgeCell.appendChild(document.createTextNode(" · " + jr.findings.length));
+    }
+    return el("tr", {}, [
+      el("td", { class: "rname" }, [
+        document.createTextNode(LABEL[rubric]),
+        el("span", { class: "tag", text: TAG[rubric] })
+      ]),
+      judgeCell, btns, agreeCell
+    ]);
+  }
+
+  function blindGate(run) {
+    var box = el("div", { class: "blindgate" });
+    box.appendChild(el("div", { text: "Blind pass — write your own findings BEFORE seeing the judge's. This is the only source of recall data, and the only mechanism that finds rules nobody thought to write." }));
+    var ta = el("textarea", { placeholder: "e.g. turn 20 — invents Lendable's location from a fetch that failed" });
+    box.appendChild(ta);
+    var row = el("div", { style: "margin-top:8px;display:flex;gap:8px;flex-wrap:wrap" });
+    row.appendChild(el("button", {
+      type: "button", text: "Reveal judge findings",
+      onclick: function () {
+        var lines = ta.value.split(/\r?\n/).filter(function (l) { return l.trim(); });
+        run.blind = { human_found: lines.length, judge_matched: null, notes: ta.value || null };
+        run.revealed = true; saveRun(run); renderAll();
+      }
     }));
+    row.appendChild(el("button", {
+      type: "button", text: "Skip blind pass",
+      onclick: function () { run.blind = null; run.revealed = true; saveRun(run); renderAll(); }
+    }));
+    box.appendChild(row);
+    return box;
+  }
 
+  function blindSummary(run) {
+    if (!run.blind) return null;
+    var wrap = el("div", { class: "blindgate" });
+    wrap.appendChild(el("div", { text: "Blind pass: you found " + run.blind.human_found +
+      ". How many did the judge also find?" }));
+    var inp = el("input", { class: "note", type: "number", min: "0",
+                            max: String(run.blind.human_found),
+                            value: run.blind.judge_matched === null ? "" : String(run.blind.judge_matched) });
+    inp.addEventListener("change", function () {
+      var v = inp.value === "" ? null : Math.max(0, Math.min(run.blind.human_found, parseInt(inp.value, 10) || 0));
+      run.blind.judge_matched = v; saveRun(run); renderAll();
+    });
+    wrap.appendChild(inp);
     return wrap;
   }
 
-  function toExportObject(run) {
-    return {
-      run: run.id,
-      verdicts: {
-        hard: { judge: run.verdicts.hard.judge, human: run.verdicts.hard.human || null },
-        spec: { judge: run.verdicts.spec.judge, human: run.verdicts.spec.human || null },
-        // Overall stays null here — it's derived from hard/spec human
-        // verdicts at read time (by stats.py and this tool's own readout),
-        // never set directly by a human and never read back from the
-        // export. Matches TEMPLATE.json / README: "do NOT set an overall
-        // verdict yourself".
-        overall: { judge: run.verdicts.overall.judge, human: null }
-      },
-      advisory: {
-        soft_count: run.advisory.soft_count || 0,
-        critique_count: run.advisory.critique_count || 0
-      },
-      findings: run.findings.map(function (f) {
-        return { tier: f.tier, summary: f.summary, human: f.human || null, note: f.note || null };
-      }),
-      blind: run.blind || null
-    };
-  }
+  function runCard(run) {
+    var card = el("div", { class: "panel runcard" });
+    card.appendChild(el("h3", { text: run.id }));
+    var meta = [];
+    if (run.judge.meta.date) meta.push(run.judge.meta.date);
+    if (run.judge.meta.snapshot) meta.push("snapshot: " + run.judge.meta.snapshot);
+    if (!run.transcript) meta.push("no transcript loaded");
+    card.appendChild(el("div", { class: "runmeta", text: meta.join("  ·  ") }));
 
-  function exportFilename(run) {
-    // README convention: <date>-<persona>-<journey>.json — run.id is
-    // "<date>/<persona>-<journey>", so only the directory separator needs
-    // flattening to a hyphen.
-    return run.id.replace(/\//g, "-") + ".json";
-  }
-
-  function downloadJSON(filename, obj) {
-    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-  }
-
-  function isLabelled(run) {
-    if (run.blind) return true;
-    if (run.verdicts.hard.human || run.verdicts.spec.human) return true;
-    return run.findings.some(function (f) { return f.human || f.note; });
-  }
-
-  function renderRun(run) {
-    var section = el("section", { class: "run", "data-id": run.id });
-
-    var header = el("div", { class: "run-header" });
-    var idInput = el("input", {
-      type: "text",
-      class: "run-id-input",
-      value: run.id,
-      oninput: function (e) {
-        run.id = e.target.value;
-        saveRun(run);
-      }
-    });
-    idInput.value = run.id;
-    header.appendChild(idInput);
-    var filenames = [run.judgeFilename, run.transcriptFilename].filter(Boolean).join(" + ");
-    header.appendChild(el("span", { class: "filename", text: filenames }));
-    if (run.transcriptOnly) {
-      header.appendChild(el("span", { class: "badge", text: "transcript only — no judge file" }));
+    if (run.judge.notes.length) {
+      card.appendChild(el("div", { class: "runmeta warn",
+        text: "parser: " + run.judge.notes.join("; ") }));
+    }
+    if (selfContradiction(run)) {
+      card.appendChild(el("div", { class: "runmeta warn",
+        text: "judge self-contradiction: its stated Overall (" + run.judge.overallJudge +
+              ") disagrees with its own gating verdicts. A defect in the judge's output, not something to fix in your labelling." }));
     }
 
-    header.appendChild(el("button", {
-      text: "Clear this run",
-      onclick: function () {
-        run.verdicts.hard.human = null;
-        run.verdicts.spec.human = null;
-        run.blind = null;
-        run.revealed = false;
-        run.blindSkipped = false;
-        run.blindText = "";
-        run.findings.forEach(function (f) { f.human = null; f.note = null; });
-        try { localStorage.removeItem(storageKey(run.key)); } catch (e) {}
-        renderAll();
-      }
-    }));
-
-    section.appendChild(header);
-
-    // Everything judge-derived — verdict chips, advisory counts, the
-    // self-contradiction note, and the human PASS/FAIL controls — waits
-    // behind the blind-pass reveal. Adjudicating a Hard-violations verdict
-    // requires having seen the findings, so the controls live here too,
-    // not above the gate.
-    //
-    // Transcript-only runs (no .judge.md sibling) skip the gate entirely —
-    // per README, there's nothing to diff a blind pass against, so making
-    // the maintainer click through "blind pass" for a run that can never
-    // be revealed into anything is friction with no payoff.
-    if (run.transcriptOnly) {
-      section.appendChild(el("p", {
-        class: "no-judge-note",
-        text: "No judge file for this run — blind-pass gate skipped, nothing to diff against. Read the transcript in the context pane."
-      }));
-    } else if (!run.revealed) {
-      renderBlindGate(run, section);
-    } else {
-      renderBlindSummary(run, section);
-      section.appendChild(renderVerdictBlock(run));
-      if (run.sectionsSeen === 0) {
-        section.appendChild(el("p", {
-          class: "no-judge-note",
-          text: "This judge file has no ## Hard violations / ## Soft issues / ## Spec gaps / ## Open critique sections — nothing parsed as a finding. Check the raw file."
-        }));
-      } else {
-        renderFindingsList(run, section);
-      }
+    if (!run.revealed) {
+      card.appendChild(blindGate(run));
+      return card;
     }
 
-    var footer = el("div", { class: "run-footer" });
-    footer.appendChild(el("button", {
-      text: "Download label JSON",
-      onclick: function () { downloadJSON(exportFilename(run), toExportObject(run)); }
-    }));
-    section.appendChild(footer);
+    var tbl = el("table", { class: "verdicts" });
+    RUBRICS.forEach(function (r) { tbl.appendChild(verdictRow(run, r)); });
+    card.appendChild(tbl);
 
-    return section;
-  }
+    var d = derivedOverall(run.human);
+    card.appendChild(el("div", { class: "runmeta", style: "margin-top:8px",
+      text: "Derived overall: " + (d || "—") + "   (judge stated: " + (run.judge.overallJudge || "—") + ")"
+            + "   Gate: " + GATING.map(function (g) { return LABEL[g]; }).join(" AND ") }));
 
-  function renderRuns() {
-    runsContainer.innerHTML = "";
-    if (runs.length === 0) {
-      runsContainer.appendChild(emptyState);
-      return;
-    }
-    runs.forEach(function (run) { runsContainer.appendChild(renderRun(run)); });
-  }
+    var bs = blindSummary(run);
+    if (bs) card.appendChild(bs);
 
-  // ---------------------------------------------------------------------
-  // Context pane — Transcript / Rubric tabs
-  // ---------------------------------------------------------------------
-  function currentContextRun() {
-    if (!contextState.runKey) return null;
-    var idx = findRunIndex(contextState.runKey);
-    return idx >= 0 ? runs[idx] : null;
-  }
-
-  function renderRunSelect(container) {
-    var select = el("select", {
-      class: "context-run-select",
-      onchange: function (e) {
-        contextState.runKey = e.target.value || null;
-        contextState.turn = null;
-        renderContextPane();
+    RUBRICS.forEach(function (r) {
+      var jr = run.judge.rubrics[r];
+      if (!jr.findings.length) return;
+      var det = el("details", { class: "findings" });
+      det.appendChild(el("summary", { text: LABEL[r] + " — " + jr.findings.length +
+        " finding" + (jr.findings.length === 1 ? "" : "s") +
+        (run.human[r] && run.human[r] !== jr.verdict ? "  (you disagreed — worth opening)" : "") }));
+      jr.findings.forEach(function (f) { det.appendChild(findingCard(run, r, f)); });
+      if (r === "conformance" && jr.criteria && jr.criteria.length > jr.findings.length) {
+        var all = el("details", {}, [el("summary", { text: "all " + jr.criteria.length +
+          " criterion assessments (incl. PASS / NOT EXERCISED)" })]);
+        jr.criteria.forEach(function (c) {
+          all.appendChild(el("div", { class: "finding txt", text: c.text }));
+        });
+        det.appendChild(all);
       }
+      if (r === "groundedness" && jr.evidence) {
+        det.appendChild(el("details", {}, [
+          el("summary", { text: "claim table" }),
+          el("pre", { class: "ctx mono", text: jr.evidence })
+        ]));
+      }
+      card.appendChild(det);
     });
-    select.appendChild(el("option", { value: "", text: runs.length ? "Select a run…" : "No runs loaded" }));
-    runs.forEach(function (run) {
-      var opt = el("option", { value: run.key, text: run.id });
-      if (run.key === contextState.runKey) opt.setAttribute("selected", "selected");
-      select.appendChild(opt);
-    });
-    container.appendChild(select);
+
+    card.appendChild(el("div", { style: "margin-top:10px" }, [
+      el("button", { type: "button", text: "Download label JSON",
+                     onclick: function () { downloadJSON(run); } })
+    ]));
+    return card;
   }
 
-  function renderTabs(container) {
-    var row = el("div", { class: "tab-row" });
-    [["transcript", "Transcript"], ["rubric", "Rubric"]].forEach(function (pair) {
-      row.appendChild(el("button", {
-        class: "tab-btn" + (contextState.tab === pair[0] ? " active" : ""),
-        type: "button",
-        text: pair[1],
-        onclick: function () {
-          contextState.tab = pair[0];
-          renderContextPane({ scroll: true });
+  // ------------------------------------------------------------------ context
+  function contextPane() {
+    var pane = document.getElementById("context");
+    pane.innerHTML = "";
+    pane.appendChild(el("h2", { text: "Context" }));
+    var run = runs.filter(function (r) { return r.key === context.runKey; })[0] || runs[0];
+    if (!run) return;
+
+    var tabs = el("div", { class: "tabs" });
+    tabs.appendChild(el("button", { class: context.tab === "transcript" ? "active" : "",
+      type: "button", text: "Transcript",
+      onclick: function () { context.tab = "transcript"; renderAll(); } }));
+    tabs.appendChild(el("button", { class: context.tab === "rubric" ? "active" : "",
+      type: "button", text: "Rubric",
+      onclick: function () { context.tab = "rubric"; renderAll(); } }));
+    pane.appendChild(tabs);
+    pane.appendChild(el("div", { class: "runmeta", text: run.id }));
+
+    if (context.tab === "transcript") {
+      if (!run.transcript) {
+        pane.appendChild(el("div", { class: "empty",
+          text: "No transcript loaded for this run — drop the runs/ folder, not just the judge files." }));
+        return;
+      }
+      var pre = el("pre", { class: "ctx mono" });
+      run.transcript.forEach(function (t) {
+        var head = "## Turn " + t.n + " — " + t.role + "\n";
+        if (context.scrollTurn === t.n && t.role === "ASSISTANT") {
+          var mk = el("mark", { text: head + t.body + "\n\n" });
+          mk.id = "scrolltarget";
+          pre.appendChild(mk);
+        } else {
+          pre.appendChild(document.createTextNode(head + t.body + "\n\n"));
         }
-      }));
-    });
-    container.appendChild(row);
-  }
-
-  function renderTranscriptBody(run, body) {
-    if (!run || !run.transcript) {
-      body.appendChild(el("div", { class: "context-empty", text: "No transcript loaded for this run yet. Drop its runs/<date>/<persona>-<journey>.md file." }));
-      return;
-    }
-    var t = run.transcript;
-    if (t.preamble) {
-      body.appendChild(el("pre", { class: "transcript-preamble mono", text: t.preamble }));
-    }
-    t.turns.forEach(function (turn) {
-      var isHighlighted = contextState.tab === "transcript" && contextState.turn === turn.n;
-      var block = el("div", { class: "turn-block" + (isHighlighted ? " turn-highlight" : "") });
-      block.appendChild(el("h3", { class: "turn-heading", id: turn.id, text: turn.heading }));
-      block.appendChild(el("pre", { class: "turn-body mono", text: turn.body }));
-      body.appendChild(block);
-    });
-    if (t.turns.length === 0 && !t.preamble) {
-      body.appendChild(el("div", { class: "context-empty", text: "Transcript loaded but no ## Turn N — ROLE headers were found." }));
-    }
-  }
-
-  function renderRubricBody(run, body) {
-    if (!contextState.tier) {
-      body.appendChild(el("p", { class: "hint", text: "Pick a rubric, or select a finding's turn control to jump straight to its tier." }));
-      var picker = el("div", { class: "tier-picker" });
-      TIERS.forEach(function (t) {
-        picker.appendChild(el("button", {
-          type: "button",
-          text: TIER_LABEL[t] + (RUBRIC_FILENAME_BY_TIER[t] ? " (" + RUBRIC_FILENAME_BY_TIER[t] + ")" : " (deterministic)"),
-          onclick: function () {
-            contextState.tier = t;
-            renderContextPane();
-          }
-        }));
       });
-      body.appendChild(picker);
+      pane.appendChild(pre);
+      if (context.scrollTurn !== null) {
+        var tgt = document.getElementById("scrolltarget");
+        if (tgt) tgt.scrollIntoView({ block: "center" });
+        context.scrollTurn = null;
+      }
       return;
     }
 
-    var picker2 = el("div", { class: "tier-picker" });
-    TIERS.forEach(function (t) {
-      picker2.appendChild(el("button", {
-        class: t === contextState.tier ? "active" : "",
-        type: "button",
-        text: TIER_LABEL[t],
-        onclick: function () {
-          contextState.tier = t;
-          renderContextPane();
-        }
-      }));
+    var picker = el("div", { class: "tabs" });
+    RUBRICS.forEach(function (r) {
+      picker.appendChild(el("button", { class: context.rubric === r ? "active" : "",
+        type: "button", text: LABEL[r],
+        onclick: function () { context.rubric = r; renderAll(); } }));
     });
-    body.appendChild(picker2);
-
-    var rubric = rubrics[contextState.tier];
-    if (!rubric) {
-      body.appendChild(el("div", {
-        class: "context-empty",
-        text: RUBRIC_FILENAME_BY_TIER[contextState.tier]
-          ? "Rubric not loaded — drop plugin/skills/test-personas/rubrics/"
-            + RUBRIC_FILENAME_BY_TIER[contextState.tier] + " (or the whole rubrics/ folder)."
-          : DETERMINISTIC_TIER_NOTE
-      }));
+    pane.appendChild(picker);
+    var r = context.rubric;
+    if (!r) { pane.appendChild(el("div", { class: "empty", text: "Pick a rubric." })); return; }
+    if (r === "lint") {
+      pane.appendChild(el("div", { class: "empty", text:
+        "Lint has no rubric file. It is decided by scripts/validate_userdata.py and scripts/lint_transcript.py, and the judge only transcribes them. Disagreeing here grades the RULE, not a model — the fix is a change to the script." }));
       return;
     }
-    body.appendChild(el("pre", { class: "rubric-text mono", text: rubric.text }));
-  }
-
-  function renderContextPane(opts) {
-    opts = opts || {};
-    contextPane.innerHTML = "";
-
-    var header = el("div", { class: "context-header" });
-    renderRunSelect(header);
-    renderTabs(header);
-    contextPane.appendChild(header);
-
-    var body = el("div", { class: "context-body" });
-    var run = currentContextRun();
-
-    if (!run) {
-      body.appendChild(el("div", { class: "context-empty", text: "Select a run above, or click a finding's turn control, to see its transcript and rubric here." }));
-      contextPane.appendChild(body);
+    if (!rubricTexts[r]) {
+      pane.appendChild(el("div", { class: "empty",
+        text: "Not loaded — drop plugin/skills/test-personas/rubrics/" + RUBRIC_FILE[r] + " (or the whole folder)." }));
       return;
     }
-
-    if (contextState.tab === "transcript") {
-      renderTranscriptBody(run, body);
-    } else {
-      renderRubricBody(run, body);
-    }
-    contextPane.appendChild(body);
-
-    if (opts.scroll && contextState.tab === "transcript" && contextState.turn != null) {
-      var target = document.getElementById("turn-" + contextState.turn + "-user") ||
-        document.getElementById("turn-" + contextState.turn + "-assistant");
-      if (target) {
-        var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
-      }
-    }
+    pane.appendChild(el("pre", { class: "ctx mono", text: rubricTexts[r] }));
   }
 
-  function renderAll() {
-    renderRuns();
-    renderReadout();
-    renderContextPane();
-  }
-
-  // ---------------------------------------------------------------------
-  // File intake
-  // ---------------------------------------------------------------------
-  // The "Choose files" picker (as opposed to the folder picker or a
-  // dropped folder) hands back bare filenames with no directory —
-  // `file.webkitRelativePath` is "". classifyPath then derives the run id
-  // from the stem alone, so e.g. the corpus's four differently-dated
-  // maya-cold-start.judge.md files would all collapse onto the same run
-  // key and silently overwrite each other. Detect that specific case —
-  // a bare path about to land in a run-id/kind slot that's already
-  // populated — and refuse instead of clobbering.
-  function wouldCollideBareFilename(path, kind, id) {
-    if (String(path).indexOf("/") !== -1) return false; // has directory context — safe
-    var idx = findRunIndex(id);
-    if (idx < 0) return false;
-    var existing = runs[idx];
-    if (kind === "judge") return !!existing.judgeFilename;
-    if (kind === "transcript") return !!existing.transcriptFilename;
-    return false;
-  }
-
-  function ingestFileEntry(file, path) {
-    return file.text().then(function (text) {
-      var cls = classifyPath(path);
-      if (cls.kind === "ignore") return;
-      var norm = String(text).replace(/\r\n/g, "\n");
-      if (cls.kind === "rubric") {
-        rubrics[cls.tier] = { text: norm, filename: path };
-        return;
-      }
-      if (cls.kind === "judge" || cls.kind === "transcript") {
-        if (wouldCollideBareFilename(path, cls.kind, cls.id)) {
-          window.alert(
-            "Refusing to load \"" + path + "\" as run \"" + cls.id + "\" — " +
-            "another file with the same bare filename is already loaded for " +
-            "that run, and the \"Choose files\" picker gives no directory to " +
-            "tell them apart. Use \"Choose a folder\" (or drag the runs/ " +
-            "folder) instead so each run's date directory disambiguates it."
-          );
-          return;
-        }
-      }
-      if (cls.kind === "judge") {
-        var parsed = parseJudgeFile(text, path);
-        upsertRun(cls.id, path, { judge: parsed });
-        return;
-      }
-      if (cls.kind === "transcript") {
-        var pt = parseTranscript(text, path);
-        upsertRun(cls.id, path, { transcript: pt });
-        return;
-      }
-    });
-  }
-
-  function ingestFileList(fileList) {
-    var jobs = [];
-    for (var i = 0; i < fileList.length; i++) {
-      var file = fileList[i];
-      var path = file.webkitRelativePath || file.name;
-      if (!/\.md$/i.test(path)) continue;
-      jobs.push(ingestFileEntry(file, path));
-    }
-    return Promise.all(jobs).then(renderAll);
-  }
-
-  function walkEntry(entry, prefix, results) {
-    return new Promise(function (resolve, reject) {
-      if (entry.isFile) {
-        entry.file(function (file) {
-          results.push({ file: file, path: prefix + entry.name });
-          resolve();
-        }, reject);
-      } else if (entry.isDirectory) {
-        var reader = entry.createReader();
-        var collected = [];
-        (function readBatch() {
-          reader.readEntries(function (batch) {
-            if (!batch.length) {
-              Promise.all(collected.map(function (e) { return walkEntry(e, prefix + entry.name + "/", results); }))
-                .then(resolve, reject);
-            } else {
-              collected = collected.concat(batch);
-              readBatch();
-            }
-          }, reject);
-        })();
-      } else {
-        resolve();
-      }
-    });
-  }
-
-  function ingestDataTransfer(dataTransfer) {
-    var items = dataTransfer.items;
-    if (items && items.length && items[0].webkitGetAsEntry) {
-      var entries = [];
-      for (var i = 0; i < items.length; i++) {
-        var entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
-        if (entry) entries.push(entry);
-      }
-      var results = [];
-      return Promise.all(entries.map(function (e) { return walkEntry(e, "", results); }))
-        .then(function () {
-          var jobs = results
-            .filter(function (r) { return /\.md$/i.test(r.path); })
-            .map(function (r) { return ingestFileEntry(r.file, r.path); });
-          return Promise.all(jobs);
-        })
-        .then(renderAll);
-    }
-    return ingestFileList(dataTransfer.files);
-  }
-
-  // ---------------------------------------------------------------------
-  // Wiring
-  // ---------------------------------------------------------------------
-  var dropzone = document.getElementById("dropzone");
-  dropzone.addEventListener("dragover", function (e) {
-    e.preventDefault();
-    dropzone.classList.add("dragover");
-  });
-  dropzone.addEventListener("dragleave", function () {
-    dropzone.classList.remove("dragover");
-  });
-  dropzone.addEventListener("drop", function (e) {
-    e.preventDefault();
-    dropzone.classList.remove("dragover");
-    ingestDataTransfer(e.dataTransfer);
-  });
-
-  document.getElementById("filePicker").addEventListener("change", function (e) {
-    ingestFileList(e.target.files);
-    e.target.value = "";
-  });
-  document.getElementById("dirPicker").addEventListener("change", function (e) {
-    ingestFileList(e.target.files);
-    e.target.value = "";
-  });
-
-  document.getElementById("downloadAllBtn").addEventListener("click", function () {
-    runs.filter(isLabelled).forEach(function (run) {
-      downloadJSON(exportFilename(run), toExportObject(run));
-    });
-  });
-
-  document.getElementById("copyAllBtn").addEventListener("click", function () {
-    var arr = runs.filter(isLabelled).map(toExportObject);
-    var text = JSON.stringify(arr, null, 2);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).catch(function () { fallbackCopy(text); });
-    } else {
-      fallbackCopy(text);
-    }
-  });
-
-  function fallbackCopy(text) {
-    var ta = document.createElement("textarea");
-    ta.value = text;
-    ta.style.position = "fixed";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand("copy"); } catch (e) {}
-    document.body.removeChild(ta);
-  }
-
-  document.getElementById("clearAllBtn").addEventListener("click", function () {
-    if (!window.confirm("Clear all labels for every loaded run? This cannot be undone.")) return;
-    try {
-      var toRemove = [];
-      for (var i = 0; i < localStorage.length; i++) {
-        var key = localStorage.key(i);
-        if (key && key.indexOf(STORAGE_PREFIX) === 0) toRemove.push(key);
-      }
-      toRemove.forEach(function (k) { localStorage.removeItem(k); });
-    } catch (e) {}
+  // ----------------------------------------------------------------- readout
+  function stats() {
+    var s = { per: {}, overall: { hits: 0, n: 0 }, contradictions: [], findings: {},
+              blindFound: 0, blindMatched: 0, labelled: 0 };
+    RUBRICS.forEach(function (r) { s.per[r] = { hits: 0, n: 0, excluded: 0 };
+                                   s.findings[r] = { agree: 0, disagree: 0, borderline: 0 }; });
     runs.forEach(function (run) {
-      run.verdicts.hard.human = null;
-      run.verdicts.spec.human = null;
-      run.blind = null;
-      run.revealed = false;
-      run.blindSkipped = false;
-      run.blindText = "";
-      run.findings.forEach(function (f) { f.human = null; f.note = null; });
+      var complete = RUBRICS.every(function (r) { return run.human[r]; });
+      if (complete) s.labelled++;
+      RUBRICS.forEach(function (r) {
+        var h = run.human[r], j = run.judge.rubrics[r].verdict;
+        if (!h) return;
+        if (j === null) { s.per[r].excluded++; return; }
+        s.per[r].n++; if (h === j) s.per[r].hits++;
+      });
+      var d = derivedOverall(run.human);
+      if (d && run.judge.overallJudge) {
+        s.overall.n++; if (passish(run.judge.overallJudge) === (d === "PASS")) s.overall.hits++;
+      }
+      if (selfContradiction(run)) s.contradictions.push(run.id);
+      Object.keys(run.findingLabels).forEach(function (k) {
+        var rub = k.split(":")[0], v = (run.findingLabels[k] || {}).human;
+        if (v && s.findings[rub]) s.findings[rub][v]++;
+      });
+      if (run.blind && run.blind.judge_matched !== null) {
+        s.blindFound += run.blind.human_found; s.blindMatched += run.blind.judge_matched;
+      }
     });
-    renderAll();
+    return s;
+  }
+
+  function sidebar() {
+    var side = document.getElementById("sidebar");
+    side.innerHTML = "";
+    side.appendChild(el("h2", { text: "Runs" }));
+    runs.forEach(function (run) {
+      var done = RUBRICS.filter(function (r) { return run.human[r]; }).length;
+      side.appendChild(el("button", {
+        class: "sidebar-run" + (context.runKey === run.key ? " active" : ""),
+        type: "button", text: run.id + "  (" + done + "/5)",
+        onclick: function () { context.runKey = run.key; renderAll(); }
+      }));
+    });
+
+    var s = stats();
+    side.appendChild(el("h2", { text: "Readout", style: "margin-top:14px" }));
+    var ro = el("div", { class: "readout" });
+    function row(k, v) { ro.appendChild(el("div", {}, [el("span", { class: "k", text: k }),
+                                                      el("span", { text: v })])); }
+    row("runs fully labelled", s.labelled + "/" + runs.length);
+    RUBRICS.forEach(function (r) {
+      var p = s.per[r];
+      var txt = p.n ? (p.hits / p.n).toFixed(2) + " (" + p.hits + "/" + p.n + ")" : "n/a";
+      if (p.excluded) txt += "  [" + p.excluded + " excl]";
+      row(LABEL[r], txt);
+    });
+    row("overall", s.overall.n ? s.overall.hits + "/" + s.overall.n : "n/a");
+    if (s.contradictions.length) row("self-contradiction", String(s.contradictions.length));
+    if (s.blindFound) row("recall", (s.blindMatched / s.blindFound).toFixed(2) +
+                                    " (" + s.blindMatched + "/" + s.blindFound + ")");
+    var coh = s.per.coherence;
+    row("coherence promotion", (coh.n >= 10 && coh.hits / coh.n >= 0.9)
+        ? "ELIGIBLE" : "not yet (" + coh.hits + "/" + coh.n + " of 10 @ .90)");
+    side.appendChild(ro);
+
+    side.appendChild(el("div", { style: "margin-top:12px;display:flex;gap:6px;flex-wrap:wrap" }, [
+      el("button", { type: "button", text: "Download all",
+                     onclick: function () { runs.forEach(downloadJSON); } }),
+      el("button", { type: "button", text: "Copy all as JSON",
+                     onclick: function () {
+                       var all = runs.map(exportObject);
+                       navigator.clipboard.writeText(JSON.stringify(all, null, 2));
+                     } })
+    ]));
+  }
+
+  // ------------------------------------------------------------------ export
+  function exportObject(run) {
+    var v = {};
+    RUBRICS.forEach(function (r) {
+      v[r] = { judge: run.judge.rubrics[r].verdict, human: run.human[r] };
+    });
+    var findings = [];
+    RUBRICS.forEach(function (r) {
+      run.judge.rubrics[r].findings.forEach(function (f) {
+        var lab = run.findingLabels[findingKey(r, f.idx)] || {};
+        if (!lab.human && !lab.note) return;
+        findings.push({ rubric: r, turn: f.turn, summary: f.text,
+                        human: lab.human || null, note: lab.note || null });
+      });
+    });
+    var blind = null;
+    if (run.blind && run.blind.judge_matched !== null) {
+      blind = { human_found: run.blind.human_found, judge_matched: run.blind.judge_matched };
+    }
+    return { run: run.id, labeller: null, verdicts: v,
+             overall: { judge: run.judge.overallJudge }, findings: findings, blind: blind };
+  }
+
+  function downloadJSON(run) {
+    var blob = new Blob([JSON.stringify(exportObject(run), null, 2)], { type: "application/json" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = run.id.replace(/\//g, "-") + ".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 0);
+  }
+
+  // ------------------------------------------------------------------ wiring
+  function renderAll() {
+    sidebar();
+    var host = document.getElementById("runs");
+    host.innerHTML = "";
+    var run = runs.filter(function (r) { return r.key === context.runKey; })[0];
+    if (run) host.appendChild(runCard(run));
+    contextPane();
+  }
+
+  function readFiles(entries) {
+    var pending = entries.length;
+    if (!pending) return;
+    entries.forEach(function (e) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        ingest(e.path, e.name, String(reader.result));
+        if (--pending === 0) finalizeIngest();
+      };
+      reader.onerror = function () { if (--pending === 0) finalizeIngest(); };
+      reader.readAsText(e.file);
+    });
+  }
+
+  // Everything below touches the DOM. Guarded so the parser above can be
+  // required from node by tests/test_grade_judge.py — there is no JS test
+  // runner in this repo, and an untested parser is how the old tool shipped
+  // a blind-pass leak.
+  var HAS_DOM = typeof document !== "undefined";
+  if (HAS_DOM) {
+
+  document.getElementById("picker").addEventListener("change", function (ev) {
+    var out = [];
+    Array.prototype.forEach.call(ev.target.files, function (f) {
+      out.push({ file: f, name: f.name, path: f.webkitRelativePath || f.name });
+    });
+    readFiles(out);
   });
 
-  renderAll();
+  var dz = document.getElementById("dropzone");
+  dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("over"); });
+  dz.addEventListener("dragleave", function () { dz.classList.remove("over"); });
+  dz.addEventListener("drop", function (e) {
+    e.preventDefault(); dz.classList.remove("over");
+    var items = e.dataTransfer.items, out = [], pending = 0, done = false;
+    function finish() { if (done && pending === 0) readFiles(out); }
+    function walk(entry, prefix) {
+      if (entry.isFile) {
+        pending++;
+        entry.file(function (f) {
+          out.push({ file: f, name: entry.name, path: prefix + entry.name });
+          pending--; finish();
+        }, function () { pending--; finish(); });
+      } else if (entry.isDirectory) {
+        pending++;
+        var rd = entry.createReader();
+        (function readMore() {
+          rd.readEntries(function (batch) {
+            if (!batch.length) { pending--; finish(); return; }
+            batch.forEach(function (c) { walk(c, prefix + entry.name + "/"); });
+            readMore();
+          }, function () { pending--; finish(); });
+        })();
+      }
+    }
+    for (var i = 0; i < items.length; i++) {
+      var entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+      if (entry) walk(entry, "");
+    }
+    done = true; finish();
+  });
+
+  }  // end HAS_DOM
+
+  // Exposed for the headless parser test (tests/test_grade_judge.py). Browsers
+  // ignore it; node uses it to run the parser over the real corpus.
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { parseJudgeFile: parseJudgeFile, parseTranscript: parseTranscript,
+                       derivedOverall: derivedOverall, RUBRICS: RUBRICS, GATING: GATING };
+  }
 })();
 </script>
 </body>

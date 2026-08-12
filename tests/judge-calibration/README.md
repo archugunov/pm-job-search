@@ -1,203 +1,139 @@
 # Judge calibration
 
-> **STALE — being rewritten.** On 2026-08-12 the rubrics were restructured
-> (lint extracted to scripts; groundedness and coherence added; open critique
-> deleted; one judge call per rubric; five-line verdict block) and the seven
-> live-journey transcripts were re-judged under the new set. Everything below
-> describing four tiers named hard / soft / spec / critique, and the
-> transcript-only list, predates that. `stats.py`, `grade-judge.html` and
-> `labels/TEMPLATE.json` still expect the OLD shape and are reshaped next —
-> don't start labelling against this document. Plan:
-> `docs/superpowers/2026-08-11-rubric-restructure-plan.md`.
+Frozen corpus of harness runs (`runs/`, scrubbed) + human labels (`labels/`) +
+`stats.py`. Purpose: know the judge's error rate so a FAIL means something, and
+replay a rubric edit in minutes instead of a full journey sweep.
 
-Frozen corpus of harness runs (`runs/`, scrubbed) + human labels
-(`labels/`) + `stats.py`. Purpose: know the judge's error rate so a FAIL
-means something, and replay rubric edits in minutes instead of a full
-journey sweep.
+## What you are labelling
 
-Not every transcript in `runs/` was judged — three are transcript-only,
-with no `.judge.md` sibling to diff against:
-`2026-06-07-beta4-verify/diego-reflection.md`,
-`2026-08-04/maya-cold-start.md`, `2026-08-07/maya-cold-start.md`. Don't
-pick these for a blind pass; there's nothing to diff your findings
-against — `grade-judge.html` knows this and skips the blind-pass gate for
-them automatically, with a note on the card.
+Five verdicts per run. That is the whole job.
 
-`2026-08-10/` is the newest run and the only one produced by the current
-code. It is also the only run judged **twice** — `maya-cold-start.judge.md`
-and `maya-cold-start.judge2.md` are two independent readings of the same
-transcript, and they disagree: 4 hard violations against 1, plus a
-required spec criterion one passed and the other failed. Label both. That
-disagreement is the cleanest measurement of judge variance in the corpus,
-and its `SUMMARY.md` names one finding already known to be wrong (judge 1
-calls `setup/SKILL.md:291` self-contradictory; it isn't) — a free
-calibration data point to start on.
+    Lint:          PASS          scripts, no judge involved
+    Groundedness:  FAIL  (3)     gating, zero-tolerance
+    Coherence:     PASS          advisory, holistic
+    Conformance:   FAIL  (1)     gating, zero-tolerance
+    Tone:          PASS          advisory, holistic
+
+    Gate: Lint AND Groundedness AND Conformance  →  Overall
+
+Read the five, set your own five, and open a rubric's findings only when you
+disagree with its verdict. This is the mainstream shape in judge calibration —
+binary rather than scaled, one judge per dimension — and it is why the corpus
+now yields ~40 comparisons instead of the old hard tier's two findings across
+eleven runs, which could never reach the minimum sample size to gate on.
+
+Three things that change how you read a row:
+
+- **Lint is not a judge.** It comes from `scripts/validate_userdata.py` and
+  `scripts/lint_transcript.py`, and the judge only transcribes them. Marking it
+  FAIL when the judge said PASS grades the *rule*; the fix is a change to the
+  script, not a worked example.
+- **Zero-tolerance vs holistic.** Groundedness and conformance fail on one
+  finding. Coherence and tone are a judgement about the whole transcript —
+  findings can and do sit alongside a PASS, and that is correct, not sloppy.
+  (`2026-08-07` tone is exactly this case.)
+- **Never set an overall verdict.** There is no control for it. Overall is
+  derived: PASS iff your lint, groundedness and conformance are all PASS.
+  Coherence and tone never enter the gate.
 
 ## Labelling with the tool (primary path)
 
-Open `tests/judge-calibration/grade-judge.html` directly in a browser —
-no build step, no server, no network calls; everything stays in the tab
-and is checkpointed to `localStorage` as you go.
+Open `grade-judge.html` in a browser. No build step, no server, no network;
+everything stays in the tab and is checkpointed to `localStorage`.
 
-1. Drop the `runs/` folder and `plugin/skills/test-personas/rubrics/`
-   folder onto the dropzone (or use "Choose a folder" for each). **Use the
-   folder picker or drag-and-drop, not "Choose files"** — the flat file
-   picker hands back bare filenames with no directory, and the corpus has
-   four different `maya-cold-start.judge.md` files in four dated folders.
-   The tool refuses to load a same-named file over one already loaded from
-   a bare path rather than silently overwriting it, but the folder picker
-   avoids the problem entirely.
-2. Each run renders as a card: transcript pane on the right (tabbed
-   Transcript / Rubric), findings in the middle, a live readout in the
-   sidebar. For judged runs, findings and verdicts start hidden behind a
-   **blind pass** — type your own findings first, then "Reveal judge
-   findings" (or "Skip blind pass" if you're only adjudicating precision,
-   not recall). Transcript-only runs skip this gate; there's nothing to
-   reveal.
-3. Once revealed: set `Hard violations` and `Spec gaps` to PASS/FAIL
-   yourself (a bare `judge: —` chip next to each shows what the judge
-   said, for comparison, but stays read-only). Do **not** set an overall
-   verdict — there's no control for it. `Overall` is derived from your two
-   sub-verdicts (PASS iff both PASS) and shown as "Derived overall: … —
-   (judge stated: …)"; a mismatch there is what the sidebar's "verdict
-   agreement" numbers measure. If the judge's own stated `Overall`
-   disagrees with what its own Hard+Spec verdicts imply, a
-   self-contradiction note appears on the card and in the sidebar — that's
-   a defect in the judge's output, not something to fix in your labelling.
-4. Each finding is a card grouped by tier (Hard / Soft / Spec / Critique).
-   Spec-gap findings carry a coloured chip showing the judge's own
-   per-criterion call (PASS / FAIL / NOT EXERCISED / NOT APPLICABLE) —
-   you're grading whether *that* call was right, not re-deriving it from
-   the prose. Click a finding's `turn N →` link to jump the context pane's
-   Transcript tab straight to that turn, highlighted.
-5. Export via each card's "Download label JSON", or "Download all" /
-   "Copy all as JSON" from the sidebar. Downloads land named
-   `<date>-<persona>-<journey>.json` — move them into `labels/` if your
-   browser didn't save them there directly.
+1. Drop the `runs/` folder onto the dropzone (and optionally
+   `plugin/skills/test-personas/rubrics/` to read rubric text alongside).
+   **Use the folder picker or drag-and-drop, not "Choose files"** — a flat
+   picker discards directory names, and four runs share the filename
+   `maya-cold-start.judge.md`.
+2. Each run starts behind a **blind pass**: write your own findings before
+   seeing the judge's, then reveal. Skip it if you only care about precision.
+   The blind pass is the only source of recall data, and the only mechanism
+   that has ever produced a *new rubric rule* — both restructures of this
+   harness came out of one.
+3. Set PASS/FAIL on each of the five rows. The judge's call sits next to yours,
+   read-only, with its finding count.
+4. Findings are collapsed under each rubric. Open one when you disagree.
+   Groundedness carries its claim table; conformance carries every criterion
+   assessment behind a second fold, since most of its bullets are PASSes rather
+   than violations.
+5. Export with "Download label JSON" per run, or "Download all" from the
+   sidebar. Move the files into `labels/`.
 
-The sidebar's Readout panel mirrors `stats.py`'s maths live: per-tier
-precision, recall, verdict agreement (with excluded-run counts called out
-the same way `stats.py` does — see below), self-contradiction, advisory
-totals, and the gate line. Label there, cross-check with `stats.py` after.
+The sidebar mirrors `stats.py` live. Label there, cross-check with the script.
 
 ## Labelling by hand (fallback)
 
-If you'd rather edit JSON directly, or need to fix up something the tool
-got wrong:
+Copy `labels/TEMPLATE.json` to `labels/<date>-<persona>-<journey>.json` and fill
+`verdicts.<rubric>.human` for each of the five. Leave `overall.human` null —
+`stats.py` exits 2 if you set it, because a hand-set overall silently competes
+with the derivation. Findings are optional; add entries only where you drilled in.
 
-1. Copy `labels/TEMPLATE.json` to `labels/<date>-<persona>-<journey>.json`.
-2. Open the run's `.judge.md`. For each finding, add a `findings[]` entry:
-   its tier, a one-line copy, and your call — `agree` (real), `disagree`
-   (not real), `borderline` (defensible either way; excluded from
-   precision, reported separately).
-3. Adjudicate `verdicts.hard.human` and `verdicts.spec.human` separately —
-   what each sub-verdict should have been (`PASS` or `FAIL`). Do NOT set
-   an overall verdict yourself: `verdicts.overall.human` stays `null`.
-   Overall is derived from the two sub-verdicts by the judge's own
-   aggregation rule (`Overall` passes only when both Hard violations and
-   Spec gaps pass); soft issues and open critiques are advisory counts
-   and never affect it. `stats.py` computes the derived overall for you
-   when comparing against the judge's stated `Overall`.
-4. Some judge verdicts are `null`, not `PASS`/`FAIL` — two runs in this
-   corpus write `- Hard violations: judges disagreed — …` instead of
-   calling it, because the harness ran two judge passes and they split.
-   That's legitimate: still adjudicate `verdicts.hard.human` (what it
-   *should* have been), leave `verdicts.hard.judge` as `null`. `stats.py`
-   and the tool both treat a `null` judge verdict as missing data, not a
-   FAIL, and report it as an excluded run rather than crashing or
-   silently dropping it.
-
-## Blind pass (recall) — do for >= 6 transcripts BEFORE reading their judge files
-
-1. Read the transcript against the three rubrics. Write your own findings
-   list with turn numbers — do not open the `.judge.md` first.
-2. Then diff against the judge file. Fill `blind`:
-   `{"human_found": <your count>, "judge_matched": <of yours it also found>}`.
+A `null` judge verdict is missing data, not a FAIL. Adjudicate the human side
+anyway; both `stats.py` and the tool report it as an excluded run rather than
+coercing it.
 
 ## Reading the numbers
 
     python3 tests/judge-calibration/stats.py tests/judge-calibration/labels/
     python3 tests/judge-calibration/stats.py tests/judge-calibration/labels/ --gate
 
-Bars: precision >= 0.9 per tier (tiers with >= 5 adjudicated findings),
-recall >= 0.8. Below the bars, a lone journey FAIL is "go look", not a
-release blocker. Verdict agreement (hard, spec, derived overall) and
-advisory counts are reported alongside the bars but never gate at this
-corpus size.
+Verdict agreement per rubric is the primary number. Finding precision appears
+only where you drilled in. Bars: agreement >= 0.9 per rubric with >= 5
+adjudicated runs, precision >= 0.9 per rubric with >= 5 adjudicated findings,
+recall >= 0.8 when any blind data exists. Thin rubrics report but never gate.
 
-If a `judge self-contradiction` line appears, the judge's own stated
-`Overall` disagreed with what its own `Hard violations` and `Spec gaps`
-verdicts should have produced — that's a defect in the judge's output
-contract, not something to fix in your labelling. Note it and move on.
+`stats.py` also prints whether **coherence** now clears the promotion bar
+(agreement >= 0.9 over >= 10 adjudicated runs). Clearing it makes coherence
+*eligible* for the gate; promoting it is a deliberate one-line change in
+`test-personas/SKILL.md`, never automatic and never because a single run
+obviously should have failed on it.
 
-`grade-judge.html` computes the same maths live in the browser while you
-label; the one cosmetic difference is that if blind data exists but every
-run's `human_found` is 0, the browser prints "Recall: n/a" while `stats.py`
-omits the recall line entirely — both agree the gate never fails on it.
-When a run's judge verdict is `null`, both report it the same way: e.g.
-`hard verdict agreement: 9/9 (2 runs excluded: judge verdict unavailable)`.
+### The honest limitation
 
-### What the numbers actually mean, at this corpus size
+Every run in the corpus currently comes back **FAIL overall**. These are
+historical transcripts with real defects and two gating rubrics are
+zero-tolerance, so that is expected — but it means overall agreement carries
+almost no signal: a judge that said FAIL to everything would score perfectly.
+Per-rubric there is real balance (lint 4/8 pass, groundedness 3/8, coherence
+4/8, tone 6/8), which is the level you label at anyway. Don't quote the overall
+number as evidence the judge works.
 
-Say the quiet part out loud: across the 11 judged runs measured when
-these bars were set, the finding pools were **hard 2, soft 18, spec 154,
-critique 41**. (The corpus has since grown — `2026-08-10` adds a twelfth
-run, judged twice, which on its own contributes 4-5 hard findings and so
-shifts the hard pool materially. Re-measure before leaning on these
-numbers.) `MIN_N` is
-5, so the hard tier can *never* gate on this corpus — there simply aren't
-enough hard-violation findings to reach the precision-gate's minimum
-sample size, ever, regardless of how the judge performs. In practice the
-precision gate is a spec-only gate.
-
-And "spec precision" is a narrower question than it sounds. It's not
-"was this reported violation real" (that's what hard-tier precision
-measures) — it's "was this criterion adjudication correct", over roughly
-114 PASS / 9 FAIL / 22 not-exercised-or-applicable spec-criteria bullets
-(145 of the 154 spec bullets carry a parseable per-criterion verdict; the
-rest are prose that never resolved to one). Answering "is the judge
-accurate" from the spec number alone conflates two different failure
-modes: the judge missing a real violation, versus the judge mis-calling
-an individual criterion it did check. `stats.py`'s CLI
-output labels this line `spec: criterion-adjudication precision` rather
-than plain `precision` so the difference stays visible at a glance.
+Verdict agreement is also not *reasoning* agreement. A FAIL can be right for
+the wrong reason — three tone findings where two are real and one is invented
+still yields a correct FAIL you would tick and move past. Periodically open a
+rubric you agree with and check the findings underneath. Cheap insurance, not a
+routine.
 
 ## Acting on a disagreement
 
-- Ambiguous criterion → rewrite the criterion (spec bug, not judge bug).
-- Mechanically checkable → move it into `scripts/validate_userdata.py`
-  or pytest; it leaves the judged pool permanently.
-- Genuinely subjective judge error → add the case as a worked example in
-  `plugin/skills/test-personas/judge-prompt.md` (pick borderline cases,
-  not obvious ones).
+- Ambiguous criterion → rewrite the criterion. That is a spec bug, not a judge bug.
+- Mechanically checkable → move it into `scripts/lint_transcript.py` or
+  `scripts/validate_userdata.py`; it leaves the judged pool permanently.
+- Genuinely subjective judge error → add it to that rubric's
+  `## Worked examples` section. Pick borderline cases, never obvious ones. Every
+  rubric is required by test to carry that section, because without it labelling
+  produces a number and nothing changes.
 
 ## Replaying after a rubric edit
 
-Re-run the judge over `runs/<date>/<persona>-<journey>.md` transcripts
-(judge-prompt + rubrics + transcript, per test-personas Phase 4 — no
-conversation loop, no simulator). Diff new verdicts against
-`verdicts.hard.human` / `verdicts.spec.human` in the labels. ~11 LLM
-calls, minutes.
+Re-run the judge for the edited rubric only, over the transcripts in `runs/`
+(judge-prompt + that one rubric + transcript; no conversation loop, no
+simulator). One rubric edit costs ~8 cheap single-dimension calls, which is the
+main reason the judge is split per rubric.
 
-## Known corpus caveats
+## Corpus notes
 
-- 2026-06-07 `diego-reflection` FAIL was a runner metadata error, not a
-  plugin bug (see plugin/memory.md 2026-06-07). Label it accordingly.
-- Judge output format drifts between runs (some print "No hard
-  violations found" plus per-rule confirmation bullets) — that's why
-  labelling is manual, not parsed for precision purposes. `grade-judge.html`
-  does a best-effort structural parse of the same drifting format to
-  surface findings and chips for you to grade — treat any obviously
-  mis-parsed bullet as a labelling-tool bug to report, not a precision
-  number to trust blindly.
-- Two runs (`2026-06-07/diego-reflection`, `2026-06-07/maya-cold-start`)
-  have a `null` Hard-violations judge verdict because the harness's two
-  judge passes disagreed and the judge file records "judges disagreed"
-  instead of calling it. Adjudicate `verdicts.hard.human` anyway; both
-  `stats.py` and `grade-judge.html` exclude these from hard verdict
-  agreement (reported, not hidden) rather than crashing or coercing the
-  `null` into a FAIL.
-- `2026-06-07-beta4-verify/maya-cold-start.judge.md` has no tier sections
-  at all (it's an abridged verification report, not a full findings
-  file) — `grade-judge.html` shows a plain note rather than rendering it
-  as a silently-empty run.
+- Eight transcripts carry restructured judge files. Six more
+  (`diego-reflection` ×3, `maya-case-practice` ×2, `maya-cold-start-cv`) are
+  from retired journeys and were deliberately **not** re-judged; their judge
+  files are still the old four-tier hard/soft/spec/critique format. The tool and
+  `test_grade_judge.py` both skip them by format. Don't label them.
+- The two `2026-06-07-beta4-verify/` files have zero assistant turns — they are
+  verification reports, not transcripts, and cannot be judged at all.
+- `2026-06-07/diego-reflection`'s old FAIL was a runner metadata error, not a
+  plugin bug (see `plugin/memory.md`, 2026-06-07).
+- Judges format the conformance section three different ways. Verdicts are
+  comparable across runs; conformance finding **counts** are not — the tool
+  counts only bullets containing FAIL, which is why a "13 findings" PASS was a
+  parser bug rather than a judge one.

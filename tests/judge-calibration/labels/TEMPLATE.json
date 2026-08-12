@@ -1,16 +1,24 @@
 {
+  "_comment": "Rubric-first. Fill the five human verdicts; that is the whole job. Open a rubric's findings and label them only when you DISAGREE with its verdict, or on a periodic spot-check — verdict agreement is not reasoning agreement, so an occasional drill-down keeps a right-for-the-wrong-reason FAIL from passing unnoticed.",
   "run": "YYYY-MM-DD/persona-journey",
+  "labeller": null,
   "verdicts": {
-    "hard":    {"judge": "PASS | FAIL", "human": null},
-    "spec":    {"judge": "PASS | FAIL", "human": null},
-    "overall": {"judge": "PASS | FAIL (confirmed) | FAIL (one-of-two)", "human": null}
+    "lint":         {"judge": "PASS | FAIL", "human": null},
+    "groundedness": {"judge": "PASS | FAIL", "human": null},
+    "coherence":    {"judge": "PASS | FAIL", "human": null},
+    "conformance":  {"judge": "PASS | FAIL", "human": null},
+    "tone":         {"judge": "PASS | FAIL", "human": null}
   },
-  "advisory": {"soft_count": 0, "critique_count": 0},
+  "_verdicts_note": "lint is decided by scripts, not a judge — a human FAIL there grades the RULE, not a model. groundedness and conformance are zero-tolerance (any finding = FAIL). coherence and tone are holistic: findings can exist alongside a PASS.",
+  "overall": {"judge": "PASS | FAIL"},
+  "_overall_note": "Never set a human overall. It is derived: PASS iff human lint AND groundedness AND conformance all PASS. coherence and tone are advisory and never enter the gate.",
   "findings": [
-    {"tier": "hard | soft | spec | critique",
+    {"rubric": "groundedness | coherence | conformance | tone | lint",
+     "turn": null,
      "summary": "one-line copy of the judge's finding",
-     "human": null,
+     "human": "agree | disagree | borderline | null",
      "note": null}
   ],
-  "blind": null
+  "blind": null,
+  "_blind_note": "Set to {\"human_found\": <n>, \"judge_matched\": <n>} only if you wrote your own findings BEFORE reading the judge file. Otherwise leave null — a guessed recall number is worse than none."
 }
