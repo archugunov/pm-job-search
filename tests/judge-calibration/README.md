@@ -91,13 +91,34 @@ obviously should have failed on it.
 
 ### The honest limitation
 
-Every run in the corpus currently comes back **FAIL overall**. These are
-historical transcripts with real defects and two gating rubrics are
-zero-tolerance, so that is expected — but it means overall agreement carries
-almost no signal: a judge that said FAIL to everything would score perfectly.
-Per-rubric there is real balance (lint 4/8 pass, groundedness 3/8, coherence
-4/8, tone 6/8), which is the level you label at anyway. Don't quote the overall
-number as evidence the judge works.
+Every run in the corpus currently comes back **FAIL overall**, and no run has
+ever passed the gate. Per-rubric pass rates:
+
+    Lint          3/8      Conformance   2/8   (gating)
+    Groundedness  3/8      Tone          6/8   (advisory)
+    Coherence     3/8
+
+Three consequences, in increasing order of how much they should bother you.
+
+Overall agreement carries almost no signal — a judge that said FAIL to
+everything scores 8/8. Never quote it as evidence the judge works.
+
+**The gate has never been observed to fire green.** Each gating rubric has
+passed on its own, but never all three on the same run, so the PASS path is an
+untested code path in the most important place. Nothing here demonstrates these
+rubrics *can* clear a good run.
+
+**Verdict-level labelling cannot detect over-firing while everything fails.**
+If a judge invents a finding, a zero-tolerance rubric still returns FAIL, you
+tick "agree", and the fabricated reasoning survives untouched. The periodic
+drill-down into a rubric you *agree* with is therefore not optional on this
+corpus — it is the only thing standing between you and a judge that is right
+for entirely invented reasons.
+
+Conformance at 2/8 deserves the hardest look. Two of its failures are legitimate
+(runs that terminated early, so required criteria were never reached — scored as
+FAIL by design, not a product defect). Whether the remaining five are real or the
+rubric is simply too strict is exactly what labelling decides.
 
 Verdict agreement is also not *reasoning* agreement. A FAIL can be right for
 the wrong reason — three tone findings where two are real and one is invented
