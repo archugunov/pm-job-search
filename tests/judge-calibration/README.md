@@ -126,6 +126,28 @@ still yields a correct FAIL you would tick and move past. Periodically open a
 rubric you agree with and check the findings underneath. Cheap insurance, not a
 routine.
 
+## You are grading the judge, not the product
+
+The only question at each row is: **given this rubric and this transcript, was
+this verdict correct?** Not "would I ship this?". They come apart in three
+places, all of them easy to get wrong:
+
+- **A defect already fixed in current code.** The frozen transcript still
+  contains it, so the judge was right to flag it. Label agree. The corpus is a
+  historical record, not a status report.
+- **A truncated harness run.** `2026-06-04` stopped at turn 9, so conformance
+  failed 15 required criteria. That is a broken *test run*, not a product
+  defect — but the rule was applied correctly to what the judge was given.
+  Agree.
+- **A real product problem filed under the wrong rubric.** This one inverts:
+  the observation is useful and the judge was still wrong to put it there.
+  Disagree, and move the observation to the product backlog so it isn't lost.
+
+What stays in scope: if you disagree because the *criterion* is ambiguous or
+badly written, that is a rubric bug, and the rubric is part of the judge. So
+"conformance is too strict" is a legitimate labelling outcome. "The product
+fails a lot" is not.
+
 ## Acting on a disagreement
 
 - Ambiguous criterion → rewrite the criterion. That is a spec bug, not a judge bug.
