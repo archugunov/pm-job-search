@@ -789,8 +789,16 @@
       text: Object.keys(rubricTexts).length + "/4 rubric files loaded" }));
 
     side.appendChild(el("div", { style: "margin-top:12px;display:flex;gap:6px;flex-wrap:wrap" }, [
-      el("button", { type: "button", text: "Download all",
-                     onclick: function () { runs.forEach(downloadJSON); } }),
+      // One file, not one per run: browsers block multiple sequential
+      // downloads, so "download all" silently delivered only the first.
+      el("button", { type: "button", text: "Download all (one file)",
+                     onclick: function () {
+                       var labelled = runs.filter(function (r) {
+                         return GRADED.some(function (x) { return r.human[x]; });
+                       });
+                       downloadBlob("grade-judge-labels.json",
+                                    labelled.map(exportObject));
+                     } }),
       el("button", { type: "button", text: "Copy all as JSON",
                      onclick: function () {
                        var all = runs.map(exportObject);
@@ -824,13 +832,17 @@
              notes: run.runNotes || null, blind: blind };
   }
 
-  function downloadJSON(run) {
-    var blob = new Blob([JSON.stringify(exportObject(run), null, 2)], { type: "application/json" });
+  function downloadBlob(filename, obj) {
+    var blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = run.id.replace(/\//g, "-") + ".json";
+    a.download = filename;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 0);
+  }
+
+  function downloadJSON(run) {
+    downloadBlob(run.id.replace(/\//g, "-") + ".json", exportObject(run));
   }
 
   // ------------------------------------------------------------------ wiring
