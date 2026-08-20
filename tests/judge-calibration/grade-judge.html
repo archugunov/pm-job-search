@@ -288,7 +288,8 @@
     try {
       localStorage.setItem(STORAGE_PREFIX + run.key, JSON.stringify({
         human: run.human, findingLabels: run.findingLabels,
-        blind: run.blind, revealed: run.revealed, blindDraft: run.blindDraft
+        blind: run.blind, revealed: run.revealed, blindDraft: run.blindDraft,
+        verdictNotes: run.verdictNotes
       }));
     } catch (e) { /* private mode / quota — labelling still works in-tab */ }
   }
@@ -304,6 +305,7 @@
       run.blind = d.blind || null;
       run.revealed = !!d.revealed;
       run.blindDraft = d.blindDraft || "";
+      run.verdictNotes = d.verdictNotes || {};
     } catch (e) { /* corrupt entry — start this run clean rather than throwing */ }
   }
 
@@ -333,7 +335,7 @@
     var run = runs.filter(function (r) { return r.key === key; })[0];
     if (!run) {
       run = { key: key, id: key, judge: null, transcript: null, human: emptyHuman(),
-              findingLabels: {}, blind: null, revealed: false };
+              findingLabels: {}, verdictNotes: {}, blind: null, revealed: false };
       runs.push(run);
     }
     if (kind === "judge") run.judge = parseJudgeFile(text);
@@ -562,11 +564,25 @@
       // re-derive it from the transcript, which is the slow path the whole
       // rubric-first workflow exists to avoid.
       var why = reasonFor(run, r);
-      if (why) {
-        tbl.appendChild(el("tr", {}, [
-          el("td", { class: "why", colspan: "4", text: why })
-        ]));
+      var cell = el("td", { class: "why", colspan: "4" });
+      if (why) cell.appendChild(el("div", { text: why }));
+      // A note against the VERDICT, not against one finding. When you disagree
+      // with a rubric, the reason is the whole point of the label — without it
+      // the disagreement is a number nobody can act on later.
+      if (r !== "lint") {
+        var ni = el("input", { class: "note", type: "text",
+          placeholder: run.human[r] && run.human[r] !== run.judge.rubrics[r].verdict
+            ? "why you disagreed — this is what turns into a worked example"
+            : "note (optional)",
+          value: (run.verdictNotes || {})[r] || "" });
+        ni.addEventListener("change", function () {
+          run.verdictNotes = run.verdictNotes || {};
+          run.verdictNotes[r] = ni.value || null;
+          saveRun(run);
+        });
+        cell.appendChild(ni);
       }
+      tbl.appendChild(el("tr", {}, [cell]));
     });
     card.appendChild(tbl);
 
@@ -771,7 +787,8 @@
   function exportObject(run) {
     var v = {};
     RUBRICS.forEach(function (r) {
-      v[r] = { judge: run.judge.rubrics[r].verdict, human: run.human[r] };
+      v[r] = { judge: run.judge.rubrics[r].verdict, human: run.human[r],
+               note: (run.verdictNotes || {})[r] || null };
     });
     var findings = [];
     RUBRICS.forEach(function (r) {

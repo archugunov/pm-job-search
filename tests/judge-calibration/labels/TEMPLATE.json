@@ -1,24 +1,49 @@
 {
-  "_comment": "Rubric-first. Fill the five human verdicts; that is the whole job. Open a rubric's findings and label them only when you DISAGREE with its verdict, or on a periodic spot-check — verdict agreement is not reasoning agreement, so an occasional drill-down keeps a right-for-the-wrong-reason FAIL from passing unnoticed.",
+  "_comment": "Rubric-first. Fill the five human verdicts; that is the whole job. Open a rubric's findings and label them only when you DISAGREE with its verdict, or on a periodic spot-check \u2014 verdict agreement is not reasoning agreement, so an occasional drill-down keeps a right-for-the-wrong-reason FAIL from passing unnoticed.",
   "run": "YYYY-MM-DD/persona-journey",
   "labeller": null,
   "verdicts": {
-    "lint":         {"judge": "PASS | FAIL", "human": null},
-    "groundedness": {"judge": "PASS | FAIL", "human": null},
-    "coherence":    {"judge": "PASS | FAIL", "human": null},
-    "conformance":  {"judge": "PASS | FAIL", "human": null},
-    "tone":         {"judge": "PASS | FAIL", "human": null}
+    "lint": {
+      "judge": "PASS | FAIL",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "PASS | FAIL",
+      "human": null,
+      "note": null
+    },
+    "coherence": {
+      "judge": "PASS | FAIL",
+      "human": null,
+      "note": null
+    },
+    "conformance": {
+      "judge": "PASS | FAIL",
+      "human": null,
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS | FAIL",
+      "human": null,
+      "note": null
+    }
   },
-  "_verdicts_note": "lint is decided by scripts, not a judge — a human FAIL there grades the RULE, not a model. groundedness and conformance are zero-tolerance (any finding = FAIL). coherence and tone are holistic: findings can exist alongside a PASS.",
-  "overall": {"judge": "PASS | FAIL"},
+  "_verdicts_note": "lint is decided by scripts, not a judge \u2014 a human FAIL there grades the RULE, not a model. groundedness and conformance are zero-tolerance (any finding = FAIL). coherence and tone are holistic: findings can exist alongside a PASS.",
+  "overall": {
+    "judge": "PASS | FAIL"
+  },
   "_overall_note": "Never set a human overall. It is derived: PASS iff human lint AND groundedness AND conformance all PASS. coherence and tone are advisory and never enter the gate.",
   "findings": [
-    {"rubric": "groundedness | coherence | conformance | tone | lint",
-     "turn": null,
-     "summary": "one-line copy of the judge's finding",
-     "human": "agree | disagree | borderline | null",
-     "note": null}
+    {
+      "rubric": "groundedness | coherence | conformance | tone | lint",
+      "turn": null,
+      "summary": "one-line copy of the judge's finding",
+      "human": "agree | disagree | borderline | null",
+      "note": null
+    }
   ],
   "blind": null,
-  "_blind_note": "Set to {\"human_found\": <n>, \"judge_matched\": <n>} only if you wrote your own findings BEFORE reading the judge file. Otherwise leave null — a guessed recall number is worse than none."
+  "_blind_note": "Set to {\"human_found\": <n>, \"judge_matched\": <n>} only if you wrote your own findings BEFORE reading the judge file. Otherwise leave null \u2014 a guessed recall number is worse than none.",
+  "_note_field": "verdicts.<rubric>.note is free text \u2014 use it when you DISAGREE, to say why. That sentence is what becomes a worked example in the rubric; a disagreement without one is a number nobody can act on later."
 }
