@@ -58,6 +58,8 @@
               text-decoration: underline; font-size: 12.5px; }
   .blindgate { background: #fffdf3; border: 1px solid #e6d9a8; border-radius: 6px; padding: 10px;
                margin-bottom: 10px; }
+  textarea.runnotes { width: 100%; min-height: 70px; font-family: inherit; font-size: 13px;
+                      padding: 6px; border: 1px solid var(--line); border-radius: 4px; }
   .blindgate textarea { width: 100%; min-height: 90px; font-family: ui-monospace, monospace;
                         font-size: 12.5px; padding: 6px; border: 1px solid var(--line);
                         border-radius: 4px; }
@@ -289,7 +291,7 @@
       localStorage.setItem(STORAGE_PREFIX + run.key, JSON.stringify({
         human: run.human, findingLabels: run.findingLabels,
         blind: run.blind, revealed: run.revealed, blindDraft: run.blindDraft,
-        verdictNotes: run.verdictNotes
+        verdictNotes: run.verdictNotes, runNotes: run.runNotes
       }));
     } catch (e) { /* private mode / quota — labelling still works in-tab */ }
   }
@@ -306,6 +308,7 @@
       run.revealed = !!d.revealed;
       run.blindDraft = d.blindDraft || "";
       run.verdictNotes = d.verdictNotes || {};
+      run.runNotes = d.runNotes || "";
     } catch (e) { /* corrupt entry — start this run clean rather than throwing */ }
   }
 
@@ -335,7 +338,7 @@
     var run = runs.filter(function (r) { return r.key === key; })[0];
     if (!run) {
       run = { key: key, id: key, judge: null, transcript: null, human: emptyHuman(),
-              findingLabels: {}, verdictNotes: {}, blind: null, revealed: false };
+              findingLabels: {}, verdictNotes: {}, runNotes: "", blind: null, revealed: false };
       runs.push(run);
     }
     if (kind === "judge") run.judge = parseJudgeFile(text);
@@ -594,6 +597,19 @@
     var bs = blindSummary(run);
     if (bs) card.appendChild(bs);
 
+    // Free-text notes for the run as a whole. Always present — the blind-pass
+    // box only exists on runs you blind-passed, which left every skipped run
+    // with nowhere to write anything down.
+    var nbox = el("div", { style: "margin-top:10px" });
+    nbox.appendChild(el("div", { class: "runmeta", style: "margin-bottom:4px",
+      text: "Notes on this run" }));
+    var nta = el("textarea", { class: "runnotes",
+      placeholder: "anything worth remembering about this run — product observations, harness problems, why a verdict was hard to call" });
+    nta.value = run.runNotes || "";
+    nta.addEventListener("input", function () { run.runNotes = nta.value; saveRun(run); });
+    nbox.appendChild(nta);
+    card.appendChild(nbox);
+
     RUBRICS.forEach(function (r) {
       var jr = run.judge.rubrics[r];
       if (!jr.findings.length) return;
@@ -804,7 +820,8 @@
       blind = { human_found: run.blind.human_found, judge_matched: run.blind.judge_matched };
     }
     return { run: run.id, labeller: null, verdicts: v,
-             overall: { judge: run.judge.overallJudge }, findings: findings, blind: blind };
+             overall: { judge: run.judge.overallJudge }, findings: findings,
+             notes: run.runNotes || null, blind: blind };
   }
 
   function downloadJSON(run) {
