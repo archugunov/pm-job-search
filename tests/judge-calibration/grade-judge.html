@@ -481,12 +481,28 @@
     notes.value = run.blind.notes || run.blindDraft || "";
     notes.addEventListener("change", function () {
       run.blind.notes = notes.value;
-      run.blind.human_found = notes.value.split(/\r?\n/).filter(function (l) { return l.trim(); }).length;
-      saveRun(run); renderAll();
+      saveRun(run);
     });
     wrap.appendChild(notes);
+
+    // Line count seeds this, but it is NOT the recall denominator. Notes are
+    // written as a user and routinely include product observations no rubric
+    // asks the judge to find; counting those blames the judge for misses that
+    // were never in its remit. Keep the notes, set the number by hand.
     wrap.appendChild(el("div", { style: "margin-top:8px",
-      text: "You found " + run.blind.human_found + ". How many did the judge also find?" }));
+      text: "Of these, how many are things a rubric actually asks the judge to catch?" }));
+    var foundInp = el("input", { class: "note", type: "number", min: "0",
+                                 value: String(run.blind.human_found) });
+    foundInp.addEventListener("change", function () {
+      run.blind.human_found = Math.max(0, parseInt(foundInp.value, 10) || 0);
+      if (run.blind.judge_matched !== null && run.blind.judge_matched > run.blind.human_found) {
+        run.blind.judge_matched = run.blind.human_found;
+      }
+      saveRun(run); renderAll();
+    });
+    wrap.appendChild(foundInp);
+    wrap.appendChild(el("div", { style: "margin-top:8px",
+      text: "And how many of those did the judge also find?" }));
     var inp = el("input", { class: "note", type: "number", min: "0",
                             max: String(run.blind.human_found),
                             value: run.blind.judge_matched === null ? "" : String(run.blind.judge_matched) });
