@@ -713,6 +713,21 @@
         ? "ELIGIBLE" : "not yet (" + coh.hits + "/" + coh.n + " of 10 @ .90)");
     side.appendChild(ro);
 
+    // A visible way to add folders after the first load, for when drag-and-drop
+    // is fiddly. Same ingest path.
+    side.appendChild(el("h2", { text: "Add files", style: "margin-top:14px" }));
+    var more = el("input", { type: "file", webkitdirectory: "", directory: "", multiple: "" });
+    more.addEventListener("change", function (ev) {
+      var out = [];
+      Array.prototype.forEach.call(ev.target.files, function (f) {
+        out.push({ file: f, name: f.name, path: f.webkitRelativePath || f.name });
+      });
+      readFiles(out);
+    });
+    side.appendChild(more);
+    side.appendChild(el("div", { class: "runmeta",
+      text: Object.keys(rubricTexts).length + "/4 rubric files loaded" }));
+
     side.appendChild(el("div", { style: "margin-top:12px;display:flex;gap:6px;flex-wrap:wrap" }, [
       el("button", { type: "button", text: "Download all",
                      onclick: function () { runs.forEach(downloadJSON); } }),
@@ -796,9 +811,12 @@
   });
 
   var dz = document.getElementById("dropzone");
-  dz.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("over"); });
-  dz.addEventListener("dragleave", function () { dz.classList.remove("over"); });
-  dz.addEventListener("drop", function (e) {
+  // Listen on the document, not the dropzone: the dropzone is hidden once runs
+  // load, and a hidden element cannot receive drops — so dropping a second
+  // folder (the rubrics) silently did nothing.
+  document.addEventListener("dragover", function (e) { e.preventDefault(); dz.classList.add("over"); });
+  document.addEventListener("dragleave", function () { dz.classList.remove("over"); });
+  document.addEventListener("drop", function (e) {
     e.preventDefault(); dz.classList.remove("over");
     var items = e.dataTransfer.items, out = [], pending = 0, done = false;
     function finish() { if (done && pending === 0) readFiles(out); }
