@@ -98,13 +98,21 @@ def verdict_agreement(labels: list[dict], rubric: str):
 
 
 def derived_overall(run: dict) -> str | None:
-    """PASS iff every gating rubric's HUMAN verdict is PASS. None when the
-    human hasn't adjudicated all three — a partial label can't imply a gate."""
+    """PASS iff every gating rubric passes.
+
+    Lint is not a judgement and is not normally labelled — it is script output,
+    and it enters the gate as a fact. So its own verdict is used unless a human
+    deliberately overrode it (which grades the RULE, not a model). The two
+    judged gating rubrics do need a human call; a partial label can't imply a
+    gate, so None until both are set."""
     v = run.get("verdicts", {})
-    humans = [v.get(r, {}).get("human") for r in GATING]
+    lint = v.get("lint", {}).get("human") or v.get("lint", {}).get("judge")
+    if lint is None:
+        return None
+    humans = [v.get(r, {}).get("human") for r in GATING if r != "lint"]
     if any(h is None for h in humans):
         return None
-    return "PASS" if all(h == "PASS" for h in humans) else "FAIL"
+    return "PASS" if _passish(lint) and all(h == "PASS" for h in humans) else "FAIL"
 
 
 def main(argv: list[str]) -> int:

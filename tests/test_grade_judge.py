@@ -181,16 +181,32 @@ def test_missing_section_reports_a_note_rather_than_guessing(tmp_path):
 
 
 def test_derived_overall_uses_gating_rubrics_only(tmp_path):
+    """Lint is not graded by a human — it enters the gate as the script's own
+    verdict, passed in separately. Only groundedness and conformance need a
+    human call."""
     out = run_node("""
-        const all = v => ({lint:v, groundedness:v, coherence:v, conformance:v, tone:v});
+        const all = v => ({groundedness:v, coherence:v, conformance:v, tone:v});
         console.log(JSON.stringify({
-          allpass:  T.derivedOverall(all('PASS')),
-          advisory: T.derivedOverall(Object.assign(all('PASS'), {coherence:'FAIL', tone:'FAIL'})),
-          gating:   T.derivedOverall(Object.assign(all('PASS'), {groundedness:'FAIL'})),
-          partial:  T.derivedOverall(Object.assign(all('PASS'), {conformance:null})),
+          allpass:  T.derivedOverall(all('PASS'), 'PASS'),
+          advisory: T.derivedOverall(Object.assign(all('PASS'), {coherence:'FAIL', tone:'FAIL'}), 'PASS'),
+          gating:   T.derivedOverall(Object.assign(all('PASS'), {groundedness:'FAIL'}), 'PASS'),
+          lintfail: T.derivedOverall(all('PASS'), 'FAIL'),
+          partial:  T.derivedOverall(Object.assign(all('PASS'), {conformance:null}), 'PASS'),
+          nolint:   T.derivedOverall(all('PASS'), null),
         }));
     """, tmp_path)
-    assert out == {"allpass": "PASS", "advisory": "PASS", "gating": "FAIL", "partial": None}
+    assert out == {"allpass": "PASS", "advisory": "PASS", "gating": "FAIL",
+                   "lintfail": "FAIL", "partial": None, "nolint": None}
+
+
+def test_lint_needs_no_human_verdict_for_overall_to_derive(tmp_path):
+    """Regression: requiring a human lint verdict meant overall never derived
+    once the tool stopped asking for one."""
+    out = run_node("""
+        console.log(JSON.stringify(
+          T.derivedOverall({groundedness:'PASS', conformance:'PASS'}, 'PASS')));
+    """, tmp_path)
+    assert out == "PASS"
 
 
 def test_wrapped_finding_bullet_stays_one_finding(tmp_path):

@@ -257,9 +257,18 @@
     var h = {}; RUBRICS.forEach(function (r) { h[r] = null; }); return h;
   }
 
-  function derivedOverall(human) {
-    for (var i = 0; i < GATING.length; i++) if (!human[GATING[i]]) return null;
-    return GATING.every(function (r) { return human[r] === "PASS"; }) ? "PASS" : "FAIL";
+  // Lint is not a judgement, so it is not labelled — it enters the gate as a
+  // fact, taken from the script's own verdict. Only the two judged gating
+  // rubrics need a human call.
+  var JUDGED_GATING = GATING.filter(function (r) { return r !== "lint"; });
+  // Rubrics a human actually grades. Lint is excluded: it is script output.
+  var GRADED = RUBRICS.filter(function (r) { return r !== "lint"; });
+
+  function derivedOverall(human, lintVerdict) {
+    if (!lintVerdict) return null;
+    for (var i = 0; i < JUDGED_GATING.length; i++) if (!human[JUDGED_GATING[i]]) return null;
+    return (lintVerdict === "PASS" &&
+            JUDGED_GATING.every(function (r) { return human[r] === "PASS"; })) ? "PASS" : "FAIL";
   }
 
   function passish(v) { return typeof v === "string" && v.indexOf("PASS") === 0; }
@@ -277,7 +286,7 @@
     try {
       localStorage.setItem(STORAGE_PREFIX + run.key, JSON.stringify({
         human: run.human, findingLabels: run.findingLabels,
-        blind: run.blind, revealed: run.revealed
+        blind: run.blind, revealed: run.revealed, blindDraft: run.blindDraft
       }));
     } catch (e) { /* private mode / quota — labelling still works in-tab */ }
   }
@@ -292,6 +301,7 @@
       run.findingLabels = d.findingLabels || {};
       run.blind = d.blind || null;
       run.revealed = !!d.revealed;
+      run.blindDraft = d.blindDraft || "";
     } catch (e) { /* corrupt entry — start this run clean rather than throwing */ }
   }
 
@@ -413,7 +423,9 @@
         class: same ? "agree-yes" : "agree-no", text: same ? "✓" : "✗ disagree"
       }));
     }
-    var btns = el("td", {}, [pfButton(run, rubric, "PASS"), pfButton(run, rubric, "FAIL")]);
+    var btns = rubric === "lint"
+      ? el("td", { class: "judgecall", text: "not graded — a fact, not a reading" })
+      : el("td", {}, [pfButton(run, rubric, "PASS"), pfButton(run, rubric, "FAIL")]);
     var judgeCell = el("td", { class: "judgecall" });
     if (!jr.present) judgeCell.appendChild(el("span", { class: "warn", text: "section missing" }));
     else if (judgeV === null) judgeCell.appendChild(el("span", { class: "warn", text: "unparseable" }));
@@ -434,6 +446,12 @@
     var box = el("div", { class: "blindgate" });
     box.appendChild(el("div", { text: "Blind pass — write your own findings BEFORE seeing the judge's. This is the only source of recall data, and the only mechanism that finds rules nobody thought to write." }));
     var ta = el("textarea", { placeholder: "e.g. turn 20 — invents Lendable's location from a fetch that failed" });
+    ta.value = run.blindDraft || "";
+    // Checkpoint every keystroke. A blind pass is unrepeatable — once you have
+    // read the judge's findings you cannot un-read them — so losing the draft
+    // to a reload or a stray click destroys the only recall data that run will
+    // ever produce.
+    ta.addEventListener("input", function () { run.blindDraft = ta.value; saveRun(run); });
     box.appendChild(ta);
     var row = el("div", { style: "margin-top:8px;display:flex;gap:8px;flex-wrap:wrap" });
     row.appendChild(el("button", {
@@ -455,8 +473,20 @@
   function blindSummary(run) {
     if (!run.blind) return null;
     var wrap = el("div", { class: "blindgate" });
-    wrap.appendChild(el("div", { text: "Blind pass: you found " + run.blind.human_found +
-      ". How many did the judge also find?" }));
+    wrap.appendChild(el("div", { text: "Your blind-pass findings — diff these against the judge's below:" }));
+    // These MUST be visible after reveal. Comparing your list against the
+    // judge's IS the blind pass; storing the notes and not showing them makes
+    // the exercise unfinishable.
+    var notes = el("textarea", {});
+    notes.value = run.blind.notes || run.blindDraft || "";
+    notes.addEventListener("change", function () {
+      run.blind.notes = notes.value;
+      run.blind.human_found = notes.value.split(/\r?\n/).filter(function (l) { return l.trim(); }).length;
+      saveRun(run); renderAll();
+    });
+    wrap.appendChild(notes);
+    wrap.appendChild(el("div", { style: "margin-top:8px",
+      text: "You found " + run.blind.human_found + ". How many did the judge also find?" }));
     var inp = el("input", { class: "note", type: "number", min: "0",
                             max: String(run.blind.human_found),
                             value: run.blind.judge_matched === null ? "" : String(run.blind.judge_matched) });
@@ -496,7 +526,7 @@
     RUBRICS.forEach(function (r) { tbl.appendChild(verdictRow(run, r)); });
     card.appendChild(tbl);
 
-    var d = derivedOverall(run.human);
+    var d = derivedOverall(run.human, run.judge.rubrics.lint.verdict);
     card.appendChild(el("div", { class: "runmeta", style: "margin-top:8px",
       text: "Derived overall: " + (d || "—") + "   (judge stated: " + (run.judge.overallJudge || "—") + ")"
             + "   Gate: " + GATING.map(function (g) { return LABEL[g]; }).join(" AND ") }));
@@ -609,7 +639,7 @@
     RUBRICS.forEach(function (r) { s.per[r] = { hits: 0, n: 0, excluded: 0 };
                                    s.findings[r] = { agree: 0, disagree: 0, borderline: 0 }; });
     runs.forEach(function (run) {
-      var complete = RUBRICS.every(function (r) { return run.human[r]; });
+      var complete = GRADED.every(function (r) { return run.human[r]; });
       if (complete) s.labelled++;
       RUBRICS.forEach(function (r) {
         var h = run.human[r], j = run.judge.rubrics[r].verdict;
@@ -617,7 +647,7 @@
         if (j === null) { s.per[r].excluded++; return; }
         s.per[r].n++; if (h === j) s.per[r].hits++;
       });
-      var d = derivedOverall(run.human);
+      var d = derivedOverall(run.human, run.judge.rubrics.lint.verdict);
       if (d && run.judge.overallJudge) {
         s.overall.n++; if (passish(run.judge.overallJudge) === (d === "PASS")) s.overall.hits++;
       }
@@ -638,10 +668,10 @@
     side.innerHTML = "";
     side.appendChild(el("h2", { text: "Runs" }));
     runs.forEach(function (run) {
-      var done = RUBRICS.filter(function (r) { return run.human[r]; }).length;
+      var done = GRADED.filter(function (r) { return run.human[r]; }).length;
       side.appendChild(el("button", {
         class: "sidebar-run" + (context.runKey === run.key ? " active" : ""),
-        type: "button", text: run.id + "  (" + done + "/5)",
+        type: "button", text: run.id + "  (" + done + "/" + GRADED.length + ")",
         onclick: function () { context.runKey = run.key; renderAll(); }
       }));
     });

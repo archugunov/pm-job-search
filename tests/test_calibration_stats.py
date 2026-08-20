@@ -275,3 +275,36 @@ def test_promotion_never_gates(tmp_path):
     labels = [label(coherence=("PASS", "PASS"))]
     code, out = run_stats(tmp_path, labels, gate=True)
     assert code == 0 and "GATE PASS" in out
+
+
+# --- lint is a fact, not a graded rubric -------------------------------------
+
+def test_overall_derives_without_a_human_lint_verdict(tmp_path):
+    """The tool no longer asks for one — lint is script output. Requiring it
+    would mean overall never derives for any file the tool produces."""
+    labels = [label(overall_judge="PASS", groundedness=("PASS", "PASS"),
+                    conformance=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 1/1" in out
+
+
+def test_script_lint_fail_drags_derived_overall_to_fail(tmp_path):
+    labels = [label(overall_judge="FAIL", lint=("FAIL", None),
+                    groundedness=("PASS", "PASS"), conformance=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 1/1" in out
+
+
+def test_human_may_still_override_lint_to_grade_the_rule(tmp_path):
+    """A hand-edited human lint verdict wins — that is how you record that the
+    script's RULE misfired on a given transcript."""
+    labels = [label(overall_judge="FAIL", lint=("FAIL", "PASS"),
+                    groundedness=("PASS", "PASS"), conformance=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall: 0/1" in out
+
+
+def test_overall_still_none_without_judged_gating_verdicts(tmp_path):
+    labels = [label(lint=("PASS", None), groundedness=("PASS", "PASS"))]
+    code, out = run_stats(tmp_path, labels)
+    assert "overall:" not in out
