@@ -1,0 +1,37 @@
+{
+  "run": "2026-07-11/maya-cold-start",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "FAIL",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "coherence": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "conformance": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS",
+      "human": "FAIL",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [],
+  "notes": "Turn 1 - Ready? is excessive, you can jsut ask thr first question right away after a short intro.\n\nTurn 10 - the anwer is too dense now, move moat to the second place, trim proof points to 2-3 only.\n\nTurn 17 - very noise message, claude.md appears out of nowhere, no value, same for the files you wrote, no value. Just confurm that all is set and provide context for what's next and a clear CTA. Drop the career coach nudge here, it's too early. Always one clear CTA, here it's /job-search.\n\nTurn 18 - no previous context on /today. Coherence violation. It should a nudge in the first run, not a separate question.\n\n\nTurn 20 - bad formatting, always prioritize for quick skimming, use tables for positions, short paragraphs, bullets, etc. Open dashboard automaticallym but mention the user can change that.\n\n\nTurn 22 - \"Heads up: I can't hold the server open from here...\" hard violation, make sure the dashboard opens properly everytime it is run.\n\n\n\n\n",
+  "blind": null
+}

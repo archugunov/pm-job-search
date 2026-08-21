@@ -133,21 +133,45 @@ def main(argv: list[str]) -> int:
 
     gate_ok = True
 
-    print(f"== verdict agreement (primary) — {len(labels)} label file(s)")
+    # Standard confusion matrix over run verdicts, positive class = FAIL
+    # ("the judge flagged this run"). Accuracy alone hides direction: two
+    # rubrics can sit at the same accuracy while one over-fires and the other
+    # misses, which is the single most useful thing to know when deciding what
+    # to change.
+    print(f"== verdict level, positive class = FAIL — {len(labels)} label file(s)")
+    print(f"{'rubric':>13}  {'TP':>3} {'FP':>3} {'FN':>3} {'TN':>3}   "
+          f"{'prec':>5} {'rec':>5} {'acc':>5}")
     for rubric in RUBRICS:
-        hits, n, excluded = verdict_agreement(labels, rubric)
-        tag = "  [gating]" if rubric in GATING else "  [advisory]"
+        pairs = [(r["verdicts"][rubric]["judge"], r["verdicts"][rubric]["human"])
+                 for r in labels
+                 if r.get("verdicts", {}).get(rubric, {}).get("human")
+                 and r["verdicts"][rubric].get("judge") is not None]
+        excluded = sum(1 for r in labels
+                       if r.get("verdicts", {}).get(rubric, {}).get("human")
+                       and r["verdicts"][rubric].get("judge") is None)
+        tag = " [gating]" if rubric in GATING else " [advisory]"
         if rubric == "lint":
-            tag += " script, not judge — a FAIL here grades the rule"
-        if n:
-            agreement = hits / n
-            print(f"{rubric:>13}: {agreement:.2f} ({hits}/{n})"
-                  f"{excluded_suffix(excluded)}{tag}")
-            if gate and n >= MIN_N and agreement < P_BAR:
-                gate_ok = False
-        else:
-            print(f"{rubric:>13}: n/a — no adjudicated runs"
-                  f"{excluded_suffix(excluded)}{tag}")
+            tag = " [gating] script, not judge"
+        if not pairs:
+            print(f"{rubric:>13}:  no adjudicated runs{excluded_suffix(excluded)}{tag}")
+            continue
+        tp = sum(1 for j, h in pairs if not _passish(j) and h == "FAIL")
+        fp = sum(1 for j, h in pairs if not _passish(j) and h == "PASS")
+        fn = sum(1 for j, h in pairs if _passish(j) and h == "FAIL")
+        tn = sum(1 for j, h in pairs if _passish(j) and h == "PASS")
+        prec = f"{tp / (tp + fp):.2f}" if tp + fp else "  n/a"
+        rec = f"{tp / (tp + fn):.2f}" if tp + fn else "  n/a"
+        acc = (tp + tn) / len(pairs)
+        print(f"{rubric:>13}  {tp:>3} {fp:>3} {fn:>3} {tn:>3}   "
+              f"{prec:>5} {rec:>5} {acc:>5.2f}"
+              f"{excluded_suffix(excluded)}{tag}")
+        if gate and len(pairs) >= MIN_N and acc < P_BAR:
+            gate_ok = False
+    print("  prec = of the runs it FAILED, how many deserved it (over-firing)")
+    print("  rec  = of the runs that deserved FAIL, how many it caught (missing)")
+    print("  NOTE: verdict-level recall only catches a miss big enough to flip the")
+    print("        verdict. On a zero-tolerance rubric, finding 1 of 5 problems still")
+    print("        reads as a hit. Partial misses show up only in blind recall below.")
 
     # Overall is never taken from a human. It is derived from the human's
     # gating verdicts and compared against what the judge asserted.

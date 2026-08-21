@@ -1,0 +1,59 @@
+{
+  "run": "2026-06-07/maya-active-loop",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "FAIL",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "coherence": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "conformance": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS",
+      "human": "FAIL",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [
+    {
+      "rubric": "groundedness",
+      "turn": 4,
+      "summary": "turn 4: \"the SMB lending feature at your current fintech (clear B2B2C credit decisioning angle)\" \u2014 no file read this run places any SMB lending work in Maya's history; `cv.md` and `profile.md` describe the current seat as Lead PM, Growth Pricing at NorthLoop on a consumer BNPL card, and the only \"SMB Lending\" in the workspace is the iwoca *role she applied to*, so this invents a career thread and then builds the whole CV on it.",
+      "human": "agree",
+      "note": null
+    },
+    {
+      "rubric": "groundedness",
+      "turn": 4,
+      "summary": "turn 4: \"the consumer onboarding work that touched KYC/risk earlier in your career\" \u2014 presented as read out of the CV (\"Looking at your CV\"), but `cv.md` contains no consumer onboarding or KYC work at any point in the timeline; characterising CV contents that the file does not hold is ungrounded regardless of whether a similar theme appears in an unread story file.",
+      "human": "agree",
+      "note": null
+    },
+    {
+      "rubric": "groundedness",
+      "turn": 6,
+      "summary": "turn 6: \"Positioning angle: underwriting depth at Brightline reframed as the direct analogue to Plaid Consumer Credit's thin-file decisioning work\" \u2014 turn 4 located the underwriting thread the user selected at \"your current fintech\" and turn 6 relocates the same thread to Brightline, an inexact restatement of the assistant's own earlier claim that leaves the user holding two incompatible employer attributions for the story now headlining her CV.",
+      "human": "agree",
+      "note": null
+    }
+  ],
+  "notes": "Turn 1 - Roles should be formatted as a table for a cleaner look. To triage is a tricky term, use something simpler. \n\nTurn 3 - \"same `meta.md` underneath\" is internal tech details, must be dropped.\n\nTurn 3 - no nudge to run \"to apply\" for the position. It's more valuable than opening a dashboard as a next step.\n\nTurn 4 - very dense paragraph, spli intro several bullets or paragraphs with a clear messsage and split a call to action. Always use formatting optimized to quick skimming.\n\nTurn 8 - \"Saved as...\" should go in the end of the message or be dropped, no clear value at the top.\n\nPractise with `pm-job-search:interviewer-simulator` (mock round) \u2014 or open the doc and rehearse out loud first. Debrief after with `/pm-job-search:interview-analysis`.\n\nToo many CTAs in one paragraph, always lead with one.  Again, too many tech details/commands/etc.\n\n\n\n\n",
+  "blind": null
+}

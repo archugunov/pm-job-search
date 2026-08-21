@@ -1,0 +1,37 @@
+{
+  "run": "2026-06-04/maya-cold-start",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "PASS",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "coherence": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "conformance": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS",
+      "human": "FAIL",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [],
+  "notes": null,
+  "blind": null
+}

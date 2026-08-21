@@ -1,0 +1,41 @@
+{
+  "run": "2026-06-07/contrarian-edge-recovery",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "FAIL",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "PASS",
+      "human": "FAIL",
+      "note": null
+    },
+    "coherence": {
+      "judge": "FAIL",
+      "human": "PASS",
+      "note": null
+    },
+    "conformance": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS",
+      "human": "FAIL",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [],
+  "notes": null,
+  "blind": {
+    "human_found": 5,
+    "judge_matched": 4
+  },
+  "_blind_provenance": "recorded in the labelling session 2026-08-20; the tool lost it across a reload"
+}

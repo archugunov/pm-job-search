@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -38,6 +39,16 @@ def all_gating(human):
     return {r: ("PASS", human) for r in GATING}
 
 
+def row(out, rubric):
+    """Pull a rubric's confusion-matrix row: (tp, fp, fn, tn, prec, rec, acc)."""
+    m = re.search(rf"^\s*{rubric}\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+"
+                  rf"(n/a|[\d.]+)\s+(n/a|[\d.]+)\s+([\d.]+)", out, re.M)
+    assert m, f"no row for {rubric} in:\n{out}"
+    g = m.groups()
+    return tuple(int(x) for x in g[:4]) + g[4:]
+
+
+
 # --- verdict agreement (the primary metric) ----------------------------------
 
 def test_verdict_agreement_per_rubric(tmp_path):
@@ -47,14 +58,15 @@ def test_verdict_agreement_per_rubric(tmp_path):
     ]
     code, out = run_stats(tmp_path, labels)
     assert code == 0
-    assert "groundedness: 1.00 (2/2)" in out
-    assert "tone: 0.50 (1/2)" in out
+    assert row(out, "groundedness")[:4] == (2, 0, 0, 0)      # both FAIL, both agreed
+    assert row(out, "tone")[:4] == (1, 1, 0, 0)              # FAIL/FAIL is TP, FAIL/PASS is FP
+    assert row(out, "tone")[6] == "0.50"
 
 
 def test_unadjudicated_rubric_reports_na(tmp_path):
     code, out = run_stats(tmp_path, [label()])
     assert code == 0
-    assert "coherence: n/a — no adjudicated runs" in out
+    assert "coherence:  no adjudicated runs" in out
 
 
 def test_gating_and_advisory_are_labelled(tmp_path):
@@ -77,7 +89,7 @@ def test_judge_verdict_suffixes_compare_correctly(tmp_path):
     """Judge verdicts carry suffixes: 'FAIL (confirmed)', 'FAIL (one-of-two)'."""
     labels = [label(groundedness=("FAIL (confirmed)", "FAIL"))]
     code, out = run_stats(tmp_path, labels)
-    assert "groundedness: 1.00 (1/1)" in out
+    assert row(out, "groundedness")[:4] == (1, 0, 0, 0)
 
 
 def test_null_judge_verdict_is_excluded_not_counted_as_fail(tmp_path):
@@ -85,13 +97,14 @@ def test_null_judge_verdict_is_excluded_not_counted_as_fail(tmp_path):
               label(groundedness=("PASS", "PASS"))]
     code, out = run_stats(tmp_path, labels)
     assert code == 0
-    assert "groundedness: 1.00 (1/1) (1 run excluded: judge verdict unavailable)" in out
+    assert row(out, "groundedness")[:4] == (0, 0, 0, 1)
+    assert "1 run excluded: judge verdict unavailable" in out
 
 
 def test_all_null_judge_verdicts_report_na_with_exclusions(tmp_path):
     labels = [label(coherence=(None, "PASS")), label(coherence=(None, "FAIL"))]
     code, out = run_stats(tmp_path, labels)
-    assert "coherence: n/a — no adjudicated runs (2 runs excluded" in out
+    assert "coherence:  no adjudicated runs (2 runs excluded" in out
 
 
 # --- derived overall ---------------------------------------------------------

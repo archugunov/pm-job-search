@@ -1,0 +1,37 @@
+{
+  "run": "2026-08-10/maya-cold-start",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "FAIL",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "coherence": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "conformance": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "tone": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [],
+  "notes": "Turn 20 - when a position cannot be fetched to be evaluated, that should be claimed as \"unkown\", which is a grounded answer, not a violation. But there should be no claims based on the data that is not fetched, this is a hard violation.\n\nWhen /web-fetch internal tool fails, the skill should use playwright tech to open web pages and fetch the content, as it provides way more reliable outputs.",
+  "blind": null
+}

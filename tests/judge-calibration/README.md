@@ -4,6 +4,41 @@ Frozen corpus of harness runs (`runs/`, scrubbed) + human labels (`labels/`) +
 `stats.py`. Purpose: know the judge's error rate so a FAIL means something, and
 replay a rubric edit in minutes instead of a full journey sweep.
 
+## Where this sits in standard practice
+
+The usual sequence for building an LLM judge is:
+
+    error analysis → failure taxonomy → rubric → validate against human labels
+
+A human reads a sample of traces unaided, open-codes what went wrong, those
+codes are clustered into a taxonomy, and the rubric is written *from* the
+taxonomy. Validation comes last.
+
+**We did it backwards.** The rubrics were written first, from intuition and
+from defects we already knew about, and ground truth was collected afterwards.
+Two consequences worth stating plainly, because they limit what these numbers
+can support:
+
+- The rubrics may not cover the failure modes that actually dominate. Nothing
+  here has tested that, because no unaided read preceded them.
+- Most of the corpus is spoiled for error analysis. Once you have read a
+  judge's findings for a run, you cannot produce an independent list for it.
+  Going forward, error analysis happens on new runs, before judging.
+
+Standard names for the pieces here, so this is referenceable outside the repo:
+
+| here | standard term |
+|---|---|
+| rubric | rubric / annotation guideline |
+| blind pass | error analysis (open coding) |
+| `runs/` + `labels/` | annotated evaluation set |
+| verdict agreement | accuracy over run verdicts |
+| held-out runs | validation set |
+
+**Known limitation:** with one annotator there is no inter-annotator agreement,
+so "human label" means one person's judgement, not a consensus. Normal for a
+small team; not the textbook form. Don't present it as one.
+
 ## What you are labelling
 
 Five verdicts per run. That is the whole job.
@@ -78,8 +113,27 @@ coercing it.
     python3 tests/judge-calibration/stats.py tests/judge-calibration/labels/
     python3 tests/judge-calibration/stats.py tests/judge-calibration/labels/ --gate
 
-Verdict agreement per rubric is the primary number. Finding precision appears
-only where you drilled in. Bars: agreement >= 0.9 per rubric with >= 5
+The main table is a confusion matrix over run verdicts, positive class = FAIL
+("the judge flagged this run"):
+
+    precision   of the runs it FAILED, how many deserved it     → over-firing
+    recall      of the runs that deserved FAIL, how many it got → missing
+    accuracy    how often you agreed at all                     → both, blended
+
+Read direction before magnitude. Two rubrics can sit at identical accuracy and
+be failing in opposite ways — in the first real labelling pass, groundedness
+and coherence were both 0.86, one missing and one over-firing.
+
+The practical reading:
+
+    low precision  →  you can't trust a FAIL
+    low recall     →  you can't trust a PASS
+
+Verdict-level recall saturates. It only catches a miss large enough to flip the
+verdict, so on a zero-tolerance rubric, finding 1 of 5 problems still scores as
+a hit. Partial misses appear only in blind recall.
+
+Finding precision appears only where you drilled in. Bars: agreement >= 0.9 per rubric with >= 5
 adjudicated runs, precision >= 0.9 per rubric with >= 5 adjudicated findings,
 recall >= 0.8 when any blind data exists. Thin rubrics report but never gate.
 

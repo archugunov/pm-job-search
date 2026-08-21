@@ -1,0 +1,63 @@
+{
+  "run": "2026-08-07/maya-cold-start",
+  "labeller": null,
+  "verdicts": {
+    "lint": {
+      "judge": "PASS",
+      "human": null,
+      "note": null
+    },
+    "groundedness": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "coherence": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    },
+    "conformance": {
+      "judge": "FAIL",
+      "human": "FAIL",
+      "note": null
+    },
+    "tone": {
+      "judge": "PASS",
+      "human": "PASS",
+      "note": null
+    }
+  },
+  "overall": {
+    "judge": "FAIL"
+  },
+  "findings": [
+    {
+      "rubric": "coherence",
+      "turn": 10,
+      "summary": "turn 10: \"A. Write it now \u2014 you paste 1-3 sentences about yourself, I draft positioning, proof points and a moat from it.\" \u2014 Rule 1: \"positioning\" is defined in the preceding line (\"who you are and what you're best at\") but \"proof points\" and \"moat\" arrive undefined, so the user weighing option A is left holding two plugin terms they cannot evaluate; mitigated by the fact that the A/B choice itself (write now vs. fill in later) is legible without them.",
+      "human": "agree",
+      "note": null
+    },
+    {
+      "rubric": "conformance",
+      "turn": 12,
+      "summary": "Cross-journey 1 (end-of-run nudge) \u2014 FAIL. turn 12: \"What salary band are you aiming for? Whatever shape works \u2014 '\u00a390-110K' or '$190-230K base + equity', or skip if you'd rather not anchor a number yet.\" \u2014 this is the last assistant output in the transcript; the journey was scripted to run through `/job-search`, `/dashboard` and `/today` and terminate on the brief, so the end-of-run nudge was in scope and was never produced.",
+      "human": "agree",
+      "note": null
+    },
+    {
+      "rubric": "conformance",
+      "turn": 13,
+      "summary": "Cross-journey 3 (no dead ends) \u2014 FAIL. turn 13: \"\u00a390-110K for an IC role, \u00a3115-140K if it's proper leadership scope.\" \u2014 the user answered turn 12's prompt and the transcript stops there; `/setup` never terminated with a next action, an offered skip, or a \"you're done\" acknowledgement.",
+      "human": "agree",
+      "note": "Same as the first finding here"
+    }
+  ],
+  "notes": null,
+  "blind": {
+    "human_found": 4,
+    "judge_matched": 1
+  },
+  "_blind_provenance": "recorded in the labelling session 2026-08-20; the tool lost it across a reload"
+}
