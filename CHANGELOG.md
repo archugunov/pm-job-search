@@ -87,6 +87,69 @@ The judged rubrics were rebuilt around what a judge is actually needed for.
   Written because the rubric rename left four journey files pointing at a
   deleted file and nothing caught it.
 
+The judge was then measured against human labels for the first time.
+
+- All eight live-journey transcripts re-judged under the new rubrics, one call
+  per rubric. Two transcripts (`2026-08-04`, `2026-08-07`) had never been judged
+  at all, so the set grew rather than being swapped.
+- Groundedness immediately caught three fabricated claims that both prior judge
+  readings had missed: a turn that reports a failed fetch for every posting it
+  touches, then states one role's location and sector, three other openings on
+  that same unfetched page, and a fourth company's only role with its
+  geographic restriction. The same turn says "I didn't guess tiers from titles
+  alone".
+- Labelling tooling rebuilt around the rubric verdict rather than the finding:
+  five verdicts per run, findings collapsed underneath and opened only on
+  disagreement. `grade-judge.html` went from 1814 lines to ~700 — four tiers,
+  the critique tier, criterion chips and the two-subverdict overall were all
+  dead concepts.
+- `stats.py` prints a confusion matrix per rubric (positive class = FAIL) with
+  precision, recall and accuracy. Accuracy alone hid direction: groundedness and
+  coherence both scored 0.86 while failing in opposite ways, one missing and one
+  over-firing.
+- `tests/test_grade_judge.py` — the labelling tool had zero automated coverage,
+  which is how it once shipped a leak that exposed judge verdicts before the
+  blind gate. Its DOM wiring now sits behind a `typeof document` guard so node
+  can require the parser and run it over the real corpus. It immediately caught
+  a zero-tolerance rubric reporting PASS alongside 13 findings.
+- First calibration pass over 7 runs: tone agreement 0.43, every disagreement in
+  the same direction — judge PASS, human FAIL. Precision 1.00, recall 0.33. It
+  never invented a tone problem; it forgave nearly all of them.
+- `tone.md` retuned in response: a recurring pattern is now a FAIL however small
+  each instance, and the judge must group findings by cause before returning
+  PASS. The four disagreements ship as worked examples. Recall went 0.33 → 1.00.
+- `tests/judge-calibration/controls/` — two hand-repaired transcripts that are
+  supposed to PASS. Every real run has defects, so nothing tested whether a
+  rubric can recognise a clean run; after the tone change failed all seven runs,
+  the controls were the only way to tell "correctly strict" from "broken".
+
+Then the product itself, since three of the tone defects came from the
+guidelines rather than from skills drifting.
+
+- `TONE.md` listed "What's the best email for you?" under "Examples that match
+  the voice" — the exact phrasing flagged in the blind pass — and
+  `setup/SKILL.md` had copied it verbatim. Its hard-filters example offered "no
+  GM roles", which contradicts the target titles of anyone aiming at a GM-shaped
+  seat. Examples in that file get copied into skills, so a bad one ships
+  everywhere.
+- Principle 2 allowed technical terms if "explained the first time". Every skill
+  decided its own case was the explained one, which is how `meta.md`,
+  `--refresh`, "to triage", HTTP codes and "sub-agent context" reached users. Now
+  a flat never-shown list, matching what `lint_transcript.py` enforces.
+- Two rules added that nothing covered: a question must state what the product
+  does with the answer or be cut, and the two-clauses-max limit now applies to
+  questions, not only to briefs.
+- Copy fixed to match: the "Ready?" gate removed from `/setup` (the user has
+  already run the skill), "best email" → "your email", the LinkedIn ask now says
+  why, `--refresh` and launchd/cron no longer surfaced, "triage" replaced in
+  `/job-search` and `recommended-flow.md`, and `/apply`'s missing-CV error
+  rewritten as a plain sentence.
+
+Known gaps, stated rather than implied: roughly half the skills and none of the
+six agents have end-to-end journey coverage; `active-loop`, `edge-recovery` and
+`sweep-smoke` have not been run since these changes; and the calibration corpus
+is spoiled for blind reads because its findings have been discussed in detail.
+
 ---
 
 ## [0.5.0] — 2026-08-10
