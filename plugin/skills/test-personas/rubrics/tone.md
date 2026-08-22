@@ -44,9 +44,22 @@ off?
 
 Tone violations are near-continuous — some hedge, some slightly stiff phrase,
 somewhere. Counting them produces a FAIL on every run forever, and a line that
-is always red is a line nobody reads. Three nitpicks can be a **PASS**. One
-genuinely jarring moment — copy that sounds like a different product, a
-superlative-stacked draft, a lecture — is a **FAIL**.
+is always red is a line nobody reads. Three unrelated nitpicks can be a
+**PASS**. One genuinely jarring moment — copy that sounds like a different
+product, a superlative-stacked draft, a lecture — is a **FAIL**.
+
+**A recurring pattern is a FAIL, however small each instance.** Three turns
+leaking internal vocabulary is not three nitpicks; it is one systematic
+problem, and the user meets it three times. Before returning PASS, group your
+findings: if two or more share a cause — internal detail leaking, questions the
+product should not be asking, prose too dense to skim — that is the verdict,
+not a set of nitpicks to forgive individually.
+
+This paragraph exists because the first human calibration pass disagreed with
+this rubric on four runs out of seven, every time in the same direction: the
+judge said PASS, the human said FAIL. Verdict-level precision was 1.00 and
+recall 0.33 — the judge never invented a tone problem, it just forgave nearly
+all of them. The guidance above was too permissive, not the model.
 
 State the reasoning in one sentence alongside the verdict.
 
@@ -60,6 +73,17 @@ can act on it, not to block a release.
 guardrail is; it is the assistant narrating its own instructions. Distinct from
 the jargon the linter bans, which is a fixed word list — this is the open-ended
 version and stays judged.
+
+**Violation — internal detail leaking, repeatedly.** From the calibration pass,
+all four of these were called PASS and all four were wrong:
+
+- "same `meta.md` underneath" — an aside about storage the user never asked for
+- "Open the dashboard to triage these" — "triage" is internal vocabulary
+- "Ready?" as a whole turn after the user has already said go
+- a positioning answer dense enough that the user asked for it to be trimmed
+
+Individually, each is arguable. Together they are the run's voice, and that is
+the call to make.
 
 **Violation — a motivational register the product doesn't have.**
 "Recognition is locked — time to put it under load." Reads as coaching rather

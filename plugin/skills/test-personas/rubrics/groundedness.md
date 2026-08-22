@@ -89,6 +89,13 @@ in what B actually said. Restating in-run content counts.
 in `file`. Naming a file is only a violation when you characterise contents you
 never read.
 
+**Not a violation — saying you don't know.** "I couldn't fetch that posting, so
+I can't tell you what's in it" is fully grounded: the failed fetch happened
+this run, and the absence of content is being reported rather than filled in.
+Reporting uncertainty is never a groundedness violation, and flagging it as one
+teaches the product exactly the wrong lesson. The violation begins at the next
+sentence, if that sentence describes what the posting says.
+
 **Not a violation — an opinion that sounds like a fact.**
 "Lendable looks like your strongest fit this week" is a judgement, not a claim,
 and needs no source row. Contrast: "Lendable scores highest of the seven" is a
