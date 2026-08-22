@@ -202,6 +202,28 @@ badly written, that is a rubric bug, and the rubric is part of the judge. So
 "conformance is too strict" is a legitimate labelling outcome. "The product
 fails a lot" is not.
 
+## Negative controls (`controls/`)
+
+Every transcript in `runs/` is a run with real defects, so a judge that failed
+everything would score perfectly. `controls/` holds hand-repaired transcripts
+that are supposed to **PASS** on named rubrics.
+
+    tone-clean.md                 tone
+    tone-groundedness-clean.md    tone + groundedness
+
+They are synthetic and say so in their headers, which a test enforces — if one
+ever drifts into `runs/` or gets read as a real run, its numbers become
+fiction. Each also names which rubrics it does *not* control for, so a PASS
+isn't over-read as "this transcript is clean".
+
+**Re-run them after every rubric change.** They are the only thing that
+distinguishes "correctly strict" from "fails everything".
+
+They earned their place immediately. Tightening `tone.md` after the first
+calibration pass took it from 2 FAILs to 7 FAILs out of 7 — agreement rose from
+0.43 to 0.86, but with zero true negatives there was no way to tell a fixed
+rubric from a broken one. The controls still passed, which settled it.
+
 ## Acting on a disagreement
 
 - Ambiguous criterion → rewrite the criterion. That is a spec bug, not a judge bug.

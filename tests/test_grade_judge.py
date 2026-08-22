@@ -233,3 +233,43 @@ def test_transcript_parser_finds_turns(tmp_path):
           assistants: t.filter(x => x.role === 'ASSISTANT').length }}));
     """, tmp_path)
     assert out["n"] > 20 and out["first"] == "USER" and out["assistants"] >= 20
+
+
+# --- negative controls -------------------------------------------------------
+
+CONTROLS = ROOT / "tests" / "judge-calibration" / "controls"
+
+
+def header_of(path: Path) -> str:
+    """Everything before the first turn, blockquote markers stripped and
+    whitespace collapsed. Two earlier versions of this failed for the wrong
+    reason: a fixed character slice truncated the longer header, then a literal
+    substring missed a phrase that happened to wrap across a line."""
+    head = path.read_text().split("\n## Turn", 1)[0]
+    return re.sub(r"\s+", " ", head.replace(">", " "))
+
+
+def test_negative_controls_exist():
+    """At least two. One is an anecdote; two is a check you can act on."""
+    assert len(list(CONTROLS.glob("*.md"))) >= 2
+
+
+@pytest.mark.parametrize("path", sorted(CONTROLS.glob("*.md")), ids=lambda p: p.name)
+def test_controls_are_marked_synthetic(path):
+    """These are hand-edited, not harness output. If one ever drifts into
+    runs/ or gets read as a real run, its numbers become fiction."""
+    head = header_of(path)
+    assert "SYNTHETIC" in head
+    assert "supposed to PASS" in head
+    assert not path.is_relative_to(RUNS)
+
+
+@pytest.mark.parametrize("path", sorted(CONTROLS.glob("*.md")), ids=lambda p: p.name)
+def test_controls_say_which_rubrics_they_control(path):
+    """A control that doesn't name its scope invites over-reading: these are
+    clean on the named rubrics only, not clean overall."""
+    assert "NOT controlled for" in header_of(path)
+
+
+def test_controls_are_not_picked_up_as_corpus_runs():
+    assert all(not p.is_relative_to(CONTROLS) for p in judge_files())
