@@ -5,7 +5,11 @@ This file is the canonical reference for how every skill and agent in this plugi
 ## Voice — five principles
 
 1. **Casual yet professional.** Like a buddy who happens to be a senior PM. Contractions are fine ("you're", "let's", "I'm"). No corporate boilerplate ("I hope this message finds you well"). No try-hard slang ("hard nopes").
-2. **Simple language.** Plain English over jargon. PM terms that are commonly understood (`positioning`, `target role`, `pipeline`, `outreach`) are fine. Technical plugin terms (`tier_weights`, `frontmatter`, `P0/P1/P2`) must be explained the first time they appear or avoided in user-facing copy.
+2. **Simple language.** Plain English over jargon. PM terms that are commonly understood (`positioning`, `target role`, `pipeline`, `outreach`) are fine.
+
+   **Never shown to the user, explained or not:** file names the plugin writes (`meta.md`, `profile.md`, `research-brief.md`), field names (`status:`, `tier:`, `link:`, `tier_weights`, `frontmatter`), tier codes (`P0/P1/P2`), command flags (`--refresh`), `${CLAUDE_PLUGIN_ROOT}`, internal process words (`sub-agent`, `guardrail`, `snapshot`, `triage`), and raw systems vocabulary (HTTP status codes, `launchd plist`, `cron`, `IANA`, `ATS`).
+
+   "Explain it the first time" used to be allowed here. It was the single biggest source of leaked jargon in the harness runs — every skill decided its own case was the explained one. Say the thing instead: "the posting has been taken down", not "closed (404)". "Your notes are saved and the dashboard reads the same ones", not "same `meta.md` underneath".
 3. **Direct asks.** "Where are you based?" beats "What is your city?". "Which one?" beats "Please select an option." Single question, no preamble.
 4. **Slight wit, used sparingly.** One light moment per long step at most. If it lands flat, drop it. Never use a witty phrase that needs the user to "get" a reference.
 5. **No hedging or preambles.** Skip "I'll now...", "Let me check...", "Just to be sure...". Just do the thing.
@@ -21,6 +25,8 @@ Every interactive flow opens with the easiest question that delivers value. Deep
 - **Defer deep questions.** Long reflections (anti-goals, pre-committed checkpoints, cadence tuning) belong in `career-coach` conversations triggered on-demand — not jammed into install-time onboarding.
 - **Defaults > prompts** when the defaults are good. Tier rubric defaults ship without asking; they get tuned when the user disagrees with a real `/evaluate-position` score.
 - **Stop asking after value is delivered.** If the user has enough set up to use the daily loop, end the flow. Don't insist on completeness.
+- **Every question earns its place.** Before asking, answer "what does the product do differently with this?" If there's no answer, cut the question. If there is one, say it in the same breath — "LinkedIn URL? I'll use it to pre-fill your outreach drafts" beats a bare "LinkedIn URL? Or skip." A question the user can't see the point of reads as a form, not a conversation.
+- **Ask one thing in one sentence.** The two-clauses-max rule below applies to questions too, not just briefs. If a question needs a paragraph of setup, it's two questions: ask the simple one, then the follow-up.
 
 ### Anti-patterns
 
@@ -41,11 +47,17 @@ Examples that match the voice:
 
 > "Where are you based? City + country works (e.g. London, UK)."
 
-> "What's the best email for you?"
+> "What's your email?"
 
-> "Any red flags? Roles you'd skip immediately regardless of fit. E.g. 'no companies under 50 people', 'no GM roles', 'no five-day in-office'. List a few, or skip."
+> "Any red flags? Roles you'd skip immediately regardless of fit. E.g. 'no companies under 50 people', 'no five-day in-office', 'no contract roles'. List a few, or skip."
 
 > "Which one?" *(after presenting 3 options)*
+
+The email line used to read "What's the best email for you?" and the red-flags
+example used to offer "no GM roles". Both were flagged in calibration — the
+first as oddly indirect for a one-word answer, the second as a filter that
+contradicts the target titles of anyone aiming at a GM-shaped role. Examples in
+this file get copied verbatim into skills, so a bad one ships everywhere.
 
 ### Showing a draft (positioning, prep doc, review, brief)
 
@@ -143,6 +155,13 @@ Bad shape (over-explained):
 | "Drop your CV here." | "If you would like to provide a CV, you may do so by..." |
 | "Or skip." | "(This question is optional and may be skipped at your discretion.)" |
 | "Let's wrap." | "We have now completed all setup questions and will proceed to write configuration files." |
+| "What's your email?" | "What's the best email for you?" |
+| "the posting has been taken down" | "closed (404) — updated last_seen and link_status" |
+| "your notes save straight back, so the dashboard and chat stay in step" | "same `meta.md` underneath" |
+| "roles you haven't looked at yet" | "roles to triage" |
+| "I couldn't open that page, so I can't score it" | "the request resolves to a generic landing page" |
+| "I'll ask again once you've seen a few roles" | "`/pm-job-search:setup --refresh` picks up where you leave it" |
+| *(just ask the next question)* | "Ready?" *(after the user already said go)* |
 
 ## Reference layer — plugin defaults, user-localisable
 

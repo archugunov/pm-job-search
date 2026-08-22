@@ -224,7 +224,7 @@ Plain prose (TONE.md Rule B — no fenced code blocks, no key-value dumps). Temp
 >
 > <If any soft-duplicates were skipped: "Skipped as likely repeats (<count>): <Company> — <Position> — <url>". These share a base title with a role you've already seen; say 'file <Company>' if it's genuinely a different role.>
 >
-> Open the dashboard to triage — or tell me here which to mark `to apply`, `not interested`, or archive."
+> Open the dashboard to sort through these — or tell me here which ones you want to go after, and which to drop."
 
 Each application row printed in chat (when the user asks to see roles, when stubs are listed, etc.) includes the JD URL inline. Format: `- <Company> — <Position> — <status> — <url>`. Long URLs are fine; do not shorten or wrap.
 

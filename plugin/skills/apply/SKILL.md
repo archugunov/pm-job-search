@@ -23,7 +23,7 @@ Optional flag:
 
 **Missing-input handling** (one-line errors, point to the fix, exit cleanly):
 
-- No `userdata/cv.md` or `.txt` → tell the user: `No userdata/cv.md or .txt — drop one or run /setup --refresh to create it.` Exit.
+- No `userdata/cv.md` or `.txt` → tell the user: "I don't have your CV yet — drop it into `userdata/` as cv.md or cv.txt and I'll tailor from it." Exit.
 - No `userdata/companies/<Co>/` folder → tell the user: `No userdata/companies/<Co>/ — run /evaluate-position first.` Exit.
 - No `research-brief.md` (company was added manually rather than via `/evaluate-position`) → soft warning: `No research-brief.md — tailoring will be looser. Continue?` Default yes; if yes, proceed using only `meta.md.position` to infer JD signals.
 

@@ -11,9 +11,11 @@ Onboard the user onto pm-job-search by filling in `userdata/profile.md` and scaf
 
 **Opening line** (after Step 0, fresh install only):
 
-> "OK, let's get you set up. Nine quick steps — none of it's locked in, you can rerun anytime. Ready?"
+> "OK, let's get you set up — nine quick steps, none of it locked in."
 
-Wait for a one-word confirmation, then start Step 1.
+Do NOT wait for a confirmation. Go straight into Step 1 in the same message. The
+user has already chosen to run this skill; asking "Ready?" spends one of their
+turns on a decision they have made, which `TONE.md` names as an anti-pattern.
 
 ## Mode detection
 
@@ -119,9 +121,9 @@ just types more. **There is one flow, not two.**
 
    > "Where are you based? City + country works (e.g. London, UK)."
 
-   > "What's the best email for you?"
+   > "What's your email?"
 
-   > "LinkedIn URL? Or skip."
+   > "LinkedIn URL? I'll use it to pre-fill outreach drafts later. Or skip."
 
    With no CV at all, this step is simply those four questions in that order,
    followed by the timezone confirmation:
@@ -178,7 +180,7 @@ just types more. **There is one flow, not two.**
    > "Positioning next — who you are and what you're best at. Two ways to handle this:"
 
    - **A. Write it now** → **Mode A** (paste 1-3 sentences and walk the conversational draft).
-   - **B. Skip for now** — print: *"Fill in later — `/pm-job-search:setup --refresh` picks up where you leave it."* Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
+   - **B. Skip for now** — print: *"Skipped — I'll ask again once you've seen a few roles."* Never name the `--refresh` flag to the user; it is a command they did not ask for and will not remember. Write `userdata/profile.md` with the three positioning sections empty under a `<!-- TODO: fill in via /pm-job-search:setup --refresh, or paste your CV at userdata/cv.md and re-run --refresh -->` comment. Onboarding finishes fast.
 
    ### Mode A (paste-now)
 
@@ -465,7 +467,7 @@ Step 2 (only if Yes) — ask:
 Free-text answer. Parse to HH:MM.
 
 Step 3 (only if Yes) — write the schedule via `/schedule` automatically and reply:
-> "Done — scheduled daily at <HH:MM> via Claude Code's built-in `/schedule`. If you'd rather not keep a Claude Code session open, ask me to set up a launchd plist (macOS) or cron entry (Linux) instead."
+> "Done — your brief runs daily at <HH:MM>. That needs Claude Code open; if you'd rather it run in the background, say so and I'll set that up."
 
 **Closing nudge:**
 
